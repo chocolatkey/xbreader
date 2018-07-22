@@ -1,0 +1,42 @@
+.noselect {
+    -webkit-touch-callout: none;
+    @include prefix("user-select", none);
+}
+
+.noget {
+	@include prefix("user-drag", none);
+	@include prefix("pointer-events", none);
+}
+
+.etext {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    & a:hover {
+        text-decoration: underline;
+    }
+}
+
+.hide {
+    display: none;
+}
+
+html.no-js .jss {
+    display: none !important;
+}
+
+/* Responsive toggle classes */
+@media (min-width: 700px) {
+    .dhide {
+        display: none !important;
+    }
+} 
+@media (max-width: 699px) {
+    html.js .mhide, html.br .mhide {
+        display: none !important;
+    }
+    html.no-js .mhide, html.br .mhide {
+        display: none !important;
+    }
+}

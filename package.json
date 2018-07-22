@@ -1,0 +1,28 @@
+{
+  "name": "xbreader",
+  "version": "0.1.1",
+  "description": "Fixed-layout publication reader for the web",
+  "author": "chocolatkey",
+  "license": "MIT",
+  "dependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.4",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "css-loader": "^0.28.11",
+    "file-loader": "^1.1.11",
+    "i18n-webpack-plugin": "^1.0.0",
+    "mini-css-extract-plugin": "^0.4.0",
+    "mithril": "^1.1.6",
+    "mopt": "^5.1.1",
+    "node-sass": "^4.8.3",
+    "sass-loader": "^7.0.1",
+    "uglifyjs-webpack-plugin": "^1.2.5",
+    "webpack": "^4.8.3",
+    "webpack-cli": "^2.1.4"
+  },
+  "scripts": {
+    "start": "webpack -d --config webpack.dev.js --watch",
+    "build": "webpack -p --config webpack.prod.js"
+  }
+}

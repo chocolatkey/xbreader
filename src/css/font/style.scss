@@ -1,0 +1,192 @@
+@import "variables";
+
+@font-face {
+  font-family: 'breader';
+  src:  url('#{$icomoon-font-path}/breader.eot?ttqjfp');
+  src:  url('#{$icomoon-font-path}/breader.eot?ttqjfp#iefix') format('embedded-opentype'),
+    url('#{$icomoon-font-path}/breader.ttf?ttqjfp') format('truetype'),
+    url('#{$icomoon-font-path}/breader.woff?ttqjfp') format('woff'),
+    url('#{$icomoon-font-path}/breader.svg?ttqjfp#breader') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="br-i-"], [class*=" br-i-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'breader' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  color: $primaryForeground;
+  font-size: 24px;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.br-i-latest {
+  &:before {
+    content: $br-i-latest; 
+  }
+}
+.br-i-apps {
+  &:before {
+    content: $br-i-apps; 
+  }
+}
+.br-i-volume {
+  &:before {
+    content: $br-i-volume; 
+  }
+}
+.br-i-bookmarked {
+  &:before {
+    content: $br-i-bookmarked; 
+  }
+}
+.br-i-bookmark {
+  &:before {
+    content: $br-i-bookmark; 
+  }
+}
+.br-i-tool {
+  &:before {
+    content: $br-i-tool; 
+  }
+}
+.br-i-refresh {
+  &:before {
+    content: $br-i-refresh; 
+  }
+}
+.br-i-download {
+  &:before {
+    content: $br-i-download; 
+  }
+}
+.br-i-comment {
+  &:before {
+    content: $br-i-comment; 
+  }
+}
+.br-i-fullscreen {
+  &:before {
+    content: $br-i-fullscreen; 
+  }
+}
+.br-i-unfullscreen {
+  &:before {
+    content: $br-i-unfullscreen; 
+  }
+}
+.br-i-help {
+  &:before {
+    content: $br-i-help; 
+  }
+}
+.br-i-cancel {
+  &:before {
+    content: $br-i-cancel; 
+  }
+}
+.br-i-lock {
+  &:before {
+    content: $br-i-lock; 
+  }
+}
+.br-i-info {
+  &:before {
+    content: $br-i-info; 
+  }
+}
+.br-i-external {
+  &:before {
+    content: $br-i-external; 
+  }
+}
+.br-i-power {
+  &:before {
+    content: $br-i-power; 
+  }
+}
+.br-i-error {
+  &:before {
+    content: $br-i-error; 
+  }
+}
+.br-i-warning {
+  &:before {
+    content: $br-i-warning; 
+  }
+}
+.br-i-feed {
+  &:before {
+    content: $br-i-feed; 
+  }
+}
+.br-i-cog {
+  &:before {
+    content: $br-i-cog; 
+  }
+}
+.br-i-share {
+  &:before {
+    content: $br-i-share; 
+  }
+}
+.br-i-volumes {
+  &:before {
+    content: $br-i-volumes; 
+  }
+}
+.br-i-list {
+  &:before {
+    content: $br-i-list; 
+  }
+}
+.br-i-search {
+  &:before {
+    content: $br-i-search; 
+  }
+}
+.br-i-vertical {
+  &:before {
+    content: $br-i-vertical; 
+  }
+}
+.br-i-menu {
+  &:before {
+    content: $br-i-menu; 
+  }
+}
+.br-i-horizontal {
+  &:before {
+    content: $br-i-horizontal; 
+  }
+}
+.br-i-single {
+  &:before {
+    content: $br-i-single; 
+  }
+}
+.br-i-spread {
+  &:before {
+    content: $br-i-spread; 
+  }
+}
+.br-i-thin {
+  &:before {
+    content: $br-i-thin; 
+  }
+}
+.br-i-wide {
+  &:before {
+    content: $br-i-wide; 
+  }
+}
+

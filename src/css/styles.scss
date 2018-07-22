@@ -1,0 +1,214 @@
+@import "./common.scss";
+@import "./font/style.scss";
+@import "./utils.scss";
+
+html {
+	overflow: hidden; //&.welcome { overflow: scroll !important; }
+	position: absolute; // for InAppBrowsers
+	@include trbl(0); // for InAppBrowsers
+	width: 100%;
+	height: 100%;
+	font-family: sans-serif;
+	//&.macOS   { font-family: "Helvetica", "Trebuchet MS", "游ゴシック", "Yu Gothic", "YuGothic", "ヒラギノ角ゴ ProN W3", "HiraKakuProN-W3", sans-serif; }
+	//&.iOS     { font-family: "Helvetica", "Trebuchet MS", "游ゴシック", "Yu Gothic", "YuGothic", "ヒラギノ角ゴ ProN W3", "HiraKakuProN-W3", sans-serif; }
+	//&.Windows { font-family: "Helvetica", "Trebuchet MS", "游ゴシック", "Yu Gothic", "YuGothic", "メイリオ",             "Meiryo",          sans-serif; }
+	-webkit-font-smoothing: subpixel-antialiased;
+	-webkit-text-size-adjust: 100%;
+	background: #404040;
+	&[data-bibi-cursor="left"]   { cursor: w-resize; }
+	&[data-bibi-cursor="right"]  { cursor: e-resize; }
+	&[data-bibi-cursor="top"]    { cursor: n-resize; }
+	&[data-bibi-cursor="bottom"] { cursor: s-resize; }
+	&[data-bibi-cursor="menu"] { cursor: cell; }
+	&[data-bibi-cursor="no"] { cursor: not-allowed; }
+	/*&[data-bibi-cursor="left"],
+	&[data-bibi-cursor="right"],
+	&[data-bibi-cursor="top"],
+	&[data-bibi-cursor="bottom"] { cursor: pointer; }*/
+	user-select: none;
+}
+
+body {
+	* {
+		-webkit-tap-highlight-color: rgba(255,255,255,0);
+		-webkit-tap-highlight-color: transparent;
+	}
+	//position: absolute;
+	//@include trbl(0);
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
+	background: transparent no-repeat center center;
+	transition: opacity .25s ease;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+::selection {
+    /* Webkit */
+    background: #fff;
+    color: #000;
+}
+::-moz-selection {
+    /* Firefox */
+    background: #fff;
+    color: #000;
+}
+
+:not(.material-icons) {
+    font-family: Roboto, "游ゴシック", YuGothic, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+}
+
+// To fix above
+.mdc-fab__icon {
+    font-family: 'Material Icons' !important;
+}
+
+.logo img {
+    height: 52px;
+    width: auto;
+}
+
+// todo wut this
+html.slider-opened div#bibi-slider {
+    background: $primaryBackground !important;
+}
+
+.br__notifier {
+	z-index: $z-index_notifier-board;
+	background: $primaryBackground;
+	color: $primaryForeground;
+	padding: 20px;
+	display: block;
+	width: 100%;
+	height: 100%;
+	margin: 0 auto;
+	text-align: center;
+}
+
+div#br-main {
+	-webkit-overflow-scrolling: touch;
+	overflow: hidden;
+	box-sizing: border-box;
+	//padding: 35px 0;
+	//transition: .2s ease-out;
+	position: absolute;
+	z-index: $z-index_main;
+	@include trbl(0);
+	padding-top: $top-bar-height;
+	width: 100%;
+	height: 100%;
+	transition: .15s ease;
+	transform-origin: 0 0;
+	will-change: scroll-position, transform, opacity;
+	padding-top: 0;
+}
+
+.page-img,
+.page-blank {
+    max-height: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+	display: block;
+	//height: auto;
+	direction: ltr;
+}
+
+.page-img {
+	display: none;
+	&[src] {
+		display: block;
+	}
+}
+
+div#br-book {
+    position: relative;
+    z-index: $z-index_main-book;
+    width: 100%;
+    //height: calc(100% - #{$top-bar-height});
+    height: 100%;
+    transition: 0.5s ease-in-out;
+    transition-property: transform;
+//		transform: translateY( 0  );
+//		html.panel-opened & { transform: translateY(36px); /* transform-origin: 50% 100%; transform: rotateX(-45deg); */ }
+}
+
+div#br-topbar, div#br-botbar {
+    transition-property: all;
+	transition-duration: .2s;
+    transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+    background-color: rgba($primaryBackground, 0.9) !important;
+
+    &:hover {
+        background-color: rgba($primaryBackground, 0.95) !important;
+    }
+}
+
+.br-tab-bar {
+	display: table;
+	position: relative;
+	height: 48px;
+	margin: 0 auto;
+	text-transform: uppercase;
+}
+
+.br-tab {
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-font-smoothing: antialiased;
+	font-size: .875rem;
+	line-height: 2.25rem;
+	font-weight: 500;
+	letter-spacing: .08929em;
+	text-transform: uppercase;
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
+	will-change: transform,opacity;
+	display: table-cell;
+	position: relative;
+	box-sizing: border-box;
+	min-width: 0px;
+	min-height: 48px;
+	padding: 0 24px;
+	text-align: center;
+	text-decoration: none;
+	white-space: nowrap;
+	cursor: pointer;
+	overflow: hidden;
+	vertical-align: middle;
+
+	border: 1px solid transparent;
+
+	&:hover {
+		background-color: darken($primaryBackground, 20%);
+		border-color: $hoverColor;
+	}
+
+	&:active {
+		background-color: darken($primaryBackground, 40%);
+		border-color: $activeColor;
+	}
+
+	// Icons
+	& i {
+		display: block;
+		margin: 0 auto;
+		width: 24px;
+		height: 24px;
+	}
+}
+
+@media screen and (max-width: 600px) {
+    .br-tab {
+        padding: 0 12px
+    }
+}
+
+
+@import "./components/slider.scss";
+@import "./components/topbar.scss";
+@import "./components/botbar.scss";
+@import "./components/arrows.scss";
+@import "./components/spinner.scss";
+@import "./components/guide.scss";

@@ -1,0 +1,116 @@
+// Reset
+* {
+    margin: 0;
+    padding: 0;
+    border-style: none;
+    border: 0;
+    font-size: 100%;
+	font-weight: normal;
+	font-style: normal;
+}
+
+li {
+	list-style: none outside;
+}
+
+section, article, nav, aside,
+header, footer,
+figure, figcaption { 
+    display: block;
+}
+
+// Colors
+$primaryForeground: #000;
+$secondaryForeground: #333;
+
+$primaryBackground: #fff;
+$secondaryBackground: #fff;
+
+$hoverColor: #9eceff;
+$activeColor: #ffe14c;
+
+// Sizes
+$scrollbar-track-size: 10px;
+$scrollbar-thumb-size: 8px;
+
+$icon-size: 40px;
+$icon-size_in-subpanel: 21px;
+
+$button-group-margin: 4px;
+
+$top-bar-height: $icon-size + $button-group-margin * 2 + 16;
+$bottom-bar-height: $top-bar-height;
+
+$slider-size: $bottom-bar-height;
+
+$guide-size: 140px;
+
+// Mixins
+@mixin trbl($t: auto, $r: $t, $b: $t, $l: $r) { top: $t; right: $r; bottom: $b; left: $l; }
+
+@mixin min($min) { @media screen and (min-width: #{$min}) { @content; } }
+@mixin max($max) { @media screen and (max-width: #{$max}) { @content; } }
+@mixin min-max($min, $max) { @media screen and (min-width: #{$min}) and (max-width: #{$max}) { @content; } }
+@mixin max-min($max, $min) { @include min-max($min, $max) { @content; } }
+
+@mixin keyframes($N) { @-webkit-keyframes #{$N} { @content; } @-epub-keyframes #{$N} { @content; } @-moz-keyframes #{$N} { @content; } @-ms-keyframes #{$N} { @content; } @keyframes #{$N} { @content; } }
+
+@mixin prefix($P, $V) { -webkit-#{$P}: $V; -epub-#{$P}: $V; -moz-#{$P}: $V; -khtml-#{$P}: $V; -ms-#{$P}: $V; @content; #{$P}: $V; }
+
+@mixin font-icon($FamilyName) {
+	display: inline-block;
+	direction: ltr;
+	letter-spacing: normal;
+	text-transform: none;
+	text-rendering: optimizeLegibility;
+	white-space: nowrap;
+	word-wrap: normal;
+	font-family: $FamilyName;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	-ms-font-feature-settings: 'liga' 1;
+	font-feature-settings: 'liga';
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	speak: none;
+}
+
+// Indexes
+
+
+$z-index_main: 1;
+	$z-index_main-book: 1;
+	$z-index_main-touchpanel: 10;
+
+$z-index_scrollbar: $z-index_main + 1;
+$z-index_progress: $z-index_main + 1;
+$z-index_nombre: $z-index_main + 1;
+$z-index_slider: $z-index_main + 10;
+
+$z-index_sub: 10;
+
+$z-index_veil: 100;
+	$z-index_veil-bottombar: 1;
+	$z-index_veil-cover: 10;
+	$z-index_veil-catcher: 10;
+	$z-index_veil-play: 10;
+	$z-index_veil-byebye: 10;
+
+$z-index_panel: 1000;
+	$z-index_panel-bookinfo: 1;
+	$z-index_panel-bottombar: $z-index_panel-bookinfo + 1;
+	$z-index_panel-topbar: 1000;
+
+$z-index_menu: $z-index_panel + 1;
+
+$z-index-help: $z-index_panel + 1;
+$z-index-poweredby: $z-index_panel + 1;
+
+$z-index_arrow: $z-index_panel + 1;
+
+$z-index_shade: $z-index_menu - 1;
+$z-index_subpanel: $z-index_menu + 1;
+
+$z-index_notifier-board: 99999999999;
+$z-index_spinner: $z-index_notifier-board - 1;

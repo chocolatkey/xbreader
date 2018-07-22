@@ -1,0 +1,106 @@
+div#br-botbar {
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    //overflow: hidden;
+    position: fixed;
+    z-index: 11;
+    border: 0;
+    /*cursor: pointer;*/
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 64px;
+    text-align: center;
+
+    & a:hover, & a:active {
+        text-decoration: underline;
+    }
+
+    & span {
+        //position: absolute;
+        display: inline-flex;
+        margin: auto;
+        white-space: nowrap;
+    }
+    &.hidden {
+        bottom: -64px;
+    }
+}
+
+div.br-botbar-controls {
+    flex: 5em;
+    display: inline-flex;
+    margin: auto;
+    justify-content: center;
+    & button {
+        background: $primaryBackground;
+        margin: 0 5px;
+        height: 38px;
+        width: 38px;
+        box-shadow: 0 -3px 0 0 rgba(0,0,0,.4) inset;
+        border-radius: 3px;
+        border: 1px solid $primaryForeground;
+        outline: none;
+
+        & i {
+            height: 36px;
+            font-size: 34px;
+        }
+
+        &:hover {
+            border-color: $hoverColor;
+        }
+
+        &:active {
+            box-shadow: 0 -1px 0 0 rgba(0,0,0,.4) inset;
+            border-color: $activeColor;
+            transform: translateY(1px);
+        }
+    }
+
+    &.landscape {
+        min-width: 100px;
+    }
+
+    &.portrait {
+        min-width: 50px;
+
+        & #br-view__tweak {
+            display: none;
+        }
+    }
+}
+
+div.br-botbar-container {
+    flex: 100% 0;
+    display: inline-flex;
+    margin: auto;
+    height: 18px;
+}
+
+div.br-botbar-inner {
+    position: relative;
+    max-width: 980px;
+    padding: 22px 10px;
+}
+
+@media screen and (max-width: 980px) {
+    div.br-botbar-inner {
+        position: static;
+        width: 100%;
+    }
+}
+
+div#br-botbar:before {
+    top: 50%;
+    right: 0;
+    bottom: auto;
+    left: 0;
+    width: 100%;
+    border-top-width: 1px;
+    transform: translateY(-.5px);
+}

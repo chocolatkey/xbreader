@@ -1,0 +1,141 @@
+// ================================================================================
+// + Arrows
+// --------------------------------------------------------------------------------
+
+
+$arrow-bar-length: $top-bar-height * 0.5;
+$arrow-icon-size: $arrow-bar-length * 1;
+
+
+div#bibi-arrow-back,
+div#bibi-arrow-forward {
+	//// Layout
+	& {
+		display: none; html.arrows-active & { display: block; }
+		position: fixed;
+		z-index: $z-index_arrow;
+		margin: auto;
+		line-height: 1;
+		&:before, &:after {
+			box-sizing: border-box;
+			display: block;
+			position: absolute;
+		}
+		&:before { // icon
+			@include font-icon("Material Icons");
+			z-index: 2;
+			margin: auto;
+			width: $arrow-icon-size;
+			height: $arrow-icon-size;
+			text-align: center;
+			vertical-align: middle;
+			line-height: $arrow-icon-size * 1.05;
+			/*text-indent: -.05em;*/
+			font-size: $arrow-icon-size;
+			border-radius: 30%;
+			color: white;//rgb(96,96,96);
+			background: rgba(0,0,0,0.4);
+		}
+		&:after { // edge shadow
+			content: "";
+			z-index: 1;
+		}
+	}
+	html.appearance-ttb & {
+		// ↑↓
+		left: 0; right: 0; width: 100%; width: 100vw; height: 0;
+		&:before { left: 0; right: 0; }
+		&:after  { left: 0; right: 0; width: 100%; height: $arrow-bar-length; }
+	}
+	html.appearance-ltr &,
+	html.appearance-rtl & {
+		// ←→
+		top: 0; bottom: 0; width: 0; height: 100%; height: 100vh;
+		&:before { top: 0; bottom: 0; }
+		&:after  { top: 0; bottom: 0; width: $arrow-bar-length; height: 100%; }
+	}
+	html.busy & {
+		&:before, &:after {
+			transition: none !important;
+			opacity: 0 !important;
+		}
+	}
+	//// Interaction
+	& {
+		&:before, &:after {
+			transition-duration: .4s;
+		}
+		&:before {
+			opacity: 0;
+			transform: scale(1);
+			transition-timing-function: cubic-bezier(.2, .8, .8, 1.6);
+		}
+		&:after {
+			opacity: 1;
+			transition-timing-function: ease-out;
+		}
+	}
+	&.available.hover {
+		cursor: pointer;
+		&:before, &:after {
+			transition-duration: .2s;
+		}
+		&:before {
+			transform: scale(1.1);
+			opacity: 1;
+		}
+	}
+	&.available.active {
+		&:before, &:after {
+			transition-duration: .1s;
+		}
+		&:before {
+			transform: scale(1.0);
+			opacity: .75;
+		}
+	}
+	&.available.glowing {
+		&:before, &:after {
+			transition-duration: .1s;
+		}
+		&:before {
+			transform: scale(1.1);
+			opacity: 1;
+		}
+	}
+}
+
+@mixin arrow-variation($dir, $transform-origin, $icon-code, $icon-code_glowing) {
+	& {
+		#{$dir}: 0;
+		&:before, &:after { transform-origin: $transform-origin; }
+		&:before { content: $icon-code; #{$dir}: 15px; } /* $button-group-margin */
+		&:after { #{$dir}: $arrow-bar-length * -1; background: linear-gradient(to $dir, rgba(128,128,128, 0), rgba(128,128,128, 0) 25%, rgba(128,128,128, 0.125)); }
+	}
+	&.available.hover, &.available.glowing {
+		&:after { #{$dir}: 0; }
+	}
+	&.available.glowing {
+		&:before { content: $icon-code_glowing; #{$dir}: 8px; }
+	}
+}
+
+html.appearance-ttb div#bibi-arrow-back {
+	/* ↑ */ @include arrow-variation(   top,  50%   0%, "\e316", "\e316"); // "\32" arrow_carrot-up // "\e043" arrow_carrot-up_alt
+}
+html.appearance-ltr div#bibi-arrow-forward, html.appearance-rtl div#bibi-arrow-back {
+	/* → */ @include arrow-variation( right, 100%  50%, "\e315", "\e315"); // "\35" arrow_carrot-right // "\e046" arrow_carrot-right_alt
+}
+html.appearance-ttb div#bibi-arrow-forward {
+	/* ↓ */ @include arrow-variation(bottom,  50% 100%, "\e313", "\e313"); // "\33" arrow_carrot-down // "\e044" arrow_carrot-down_alt
+}
+html.appearance-ltr div#bibi-arrow-back, html.appearance-rtl div#bibi-arrow-forward {
+	/* ← */ @include arrow-variation(  left,   0%  50%, "\e314", "\e314"); // "\34" arrow_carrot-left // "\e045" arrow_carrot-left_alt
+}
+
+html.appearance-ttb.notifier-shown div#bibi-arrow-back {
+	/* ↑ */ // with Notifier
+	&.available.glowing {
+		&:before { top: 8px + $top-bar-height; }
+	}
+}
