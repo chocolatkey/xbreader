@@ -5,7 +5,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const I18nPlugin = require("i18n-webpack-plugin");
 const webpack = require("webpack");
-const pkg = require("./package.json");
+const consts = require("./consts");
 const languages = {
     en: null,
     ja: require("./i18n/ja.js"),
@@ -82,11 +82,7 @@ let exp = Object.keys(languages).map((language) => {
                     }
                 }
             }),
-            new webpack.DefinePlugin({
-                __VERSION__: JSON.stringify(pkg.version),
-                __NAME__: JSON.stringify(pkg.name),
-                __DEV__: false
-            })
+            new webpack.DefinePlugin(consts)
         ]
     };
 });
@@ -109,11 +105,7 @@ exp.push({
         }]
     },
     plugins: [
-        new webpack.DefinePlugin({
-            __VERSION__: JSON.stringify(pkg.version),
-            __NAME__: JSON.stringify(pkg.name),
-            __DEV__: false
-        })
+        new webpack.DefinePlugin(consts)
     ]
 });
 

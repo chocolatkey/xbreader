@@ -3,7 +3,7 @@ const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const I18nPlugin = require("i18n-webpack-plugin");
 const webpack = require("webpack");
-const pkg = require("./package.json");
+const consts = require("./consts");
 
 module.exports = [{
     entry: {
@@ -60,11 +60,7 @@ module.exports = [{
             //filename: "[name]-[hash].css",
             //chunkFilename: "[id].css"
         }),
-        new webpack.DefinePlugin({
-            __VERSION__: JSON.stringify(pkg.version),
-            __NAME__: JSON.stringify(pkg.name),
-            __DEV__: true
-        })
+        new webpack.DefinePlugin(consts)
     ]
 }, {
     entry: {
@@ -84,10 +80,6 @@ module.exports = [{
         }]
     },
     plugins: [
-        new webpack.DefinePlugin({
-            __VERSION__: JSON.stringify(pkg.version),
-            __NAME__: JSON.stringify(pkg.name),
-            __DEV__: false
-        })
+        new webpack.DefinePlugin(consts)
     ]
 }];
