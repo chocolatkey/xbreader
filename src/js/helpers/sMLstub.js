@@ -23,6 +23,8 @@ class sML {
             return OS;
         })({});
 
+        this.Mobile = this.OS.iOS || this.OS.Android || this.OS.WindowsPhone;
+
         this.UserAgent = this.UA = ((UA) => {
             if(/Gecko\/\d/.test(nUA)) {
                 UA.Gecko = getVersion("rv");

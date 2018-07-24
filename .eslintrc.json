@@ -31,6 +31,7 @@
         "__": true,
         "__DEV__": true,
         "__VERSION__": true,
-        "__NAME__": true
+        "__NAME__": true,
+        "__CDN__": true
     }
 }

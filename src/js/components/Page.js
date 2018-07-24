@@ -1,6 +1,6 @@
 import m from "mithril";
 import SmartLoader from "../helpers/lazyLoader";
-const MAX_FIT = 1400;
+export const MAX_FIT = 1400;
 
 export default class Page {
 
