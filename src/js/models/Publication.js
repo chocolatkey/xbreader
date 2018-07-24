@@ -21,7 +21,7 @@ export default class Publication {
                 //if(this.spine.length % 2) // Uneven number of pages, we good
                 this.ready = true;
                 this.navi = new Navigator(this.spine);
-                console.log("Publication loaded: " + this.metadata.name);
+                console.log("Publication loaded: " + this.metadata.title);
                 return true;
             } else {
                 throw "Couldn't get manifest!";

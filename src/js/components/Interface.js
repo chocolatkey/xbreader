@@ -171,7 +171,7 @@ export default class Interface {
                         /*m("a#br-chapter", {
                             href: "#", // TODO
                             title: "Chapter selection"
-                        }, publication.pmetadata.name),*/
+                        }, publication.pmetadata.title),*/
                         m("select#br-chapter", {
                             title: __("Chapter selection")
                         }, [
@@ -179,7 +179,7 @@ export default class Interface {
                             m("option", {
                                 value: "b38fc336-531d-4eff-be25-311d21bf2902",
                                 selected: "",
-                            }, publication.pmetadata.name),
+                            }, publication.pmetadata.title),
                             m("option", __("Loading...")),
                         ])
                     ]),

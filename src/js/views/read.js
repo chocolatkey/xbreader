@@ -25,16 +25,6 @@ export default class Read {
     view() {
         return [
             m(this.reader, {uuid: this.uuid}),
-            //m("div#bibi-sub]", this.publication.pmetadata.name),
-            /*m("div#bibi-notifier", ""),
-            m("div#bibi-veil", ""),
-            m("div#bibi-panel", ""),
-            m("div#bibi-shade", ""),
-            m("div#bibi-help", ""),
-            m("div#bibi-poweredby", ""),
-            m("div#bibi-nombre", ""),
-            m("div#bibi-slider", ""),
-            m("div#bibi-spinner", ""),*/
         ];
     }
 }
