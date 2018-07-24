@@ -297,7 +297,6 @@ export default class Peripherals {
             const sliderLength = this.slider.getLength() - 1;
             const atFirstSlide = Math.max(this.slider.currentSlide, 0) == 0;
             const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) == sliderLength;
-            console.log(atFirstSlide + "|" + atLastSlide);
             if (this.slider.config.ttb) { // Vertical controls
                 switch (ev.Division.Y) {
                 case "bottom":
