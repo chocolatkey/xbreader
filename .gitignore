@@ -76,3 +76,5 @@ typings/
 static/
 tmp/
 bin/*
+*.old
+*.php

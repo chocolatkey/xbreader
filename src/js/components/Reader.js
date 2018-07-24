@@ -12,7 +12,7 @@ export default class Reader {
         this.r = Math.random();
         this.publication = new Publication();
         this.interface = new Interface(this);
-        if (sML.OS.iOS || sML.OS.Android || sML.OS.WindowsPhone)
+        if (sML.Mobile)
             this.mobile = true;
         else
             this.mobile = false;
@@ -108,9 +108,17 @@ export default class Reader {
                 easing: "ease-out",
                 onChange: () => {
                     this.guideHidden = true;
+                    this.zoomer.scale = 1;
                     m.redraw();
                 },
                 onInit: () => {
+                    this.zoomer = {
+                        scale: 1,
+                        translate: {
+                            X: 0,
+                            Y: 0
+                        },
+                    };
                     m.redraw();
                 },
                 increment: 2,
@@ -149,6 +157,7 @@ export default class Reader {
                 m.redraw();
                 setTimeout(() => {
                     this.interface.toggle(false);
+                    m.redraw();
                 }, 1500);
             }, 0);
         }).catch(error => {
@@ -167,14 +176,29 @@ export default class Reader {
         const overflow = vnode.state.slider ? (vnode.state.slider.config.ttb ? "auto" : "hidden") : "hidden";
         const direction = vnode.state.slider ? (vnode.state.slider.config.rtl ? "rtl" : "ltr") : "ltr";
         let lastLandscapeIndex = 0;
+        let bookStyle = {
+            overflow: overflow,
+            direction: direction,
+        };
+        const zmr = vnode.state.zoomer;
+        if(zmr) {
+            bookStyle.transform = `scale(${zmr.scale})`;
+            bookStyle.transformOrigin = `${zmr.translate.X}px ${zmr.translate.Y}px 0px`;
+        }
         let rend = [
             m("div#br-main", {
                 style: vnode.state.publication.isReady ? null : "visibility: hidden;"
             }, [
                 m("div#br-book", {
-                    style: `overflow: ${overflow}; direction: ${direction}`,
+                    style: bookStyle,
                     oncontextmenu: (e) => {
                         this.interface.toggle();
+                        e.preventDefault();
+                    },
+                    ondblclick: (e) => {
+                        if(vnode.state.slider.config.ttb || !this.binder)
+                            return;
+                        this.binder.ondblclick(e);
                         e.preventDefault();
                     }
                 }, vnode.state.publication.spine.map((page, index) => {

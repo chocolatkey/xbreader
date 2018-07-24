@@ -30,7 +30,7 @@ export default class Interface {
         }
         if(this.isHidden)
             this.toggleMenu(false);
-        m.redraw();
+        //m.redraw(); // TODO Remove
     }
 
     slider(slider, isRTL) {

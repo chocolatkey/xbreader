@@ -7,6 +7,7 @@ export default class Peripherals {
     constructor(Reader) {
         this.slider = Reader.slider;
         this.interface = Reader.interface;
+        this.reader = Reader;
 
         this.transformProperty = Platform.webkitOrNot();
         this.onwheel.PreviousWheels = [];
@@ -14,6 +15,7 @@ export default class Peripherals {
             X: 0,
             Y: 0
         };
+        this.isDragging = false;
         this.coordinator = new Coordinator(this);
         this.ActiveKeys = {};
         this.KeyCodes = {
@@ -31,7 +33,10 @@ export default class Peripherals {
             "PAGE UP": "head",
             "PAGE DOWN": "foot",
             "END": "foot",
-            "HOME": "head"
+            "HOME": "head",
+            "Plus": "zoom-in",
+            "Minus": "zoom-out",
+            "Zero": "zoom-reset"
         };
 
         this.updateKeyCodes(["keydown", "keyup", "keypress"], {
@@ -69,6 +74,9 @@ export default class Peripherals {
             121: "F10",
             122: "F11",
             123: "F12",
+            187: "Plus",
+            189: "Minus",
+            48: "Zero"
             //TODO:
             /*
             F for fit toggle
@@ -84,12 +92,12 @@ export default class Peripherals {
         this.observe(document.body);
         let tx = document.documentElement;
         tx.addEventListener("pointermove", event => this.onpointermove(event));
-        this.slider.selector.addEventListener("click", event => this.onpointerdown(event));
-        this.slider.selector.addEventListener("click", event => this.onpointerup(event));
+        this.slider.selector.addEventListener("click", event => this.onclick(event));
+        //this.slider.selector.addEventListener("dblclick", event => this.ondblclick(event));
 
 
         // Bind all event handlers for referencability
-        ["touchstartHandler", "touchendHandler", "touchmoveHandler"].forEach(method => {
+        ["touchstartHandler", "touchendHandler", "touchmoveHandler", "mousedownHandler", "mouseupHandler", "mousemoveHandler"].forEach(method => {
             this[method] = this[method].bind(this);
         });
         this.attachEvents();
@@ -111,12 +119,19 @@ export default class Peripherals {
             startY: 0,
             letItGo: null,
             preventClick: false,
+            transformX: 0,
+            transformY: 0
         };
 
         // Touch events
         this.slider.selector.addEventListener("touchstart", this.touchstartHandler);
         this.slider.selector.addEventListener("touchend", this.touchendHandler);
         this.slider.selector.addEventListener("touchmove", this.touchmoveHandler);
+
+        // Mouse events, only used for zoom moving
+        this.slider.selector.addEventListener("mousedown", this.mousedownHandler);
+        this.slider.selector.addEventListener("mouseup", this.mouseupHandler);
+        this.slider.selector.addEventListener("mousemove", this.mousemoveHandler);
     }
 
 
@@ -128,6 +143,9 @@ export default class Peripherals {
         this.slider.selector.removeEventListener("touchstart", this.touchstartHandler);
         this.slider.selector.removeEventListener("touchend", this.touchendHandler);
         this.slider.selector.removeEventListener("touchmove", this.touchmoveHandler);
+        this.slider.selector.removeEventListener("mousedown", this.mousedownHandler);
+        this.slider.selector.removeEventListener("mouseup", this.mouseupHandler);
+        this.slider.selector.removeEventListener("mousemove", this.mousemoveHandler);
     }
 
     /**
@@ -139,8 +157,11 @@ export default class Peripherals {
             endX: 0,
             startY: 0,
             letItGo: null,
-            preventClick: this.drag.preventClick
+            preventClick: this.drag.preventClick,
+            transformX: 0,
+            transformY: 0
         };
+        this.isDragging = false;
     }
 
 
@@ -150,14 +171,17 @@ export default class Peripherals {
     touchstartHandler(e) {
         // Prevent dragging / swiping on inputs, selects and textareas
         const ignoreSlider = ["TEXTAREA", "OPTION", "INPUT", "SELECT"].indexOf(e.target.nodeName) !== -1;
-        if (ignoreSlider) {
+        if (ignoreSlider)
             return;
-        }
 
         e.stopPropagation();
         this.pointerDown = true;
         this.drag.startX = e.touches[0].pageX;
         this.drag.startY = e.touches[0].pageY;
+        if(this.reader.zoomer) {
+            this.drag.transformX = this.reader.zoomer.translate.X;
+            this.drag.transformY = this.reader.zoomer.translate.Y;
+        }
     }
 
     /**
@@ -170,7 +194,9 @@ export default class Peripherals {
         if (this.drag.endX) {
             this.updateAfterDrag();
         }
-        this.clearDrag();
+        setTimeout(() => {
+            this.clearDrag();
+        }, 50);
     }
 
 
@@ -179,9 +205,35 @@ export default class Peripherals {
      */
     touchmoveHandler(e) {
         e.stopPropagation();
+        
+        if((Math.abs(this.drag.startY - e.touches[0].pageY) + Math.abs(this.drag.startX - e.touches[0].pageX)) > 5 && this.pointerDown) {
+            this.isDragging = true;
+        }
 
         if (this.drag.letItGo === null) {
             this.drag.letItGo = Math.abs(this.drag.startY - e.touches[0].pageY) < Math.abs(this.drag.startX - e.touches[0].pageX);
+        }
+
+        if(this.isScaled && this.pointerDown) {
+            e.preventDefault();
+            const BibiEvent = this.coordinator.getBibiEvent(e);
+            this.reader.zoomer.translate = {
+                X: this.drag.transformX - (BibiEvent.Coord.X - this.drag.startX),
+                Y: this.drag.transformY - (BibiEvent.Coord.Y - this.drag.startY)
+            };
+
+            if(this.reader.zoomer.translate.X < 0)
+                this.reader.zoomer.translate.X = 0;
+            if(this.reader.zoomer.translate.Y < 0)
+                this.reader.zoomer.translate.Y = 0;
+
+            if(this.reader.zoomer.translate.X > this.slider.selector.offsetWidth)
+                this.reader.zoomer.translate.X = this.slider.selector.offsetWidth;
+            if(this.reader.zoomer.translate.Y > this.slider.selector.offsetHeight)
+                this.reader.zoomer.translate.Y = this.slider.selector.offsetHeight;
+
+            m.redraw();
+            return;
         }
 
         if (this.pointerDown && this.drag.letItGo) {
@@ -196,6 +248,48 @@ export default class Peripherals {
             const offset = this.slider.config.rtl ? currentOffset + dragOffset : currentOffset - dragOffset;
             this.slider.sliderFrame.style[this.transformProperty] = `translate3d(${(this.slider.config.rtl ? 1 : -1) * offset}px, 0, 0)`;
         }
+    }
+
+    get isScaled() {
+        return this.reader.zoomer && this.reader.zoomer.scale > 1;
+    }
+
+    addTouch(e) {
+        e.touches = [
+            {
+                pageX: e.pageX,
+                pageY: e.pageY
+            }
+        ];
+    }
+
+    /**
+     * mousedown event handler
+     */
+    mousedownHandler(e) {
+        this.addTouch(e);
+        if(this.isScaled)
+            this.touchstartHandler(e);
+    }
+
+
+    /**
+     * mouseup event handler
+     */
+    mouseupHandler(e) {
+        this.addTouch(e);
+        if(this.isScaled)
+            this.touchendHandler(e);
+    }
+
+
+    /**
+     * mousemove event handler
+     */
+    mousemoveHandler(e) {
+        this.addTouch(e);
+        if(this.isScaled)
+            this.touchmoveHandler(e);
     }
 
     updateKeyCodes(EventTypes, KeyCodesToUpdate) {
@@ -225,7 +319,7 @@ export default class Peripherals {
         }
         this.interface.toggle(false);
         this.slider.slideToCurrent(true); // slideToNegativeClone || slideToPositiveClone
-
+        m.redraw();
     }
 
     ////////
@@ -356,6 +450,7 @@ export default class Peripherals {
     // Master
 
     moveBy(MovingParameter) {
+        // Move
         if (typeof MovingParameter == "number") {
             if (MovingParameter === 1) {
                 this.slider.next(this.slider.perPage);
@@ -368,8 +463,20 @@ export default class Peripherals {
             } else if (MovingParameter === "foot") {
                 this.slider.goTo(this.slider.getLength());
             }
+
+            // Zoom
+            if (MovingParameter === "zoom-in") {
+                if (this.reader.zoomer.scale < 6)
+                    this.reader.zoomer.scale += 0.5; // Gets slower as you zoom in more due to decreasing ratio impact
+            } else if (MovingParameter === "zoom-out") {
+                if (this.reader.zoomer.scale > 1)
+                    this.reader.zoomer.scale -= 0.5;
+            } else if (MovingParameter === "zoom-reset") {
+                this.reader.zoomer.scale = 1;
+            }
         }
         this.interface.toggle(false);
+        m.redraw();
     }
 
     // Pointer
@@ -377,7 +484,7 @@ export default class Peripherals {
     evalPointer(event, active) {
         if (!active)
             return;
-        let ev = this.coordinator.getBibiEvent(event);
+        const ev = this.coordinator.getBibiEvent(event);
         if (this.slider.config.ttb) { // Vertical controls
             switch (ev.Division.Y) {
             case "bottom":
@@ -388,6 +495,7 @@ export default class Peripherals {
                 break;
             case "middle":
                 this.interface.toggle();
+                m.redraw();
                 break;
             }
         } else { // Horizontal controls
@@ -395,28 +503,63 @@ export default class Peripherals {
             const prev = this.slider.config.rtl ? "right" : "left";
             switch (ev.Division.X) {
             case next:
-                this.moveBy(1);
+                this.delayedMoveBy(1);
                 break;
             case prev:
-                this.moveBy(-1);
+                this.delayedMoveBy(-1);
                 break;
             case "center":
-                this.interface.toggle();
+                this.delayedToggle();
                 break;
             }
         }
     }
 
-    ontap(Eve) {}
-
-    onpointerdown(Eve) {
-        this.PointerIsDowned = true;
-        this.evalPointer(Eve, false);
+    delayedToggle() {
+        this.dtimer = setTimeout(() => {
+            if (!this.pdblclick) {
+                this.interface.toggle();
+                m.redraw();
+            }
+            this.pdblclick = false;
+        }, 200); // Unfortunately adds lag to interface elements :(
     }
 
-    onpointerup(Eve) {
-        this.PointerIsDowned = false;
-        this.evalPointer(Eve, true);
+    delayedMoveBy(MovingParameter) {
+        this.dtimer = setTimeout(() => {
+            if (!this.pdblclick) {
+                this.moveBy(MovingParameter);
+            }
+            this.pdblclick = false;
+        }, 200); // Unfortunately adds lag to interface elements :(
+    }
+
+    ontap(Eve) {}
+
+    onclick(Eve) {
+        this.evalPointer(Eve, !this.isDragging);
+    }
+
+    ondblclick(Eve) {
+        clearTimeout(this.dtimer);
+        this.pdblclick = true;
+
+        this.interface.toggle(false);
+        if(!this.reader.zoomer)
+            return;
+
+        const BibiEvent = this.coordinator.getBibiEvent(event);
+        this.reader.zoomer.scale = this.isScaled ? 1 : 2;
+        if(this.isScaled)
+            this.reader.zoomer.translate = {
+                X: BibiEvent.Coord.X,
+                Y: BibiEvent.Coord.Y
+            };
+        /*else
+            this.reader.zoomer.translate = {
+                X: 0,
+                Y: 0
+            };*/
     }
 
     onpointermove(Eve) {
