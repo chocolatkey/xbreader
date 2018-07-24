@@ -101,6 +101,8 @@ export default class Peripherals {
             this[method] = this[method].bind(this);
         });
         this.attachEvents();
+        // Mousemove applies to TTB view as well because it controls cursors.
+        this.slider.selector.addEventListener("mousemove", this.mousemoveHandler);
 
         console.log("Peripherals ready");
     }
@@ -131,7 +133,6 @@ export default class Peripherals {
         // Mouse events, only used for zoom moving
         this.slider.selector.addEventListener("mousedown", this.mousedownHandler);
         this.slider.selector.addEventListener("mouseup", this.mouseupHandler);
-        this.slider.selector.addEventListener("mousemove", this.mousemoveHandler);
     }
 
 
@@ -145,7 +146,6 @@ export default class Peripherals {
         this.slider.selector.removeEventListener("touchmove", this.touchmoveHandler);
         this.slider.selector.removeEventListener("mousedown", this.mousedownHandler);
         this.slider.selector.removeEventListener("mouseup", this.mouseupHandler);
-        this.slider.selector.removeEventListener("mousemove", this.mousemoveHandler);
     }
 
     /**
@@ -267,9 +267,10 @@ export default class Peripherals {
      * mousedown event handler
      */
     mousedownHandler(e) {
-        this.addTouch(e);
-        if(this.isScaled)
+        if(this.isScaled) {
+            this.addTouch(e);
             this.touchstartHandler(e);
+        }
     }
 
 
@@ -277,9 +278,10 @@ export default class Peripherals {
      * mouseup event handler
      */
     mouseupHandler(e) {
-        this.addTouch(e);
-        if(this.isScaled)
+        if(this.isScaled) {
+            this.addTouch(e);
             this.touchendHandler(e);
+        }
     }
 
 
@@ -287,9 +289,53 @@ export default class Peripherals {
      * mousemove event handler
      */
     mousemoveHandler(e) {
-        this.addTouch(e);
-        if(this.isScaled)
+        if(this.isScaled) {
+            this.addTouch(e);
             this.touchmoveHandler(e);
+        } else {
+            const ev = this.coordinator.getBibiEvent(e);
+            const sliderLength = this.slider.getLength() - 1;
+            const atFirstSlide = Math.max(this.slider.currentSlide, 0) == 0;
+            const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) == sliderLength;
+            console.log(atFirstSlide + "|" + atLastSlide);
+            if (this.slider.config.ttb) { // Vertical controls
+                switch (ev.Division.Y) {
+                case "bottom":
+                    this.changeCursor(atLastSlide ? "not-allowed": "s-resize");
+                    break;
+                case "top":
+                    this.changeCursor(atFirstSlide ? "not-allowed": "n-resize");
+                    break;
+                case "middle":
+                    this.changeCursor("pointer");
+                    break;
+                }
+            } else { // Horizontal controls
+                const rtl = this.slider.config.rtl;
+                switch (ev.Division.X) {
+                case "left":
+                    this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed": "w-resize");
+                    break;
+                case "right":
+                    this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed": "e-resize");
+                    break;
+                case "center":
+                    this.changeCursor("pointer");
+                    break;
+                }
+            }
+        }
+    }
+
+    changeCursor(newCursor) {
+        if(newCursor == this.currentCursor)
+            return;
+        this.currentCursor = newCursor;
+        m.redraw();
+    }
+
+    get cursor() {
+        return this.currentCursor ? this.currentCursor :"pointer";
     }
 
     updateKeyCodes(EventTypes, KeyCodesToUpdate) {
@@ -457,6 +503,12 @@ export default class Peripherals {
             } else if (MovingParameter === -1) {
                 this.slider.prev(this.slider.perPage);
             }
+            // When rapidly navigating, ignore double clicks until cooldown
+            this.disableDblClick = true;
+            clearTimeout(this.dblDisabler);
+            this.dblDisabler = setTimeout(() => {
+                this.disableDblClick = false;
+            }, 1000);
         } else if (typeof MovingParameter == "string") {
             if (MovingParameter === "head") {
                 this.slider.goTo(0);
@@ -545,7 +597,7 @@ export default class Peripherals {
         this.pdblclick = true;
 
         this.interface.toggle(false);
-        if(!this.reader.zoomer)
+        if(!this.reader.zoomer || this.disableDblClick)
             return;
 
         const BibiEvent = this.coordinator.getBibiEvent(event);

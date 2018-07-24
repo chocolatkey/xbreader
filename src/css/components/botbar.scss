@@ -37,6 +37,7 @@ div.br-botbar-controls {
     margin: auto;
     justify-content: center;
     & button {
+        cursor: pointer;
         background: $primaryBackground;
         margin: 0 5px;
         height: 38px;

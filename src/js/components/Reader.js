@@ -180,11 +180,22 @@ export default class Reader {
             overflow: overflow,
             direction: direction,
         };
+
+        // Cursor
+        const bnd = vnode.state.binder;
+        if(bnd) {
+            bookStyle.cursor = bnd.cursor;
+        }
+
+        // Zoomer
         const zmr = vnode.state.zoomer;
         if(zmr) {
             bookStyle.transform = `scale(${zmr.scale})`;
             bookStyle.transformOrigin = `${zmr.translate.X}px ${zmr.translate.Y}px 0px`;
+            bookStyle.cursor = zmr.scale > 1 ? "move" : bookStyle.cursor;
         }
+
+        // Rendering
         let rend = [
             m("div#br-main", {
                 style: vnode.state.publication.isReady ? null : "visibility: hidden;"
