@@ -14,7 +14,7 @@ html {
 	//&.Windows { font-family: "Helvetica", "Trebuchet MS", "游ゴシック", "Yu Gothic", "YuGothic", "メイリオ",             "Meiryo",          sans-serif; }
 	-webkit-font-smoothing: subpixel-antialiased;
 	-webkit-text-size-adjust: 100%;
-	background: #404040;
+	background: $tertiaryBackground;
 	&[data-bibi-cursor="left"]   { cursor: w-resize; }
 	&[data-bibi-cursor="right"]  { cursor: e-resize; }
 	&[data-bibi-cursor="top"]    { cursor: n-resize; }
@@ -212,3 +212,4 @@ div#br-topbar, div#br-botbar {
 @import "./components/arrows.scss";
 @import "./components/spinner.scss";
 @import "./components/guide.scss";
+@import "./error.scss";
