@@ -21,7 +21,6 @@ export default class Navigator {
                 lastLandscapeIndex++;
         });
         this.buildSpreadStrings(publication.spine);
-        console.log(publication.spine);
     }
 
     buildSpreadStrings(spine) {
