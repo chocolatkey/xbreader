@@ -6,7 +6,8 @@ import errorView from "./views/error";
 
 window.xbreader = (config) => {
     console.log(`${__NAME__} ${__VERSION__}`);
-    m.route(document.body, "/error/404", {
+    const mountingPoint = config.mount ? config.mount : document.body;
+    m.route(mountingPoint, "/error/404", {
         "/read/:id": new readView(config),
         "/preview/:id": "ddddd",
         "/comments": "comments",
