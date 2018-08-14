@@ -39,8 +39,25 @@ export default class Platform {
         }
     }
 
+    /**
+     * Get network type (limited compatibility: https://caniuse.com/#feat=netinfo)
+     * Types:
+     * 0 = fast or unknown (default)
+     * 1 = medium (3G)
+     * 2 = slow (2G)
+     */
+    get networkType() {
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        if(!connection) // Not supported
+            return 0;
+        if(connection.effectiveType.indexOf("2g") >= 0)
+            return 2;
+        if(connection.effectiveType.indexOf("3g") >= 0)
+            return 1;
+        return 0; // Unknown or other
+    }
+
     get language() {
-        if(typeof navigator.language != "string") return "en";
-        return (navigator.language.split("-")[0] == "ja") ? "ja" : "en";
+        return navigator.language.split("-")[0];
     }
 }

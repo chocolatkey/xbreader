@@ -79,15 +79,6 @@ export default class LazyLoader {
             ctx.clearRect(0, 0, cd.width, cd.height);
             if (element instanceof HTMLImageElement) {
                 ctx.drawImage(element, 0, 0, cd.width, cd.height);
-                //// stupid watermark idea
-                /*if(this.index === 0) {
-                    ctx.fillStyle = "#404040";
-                    for (let i = 30; i > 0; i--) {
-                        console.log(i);
-                        if(i % 3)
-                            ctx.fillRect( cd.width - 1, i, 1, 1 );
-                    }
-                }*/
             } else {
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
@@ -110,6 +101,7 @@ export default class LazyLoader {
         if(this.image) {
             if(this.loaded) {
                 this.image.src = this.preloader.src;
+                window.URL.revokeObjectURL(this.blob);
                 return;
             } else {
                 if(this.blob)
@@ -128,7 +120,6 @@ export default class LazyLoader {
             this.draw(__("Loading..."));
         }
         this.preloader = document.createElement("img");
-        this.preloader.src = this.original;
         this.preloader.onload = () => {
             if (!this.preloader)
                 return;
@@ -144,6 +135,7 @@ export default class LazyLoader {
                 }
             }, 1000);*/
         };
+        this.preloader.src = this.original;
     }
 
     get preloaded() {
