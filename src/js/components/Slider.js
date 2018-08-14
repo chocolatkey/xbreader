@@ -36,7 +36,7 @@ export default class Slider {
         this.config = Slider.mergeSettings(options);
 
         // Resolve selector's type
-        this.selector = typeof this.config.selector === 'string' ? document.querySelector(this.config.selector) : this.config.selector;
+        this.selector = typeof this.config.selector === "string" ? document.querySelector(this.config.selector) : this.config.selector;
 
         // update perPage number dependable of user value
         this.resolveSlidesNumber();
@@ -49,7 +49,7 @@ export default class Slider {
         this.transformProperty = Platform.webkitOrNot();
 
         // Bind all event handlers for referencability
-        ['resizeHandler'].forEach(method => {
+        ["resizeHandler"].forEach(method => {
             this[method] = this[method].bind(this);
         });
 
@@ -65,9 +65,9 @@ export default class Slider {
      */
     static mergeSettings(options) {
         const settings = {
-            selector: '.siema',
+            selector: ".siema",
             duration: 200,
-            easing: 'ease-out',
+            easing: "ease-out",
             perPage: 1,
             startIndex: 0,
             draggable: true,
@@ -93,7 +93,7 @@ export default class Slider {
      */
     attachEvents() {
         // Resize element on window resize
-        window.addEventListener('resize', this.resizeHandler);
+        window.addEventListener("resize", this.resizeHandler);
     }
 
 
@@ -101,7 +101,7 @@ export default class Slider {
      * Detaches listeners from required events.
      */
     detachEvents() {
-        window.removeEventListener('resize', this.resizeHandler);
+        window.removeEventListener("resize", this.resizeHandler);
     }
 
 
@@ -112,7 +112,7 @@ export default class Slider {
         this.attachEvents();
 
         // hide everything out of selector's boundaries
-        this.selector.style.overflow = 'hidden';
+        this.selector.style.overflow = "hidden";
 
         // build a frame and slide to a currentSlide
         this.buildSliderFrame();
@@ -126,7 +126,7 @@ export default class Slider {
      */
     buildSliderFrame() {
         // Create frame and apply styling
-        this.sliderFrame = document.createElement('div');
+        this.sliderFrame = document.createElement("div");
         this.enableTransition();
 
         // Create a document fragment to put slides into it
@@ -164,7 +164,7 @@ export default class Slider {
         this.sliderFrame.appendChild(docFragment);
 
         // Clear selector (just in case something is there) and insert a frame
-        this.selector.innerHTML = '';
+        this.selector.innerHTML = "";
         this.selector.appendChild(this.sliderFrame);
 
         // Go to currently active slide after initial build
@@ -172,9 +172,9 @@ export default class Slider {
     }
 
     buildSliderFrameItem(elm) {
-        const elementContainer = document.createElement('div');
-        elementContainer.style.cssFloat = this.config.rtl ? 'right' : 'left';
-        elementContainer.style.float = this.config.rtl ? 'right' : 'left';
+        const elementContainer = document.createElement("div");
+        elementContainer.style.cssFloat = this.config.rtl ? "right" : "left";
+        elementContainer.style.float = this.config.rtl ? "right" : "left";
         if(this.perPage > 1 && elm.isLandscape)
             elementContainer.style.width = `${100 / (this.getLength()) * 2}%`;
         else
@@ -194,6 +194,10 @@ export default class Slider {
         else
             this.perPage = 2;
             
+    }
+
+    get single() {
+        return this.perPage > 1 ? false : true;
     }
 
 
@@ -308,6 +312,10 @@ export default class Slider {
             this.innerElements[this.currentSlide].scrollIntoView(true);
             return;
         }
+        if(this.single && !this.config.ttb)
+            //this.selector.scrollTo(this.selector.pageXOffset, 0);
+            this.selector.scrollBy(0, -9999); // Scroll back to top for next page
+
 
         /*let offset = 0;
         if(this.perPage > 1) { // Spread
@@ -364,10 +372,10 @@ export default class Slider {
      */
     insert(item, index, callback) {
         if (index < 0 || index > this.innerElements.length + 1) {
-            throw new Error('Unable to inset it at this index 😭');
+            throw new Error("Unable to inset it at this index 😭");
         }
         if (this.innerElements.indexOf(item) !== -1) {
-            throw new Error('The same item in a carousel? Really? Nope 😭');
+            throw new Error("The same item in a carousel? Really? Nope 😭");
         }
 
         // Avoid shifting content
@@ -419,16 +427,16 @@ export default class Slider {
     destroy(restoreMarkup = false, callback) {
         this.detachEvents();
 
-        this.selector.style.cursor = 'auto';
+        this.selector.style.cursor = "auto";
 
         if (restoreMarkup) {
             const slides = document.createDocumentFragment();
             for (let i = 0; i < this.innerElements.length; i++) {
                 slides.appendChild(this.innerElements[i]);
             }
-            this.selector.innerHTML = '';
+            this.selector.innerHTML = "";
             this.selector.appendChild(slides);
-            this.selector.removeAttribute('style');
+            this.selector.removeAttribute("style");
         }
 
         if (callback) {

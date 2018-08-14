@@ -12,11 +12,10 @@ export default class Interface {
     toggleMenu(newState) {
         if (newState == null)
             this.menuShown = !this.menuShown;
-        else if (this.menuShown != newState) {
+        else if (this.menuShown != newState)
             this.menuShown = newState;
-        } else {
+        else
             return;
-        }
     }
 
     // TODO this.isHidden undefined for retardedness, move to config state
@@ -26,51 +25,47 @@ export default class Interface {
         else if (!!this.isHidden == newState) {
             this.isHidden = !newState;
         } else {
-            return;
+            return false;
         }
         if(this.isHidden)
             this.toggleMenu(false);
-        //m.redraw(); // TODO Remove
+        return true;
     }
 
-    slider(slider, isRTL) {
+    sliderMove(e, slider, publication) {
+        e.redraw = false;
+        if(publication.isTtb)
+            slider.selector.scrollTo(0, slider.selector.scrollHeight * e.target.value / 100);
+        else
+            slider.goTo(parseInt(e.target.value));
+    }
+
+    slider(slider, publication) {
         return m("input.br-slider", {
             type: "range",
             min: 0,
-            max: slider.getLength() % 2 ? slider.getLength() - 1 : slider.getLength(),
-            value: slider.currentSlide,
-            step: slider.perPage,
+            max: publication.isTtb ? 100 : (slider.getLength() % 2 ? slider.getLength() - 1 : slider.getLength()),
+            value: publication.isTtb ? slider.selector.scrollTop / slider.selector.scrollHeight * 100 : slider.currentSlide,
+            step: publication.isTtb ? "any" : slider.perPage,
             title: __("Select Page"),
             onchange: (e) => { // Activates when slider is released (mouse let go). Needed for IE compatibility
-                e.redraw = false;
-                slider.goTo(parseInt(e.target.value));
+                this.sliderMove(e, slider, publication);
             },
             oninput: (e) => { // Triggered on slider value changed (while dragging it!), works in evergreen browsers
-                e.redraw = false;
-                slider.goTo(parseInt(e.target.value));
+                this.sliderMove(e, slider, publication);
             },
-            dir: isRTL ? "rtl" : "ltr"
+            dir: publication.rtl ? "rtl" : "ltr"
         });
     }
 
-    sliderSystem(slider, publication) {
-        let currentPageString = slider.currentSlide;
-
-        if (slider.perPage > 1) {
-            if (currentPageString > 1)
-                currentPageString = String(currentPageString) + "-" + String(currentPageString + 1);
-            else
-                currentPageString = "1";
-        } else
-            currentPageString++;
-        
+    sliderSystem(slider, publication) {        
         let items = [
-            this.slider(slider, publication.rtl)
+            this.slider(slider, publication)
         ];
 
         const currentPageIndicator = m("span.br-slider__pagenum", {
             title: __("Current Page")
-        }, currentPageString);
+        }, publication.navi.getPageString(slider));
         const pageAmountIndicator = m("span.br-slider__pagenum-last", {
             title: __("# of Pages")
         }, publication.pmetadata.numberOfPages);
@@ -80,7 +75,8 @@ export default class Interface {
             items.push(currentPageIndicator);
         } else {
             items.unshift(currentPageIndicator);
-            items.push(pageAmountIndicator);
+            if(!publication.isTtb)
+                items.push(pageAmountIndicator);
         }
 
         items.unshift([
@@ -88,14 +84,14 @@ export default class Interface {
                 title: publication.rtl ? __("Go to the next chapter") : __("Go to the previous chapter")
             }, m("a", {
                 href: "#"
-            }, publication.rtl ? __("Next") : __("Previous")))
+            }, publication.rtl ? __("Next") : __("Prev")))
         ]);
         items.push([ // Rightmost slider control
             m("span.br-slider__rgo", {
                 title: publication.rtl ? __("Go to the previous chapter") : __("Go to the next chapter")
             }, m("a", {
                 href: "#"
-            }, publication.rtl ? __("Previous") : __("Next")))
+            }, publication.rtl ? __("Prev") : __("Next")))
         ]);
 
         return m("div.br-botbar-container", items);
@@ -142,16 +138,16 @@ export default class Interface {
                     }
                     slider.resizeHandler();
                 },
-                title: slider.perPage > 1 ? __("Single page view") : __("Spread view"),
+                title: slider.single ? __("Spread view") : __("Single page view"),
             }, [
                 m("i", {
-                    class: slider.perPage > 1 ? "br-i-single" : "br-i-spread"
+                    class: slider.single ? "br-i-spread" : "br-i-single"
                 })
             ]);
 
         return [
             m("div.noselect#br-topbar", {
-                class: self.isHidden ? "hidden" : undefined
+                class: self.isHidden ? "hidden" : "shown"
             }, [
                 m("div.br-topbar__row", [
                     m("section.br-toolbar__section.br-toolbar__section--align-start", [
@@ -200,7 +196,7 @@ export default class Interface {
                         ])
                     ]),
                     m("section.br-toolbar__section.br-toolbar__section--align-end.br-cmenu", {
-                        class: self.menuShown ? undefined : "gone"
+                        class: self.menuShown ? "shown" : "gone"
                     }, [
                         m("div", [
                             m("nav.br-tab-bar", [
@@ -246,18 +242,19 @@ export default class Interface {
                 class: fClass
             }),
             m("div#br-botbar.noselect", {
-                class: self.isHidden ? "hidden" : undefined
+                class: self.isHidden ? "hidden" : "shown"
             }, [
                 this.sliderSystem(slider, publication),
                 m("div.br-botbar-controls", {
-                    class: isPortrait ? "portrait" : "landscape"
+                    class: isPortrait ? "portrait" : "landscape",
+                    style: publication.isTtb ? "display: none;" : null,
                 }, [
                     tweakButton,
                     m("button#br-view__rvm", {
                         title: "",
-                        style: publication.direction == "ttb" ? "display: none;" : null,
                         onclick: () => {
                             const reader = vnode.attrs.reader;
+                            reader.zoomer.scale = 1;
                             reader.switchDirection();
                         }
                     }, [

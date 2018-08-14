@@ -36,7 +36,8 @@ export default class Peripherals {
             "HOME": "head",
             "Plus": "zoom-in",
             "Minus": "zoom-out",
-            "Zero": "zoom-reset"
+            "Zero": "zoom-reset",
+            "Return": "menu"
         };
 
         this.updateKeyCodes(["keydown", "keyup", "keypress"], {
@@ -76,7 +77,12 @@ export default class Peripherals {
             123: "F12",
             187: "Plus",
             189: "Minus",
-            48: "Zero"
+            48: "Zero",
+            // Numpad Keys
+            107: "Plus",
+            109: "Minus",
+            45: "Zero",
+            12: "Return",
             //TODO:
             /*
             F for fit toggle
@@ -178,7 +184,7 @@ export default class Peripherals {
         this.pointerDown = true;
         this.drag.startX = e.touches[0].pageX;
         this.drag.startY = e.touches[0].pageY;
-        if(this.reader.zoomer) {
+        if (this.reader.zoomer) {
             this.drag.transformX = this.reader.zoomer.translate.X;
             this.drag.transformY = this.reader.zoomer.translate.Y;
         }
@@ -205,8 +211,8 @@ export default class Peripherals {
      */
     touchmoveHandler(e) {
         e.stopPropagation();
-        
-        if((Math.abs(this.drag.startY - e.touches[0].pageY) + Math.abs(this.drag.startX - e.touches[0].pageX)) > 5 && this.pointerDown) {
+
+        if ((Math.abs(this.drag.startY - e.touches[0].pageY) + Math.abs(this.drag.startX - e.touches[0].pageX)) > 5 && this.pointerDown) {
             this.isDragging = true;
         }
 
@@ -214,7 +220,7 @@ export default class Peripherals {
             this.drag.letItGo = Math.abs(this.drag.startY - e.touches[0].pageY) < Math.abs(this.drag.startX - e.touches[0].pageX);
         }
 
-        if(this.isScaled && this.pointerDown) {
+        if (this.isScaled && this.pointerDown) {
             e.preventDefault();
             const BibiEvent = this.coordinator.getBibiEvent(e);
             this.reader.zoomer.translate = {
@@ -222,14 +228,14 @@ export default class Peripherals {
                 Y: this.drag.transformY - (BibiEvent.Coord.Y - this.drag.startY)
             };
 
-            if(this.reader.zoomer.translate.X < 0)
+            if (this.reader.zoomer.translate.X < 0)
                 this.reader.zoomer.translate.X = 0;
-            if(this.reader.zoomer.translate.Y < 0)
+            if (this.reader.zoomer.translate.Y < 0)
                 this.reader.zoomer.translate.Y = 0;
 
-            if(this.reader.zoomer.translate.X > this.slider.selector.offsetWidth)
+            if (this.reader.zoomer.translate.X > this.slider.selector.offsetWidth)
                 this.reader.zoomer.translate.X = this.slider.selector.offsetWidth;
-            if(this.reader.zoomer.translate.Y > this.slider.selector.offsetHeight)
+            if (this.reader.zoomer.translate.Y > this.slider.selector.offsetHeight)
                 this.reader.zoomer.translate.Y = this.slider.selector.offsetHeight;
 
             m.redraw();
@@ -255,19 +261,17 @@ export default class Peripherals {
     }
 
     addTouch(e) {
-        e.touches = [
-            {
-                pageX: e.pageX,
-                pageY: e.pageY
-            }
-        ];
+        e.touches = [{
+            pageX: e.pageX,
+            pageY: e.pageY
+        }];
     }
 
     /**
      * mousedown event handler
      */
     mousedownHandler(e) {
-        if(this.isScaled) {
+        if (this.isScaled) {
             this.addTouch(e);
             this.touchstartHandler(e);
         }
@@ -278,7 +282,7 @@ export default class Peripherals {
      * mouseup event handler
      */
     mouseupHandler(e) {
-        if(this.isScaled) {
+        if (this.isScaled) {
             this.addTouch(e);
             this.touchendHandler(e);
         }
@@ -289,7 +293,7 @@ export default class Peripherals {
      * mousemove event handler
      */
     mousemoveHandler(e) {
-        if(this.isScaled) {
+        if (this.isScaled) {
             this.addTouch(e);
             this.touchmoveHandler(e);
         } else {
@@ -299,42 +303,42 @@ export default class Peripherals {
             const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) == sliderLength;
             if (this.slider.config.ttb) { // Vertical controls
                 switch (ev.Division.Y) {
-                case "bottom":
-                    this.changeCursor(atLastSlide ? "not-allowed": "s-resize");
-                    break;
-                case "top":
-                    this.changeCursor(atFirstSlide ? "not-allowed": "n-resize");
-                    break;
-                case "middle":
-                    this.changeCursor("pointer");
-                    break;
+                    case "bottom":
+                        this.changeCursor(atLastSlide ? "not-allowed" : "s-resize");
+                        break;
+                    case "top":
+                        this.changeCursor(atFirstSlide ? "not-allowed" : "n-resize");
+                        break;
+                    case "middle":
+                        this.changeCursor("pointer");
+                        break;
                 }
             } else { // Horizontal controls
                 const rtl = this.slider.config.rtl;
                 switch (ev.Division.X) {
-                case "left":
-                    this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed": "w-resize");
-                    break;
-                case "right":
-                    this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed": "e-resize");
-                    break;
-                case "center":
-                    this.changeCursor("pointer");
-                    break;
+                    case "left":
+                        this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed" : "w-resize");
+                        break;
+                    case "right":
+                        this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed" : "e-resize");
+                        break;
+                    case "center":
+                        this.changeCursor("pointer");
+                        break;
                 }
             }
         }
     }
 
     changeCursor(newCursor) {
-        if(newCursor == this.currentCursor)
+        if (newCursor == this.currentCursor)
             return;
         this.currentCursor = newCursor;
         m.redraw();
     }
 
     get cursor() {
-        return this.currentCursor ? this.currentCursor :"pointer";
+        return this.currentCursor ? this.currentCursor : "pointer";
     }
 
     updateKeyCodes(EventTypes, KeyCodesToUpdate) {
@@ -369,13 +373,26 @@ export default class Peripherals {
 
     ////////
 
+    updateSpecialParamters() { // TODO better naming
+        if(this.slider.single)
+            sML.edit(this.MovingParameters, {
+                "Page Up": 0,
+                "Page Down": 0,
+            });
+        else
+            sML.edit(this.MovingParameters, {
+                "Page Up": -1,
+                "Page Down": 1,
+            });
+    }
+
     updateMovingParameters(ARD) {
         switch (ARD) {
         case "ttb":
             return sML.edit(this.MovingParameters, {
-                "Up Arrow": -1,
+                "Up Arrow": 0, // -1
                 "Right Arrow": 0,
-                "Down Arrow": 1,
+                "Down Arrow": 0, // 1
                 "Left Arrow": 0,
                 "W": -1,
                 "D": 0,
@@ -384,7 +401,10 @@ export default class Peripherals {
                 "UP ARROW": "head",
                 "RIGHT ARROW": "",
                 "DOWN ARROW": "foot",
-                "LEFT ARROW": ""
+                "LEFT ARROW": "",
+                "Plus": 0,
+                "Minus": 0,
+                "Zero": 0,
             });
         case "ltr":
             return sML.edit(this.MovingParameters, {
@@ -399,7 +419,10 @@ export default class Peripherals {
                 "UP ARROW": "",
                 "RIGHT ARROW": "foot",
                 "DOWN ARROW": "",
-                "LEFT ARROW": "head"
+                "LEFT ARROW": "head",
+                "Plus": "zoom-in",
+                "Minus": "zoom-out",
+                "Zero": "zoom-reset",
             });
         case "rtl":
             return sML.edit(this.MovingParameters, {
@@ -414,7 +437,10 @@ export default class Peripherals {
                 "UP ARROW": "",
                 "RIGHT ARROW": "head",
                 "DOWN ARROW": "",
-                "LEFT ARROW": "foot"
+                "LEFT ARROW": "foot",
+                "Plus": "zoom-in",
+                "Minus": "zoom-out",
+                "Zero": "zoom-reset",
             });
         default:
             return sML.edit(this.MovingParameters, {
@@ -429,9 +455,12 @@ export default class Peripherals {
                 "UP ARROW": "",
                 "RIGHT ARROW": "",
                 "DOWN ARROW": "",
-                "LEFT ARROW": ""
+                "LEFT ARROW": "",
+                "Plus": 0,
+                "Minus": 0,
+                "Zero": 0,
             });
-        }
+    }
     }
 
     getKeyName(Eve) {
@@ -446,8 +475,8 @@ export default class Peripherals {
         if (Eve.ctrlKey) Eve.BibiModifierKeys.push("Control");
         if (Eve.altKey) Eve.BibiModifierKeys.push("Alt");
         if (Eve.metaKey) Eve.BibiModifierKeys.push("Meta");
-        //if(!Eve.KeyName) return false;
-        if (Eve.KeyName) Eve.preventDefault();
+        if (!Eve.KeyName) return false;
+        //if (Eve.KeyName) Eve.preventDefault();
         return true;
     }
 
@@ -465,6 +494,7 @@ export default class Peripherals {
     onkeyup(Eve) {
         if (!this.onEvent(Eve)) return false;
         if (this.ActiveKeys[Eve.KeyName] && Date.now() - this.ActiveKeys[Eve.KeyName] < 300) {
+            this.updateSpecialParamters();
             this.tryMoving(Eve);
         }
         if (Eve.KeyName) {
@@ -487,7 +517,12 @@ export default class Peripherals {
     tryMoving(Eve) {
         if (!Eve.KeyName) return false;
         var MovingParameter = this.MovingParameters[!Eve.shiftKey ? Eve.KeyName : Eve.KeyName.toUpperCase()];
-        if (!MovingParameter) return false;
+        if (!MovingParameter) {
+            //Eve.target = this.slider.selector;
+            this.slider.selector.focus();
+            if(this.interface.toggle(false)) m.redraw();
+            return false;
+        }
         Eve.preventDefault();
         this.moveBy(MovingParameter);
     }
@@ -526,7 +561,10 @@ export default class Peripherals {
                 this.reader.zoomer.scale = 1;
             }
         }
-        this.interface.toggle(false);
+        if (MovingParameter === "menu")
+            this.interface.toggle();
+        else
+            this.interface.toggle(false);
         m.redraw();
     }
 
@@ -538,42 +576,40 @@ export default class Peripherals {
         const ev = this.coordinator.getBibiEvent(event);
         if (this.slider.config.ttb) { // Vertical controls
             switch (ev.Division.Y) {
-            case "bottom":
-                this.moveBy(1);
-                break;
-            case "top":
-                this.moveBy(-1);
-                break;
-            case "middle":
-                this.interface.toggle();
-                m.redraw();
-                break;
+                case "bottom":
+                    this.moveBy(1);
+                    break;
+                case "top":
+                    this.moveBy(-1);
+                    break;
+                case "middle":
+                    this.interface.toggle();
+                    m.redraw();
+                    break;
             }
         } else { // Horizontal controls
             const next = this.slider.config.rtl ? "left" : "right";
             const prev = this.slider.config.rtl ? "right" : "left";
             switch (ev.Division.X) {
-            case next:
-                this.delayedMoveBy(1);
-                break;
-            case prev:
-                this.delayedMoveBy(-1);
-                break;
-            case "center":
-                this.delayedToggle();
-                break;
+                case next:
+                    this.delayedMoveBy(1);
+                    break;
+                case prev:
+                    this.delayedMoveBy(-1);
+                    break;
+                case "center":
+                    this.delayedToggle();
+                    break;
             }
         }
     }
 
     delayedToggle() {
-        this.dtimer = setTimeout(() => {
-            if (!this.pdblclick) {
-                this.interface.toggle();
-                m.redraw();
-            }
-            this.pdblclick = false;
-        }, 200); // Unfortunately adds lag to interface elements :(
+        if (!this.pdblclick) {
+            this.interface.toggle();
+            m.redraw();
+        }
+        this.pdblclick = false;
     }
 
     delayedMoveBy(MovingParameter) {
@@ -596,12 +632,12 @@ export default class Peripherals {
         this.pdblclick = true;
 
         this.interface.toggle(false);
-        if(!this.reader.zoomer || this.disableDblClick)
+        if (!this.reader.zoomer || this.disableDblClick)
             return;
 
         const BibiEvent = this.coordinator.getBibiEvent(event);
         this.reader.zoomer.scale = this.isScaled ? 1 : 2;
-        if(this.isScaled)
+        if (this.isScaled)
             this.reader.zoomer.translate = {
                 X: BibiEvent.Coord.X,
                 Y: BibiEvent.Coord.Y
@@ -627,8 +663,8 @@ export default class Peripherals {
         const pages = this.slider.selector.children;
         let totalHeight = 0;
         for (let index = 0; index < pages.length; index++) {
-            if(Math.abs(this.slider.selector.scrollTop - totalHeight) < (pages[index].clientHeight * 0.6)) {
-                if(index != this.slider.currentSlide) {
+            if (Math.abs(this.slider.selector.scrollTop - totalHeight) < (pages[index].clientHeight * 0.6)) {
+                if (index != this.slider.currentSlide) {
                     this.slider.currentSlide = index;
                     this.interface.toggle(false);
                     m.redraw();
@@ -646,10 +682,11 @@ export default class Peripherals {
         if (Math.abs(Eve.deltaX) > Math.abs(Eve.deltaY)) { // Horizontal scrolling
             CW.Distance = (Eve.deltaX < 0 ? -1 : 1) * (this.slider.config.rtl ? -1 : 1);
             CW.Delta = Math.abs(Eve.deltaX);
-        } else if(!this.slider.config.ttb) { // Vertical scrolling for horizontal view
+        } else if (!this.slider.config.ttb && !this.slider.single) { // Vertical scrolling for horizontal view, only in spread view though
             CW.Distance = (Eve.deltaY < 0 ? -1 : 1);
             CW.Delta = Math.abs(Eve.deltaY);
         } else {
+            if(this.interface.toggle(false) && !this.slider.config.ttb) m.redraw();
             return;
         }
         if (!PWs[PWl - 1]) {

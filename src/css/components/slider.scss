@@ -110,7 +110,7 @@ $w: calc(100% - 160px);
 
         &:before {
             //right: 4px;
-            margin-left: 50px;
+            margin-left: 30px; // TODO fine-tune sync with lgo
             border-left-color: darken($colorTrack, 30%);
         }
     }

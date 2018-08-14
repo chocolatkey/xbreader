@@ -3,33 +3,60 @@ import SmartLoader from "../helpers/lazyLoader";
 export const MAX_FIT = 1400;
 
 export default class Page {
+    parseDimension(val) {
+        if(isNaN(val))
+            return "auto";
+        else
+            return val + "px";
+    }
+
+    get styles() {            
+        return `\
+        height: ${this.parseDimension(this.itemHeight)};\
+        width: ${this.parseDimension(this.itemWidth)};\
+        float: ${this.float};\
+        margin-left: ${this.marginLeft}px;\
+        margin-right: ${this.marginRight}px;\
+        margin-top: ${this.marginTop}px;`;
+    }
+
+    get float() {
+        // Get reverse of page alignment
+        if(this.data.page === "left")
+            return "right";
+        if(this.data.page === "right")
+            return "left";
+        return this.data.page;
+    }
+
+    get landscape() {
+        return this.data.orientation === "landscape" ? true : false;
+    }
 
     oninit(vnode) {
         this.data = vnode.attrs.data;
-        this.isLandscape = this.data.width > this.data.height; // TODO based on spine property
         if (!vnode.attrs.blank)
             this.loader = new SmartLoader(this.data, vnode.attrs.index);
     }
 
     view(vnode) {
         const slider = vnode.attrs.slider;
-        const float = vnode.attrs.float;
         let spread = true;
         let free = false;
         let docWidth = document.documentElement.clientWidth || document.body.clientWidth;
         const docHeight = this.itemHeight = window.innerHeight;
         if (slider) {
             docWidth = slider.selector.clientWidth; // Other
-            if (slider.perPage == 1 || slider.config.ttb || this.isLandscape)
+            if (slider.single || slider.config.ttb || this.landscape)
                 spread = false;
-            if (slider.config.ttb && this.isLandscape) {
+            if (slider.config.ttb && this.landscape) {
                 this.itemHeight = Math.min(this.data.height, docHeight);
                 free = true;
             }
         }
         this.marginLeft = this.marginRight = this.marginTop = 0;
         this.itemWidth = (this.itemHeight / this.data.height) * this.data.width;
-        if (((this.itemWidth * 2) > docWidth && docHeight <= docWidth) && (!this.isLandscape || spread)) {
+        if (((this.itemWidth * 2) > docWidth && docHeight <= docWidth) && (!this.landscape || spread)) {
             this.itemWidth = docWidth / 2;
             this.itemHeight = (this.itemWidth / this.data.width) * this.data.height;
             this.marginTop = free ? 0 : (docHeight - this.itemHeight) / 2;
@@ -40,27 +67,40 @@ export default class Page {
                 this.itemHeight = (this.itemWidth / this.data.width) * this.data.height;
             }
             this.marginTop = free ? 0 : (docHeight - this.itemHeight) / 2; // Vertical align to center in horizontal
-
-            if (float === "left")
+            if (this.float === "left")
                 this.marginLeft = (docWidth - this.itemWidth) / 2;
-            else if (float === "right")
+            else if (this.float === "right" || this.float === "center")
                 this.marginRight = (docWidth - this.itemWidth) / 2;
         }
 
         let itemAttrs = {};
-        if (slider && slider.config.ttb) // Vertical (TTB)
+        if (slider && (slider.config.ttb || slider.single)) { // Vertical (TTB) or forced single page
             if (!slider.config.fit && docHeight <= docWidth) { // Fit to original size
                 const mFitWidth = MAX_FIT / this.data.height * this.data.width;
-                if(this.data.height > MAX_FIT && !this.isLandscape && mFitWidth < docWidth) { // Too large to fit, compromise with maxFit
-                    itemAttrs.style = `height: ${MAX_FIT}px; width: ${mFitWidth}px; margin: 0 auto;`;
-                } else // Original image size
-                    itemAttrs.style = "height: auto; width: auto; margin: 0 auto;";
-            } else // Fit to browser height
-                itemAttrs.style = `height: ${this.itemHeight}px; width: ${this.itemWidth}px; margin: 0 auto;`;
-        else // Horizontal (LTR & RTL)
-            itemAttrs.style = `height: ${this.itemHeight}px; width: ${this.itemWidth}px; float: ${float}; margin-left: ${this.marginLeft}px; margin-right: ${this.marginRight}px; margin-top: ${this.marginTop}px;`;
+                if(this.data.height > MAX_FIT && !this.landscape && mFitWidth < docWidth) { // Too large to fit, compromise with maxFit
+                    this.itemHeight = MAX_FIT;
+                    this.itemWidth = mFitWidth;
+                } else { // Original image size
+                    this.itemHeight = "auto";
+                    this.itemWidth = "auto";
+                    itemAttrs.style = "height: auto; width: auto;";
+                }
+            }
+            itemAttrs.style = `height: ${this.itemHeight}px; width: ${this.itemWidth}px;`;
+            if(slider.config.ttb)
+                itemAttrs.style += " margin: 0 auto;";
+            else {
+                if (this.float === "left")
+                    this.marginLeft = (docWidth - this.itemWidth) / 2;
+                else if (this.float === "right" || this.float === "center")
+                    this.marginRight = (docWidth - this.itemWidth) / 2;
+                //this.data.page = "none";
+                itemAttrs.style = this.styles;
+            }
 
-        
+        } else // Horizontal (LTR & RTL)
+            itemAttrs.style = this.styles;
+
         let innerItemIs = null;
         if (vnode.attrs.blank)
             innerItemIs = m("canvas.page-blank", {

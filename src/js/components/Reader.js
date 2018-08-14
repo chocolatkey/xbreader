@@ -8,7 +8,8 @@ import Interface from "./Interface";
 import Platform from "../helpers/platform";
 
 export default class Reader {
-    constructor() {
+    constructor(config) {
+        this.config = Reader.mergeSettings(config);
         this.r = Math.random();
         this.publication = new Publication();
         this.interface = new Interface(this);
@@ -27,10 +28,26 @@ export default class Reader {
         this.direction = "auto"; // page-progression-direction
         this.spread = true;
         this.hint = "";
-        this.guideHidden = false;
         window.addEventListener("resize", this.resizeHandler);
         window.addEventListener("orientationchange", this.resizeHandler);
         Platform.checkRequestAnimationFrame();
+    }
+
+    static mergeSettings(config) {
+        const settings = { // TODO
+            next: null,
+            previous: null,
+            direction: "auto",
+            spread: "spread",
+            guideHidden: false
+        };
+
+        const userSttings = config;
+        for (const attrname in userSttings) {
+            settings[attrname] = userSttings[attrname];
+        }
+
+        return settings;
     }
 
     resizeHandler() {
@@ -40,6 +57,36 @@ export default class Reader {
             if(this.direction == "ttb" && this.slider)
                 this.slider.slideToCurrent();
         }, 50);
+    }
+
+    makeSlider(isTTB) {
+        this.slider = new Slider({
+            selector: "#br-book", // TODO dynamic
+            duration: 200,
+            easing: "ease-out",
+            onChange: () => {
+                this.config.guideHidden = true;
+                this.zoomer.scale = 1;
+                m.redraw();
+            },
+            onInit: () => {
+                this.zoomer = {
+                    scale: 1,
+                    translate: {
+                        X: 0,
+                        Y: 0
+                    },
+                };
+                m.redraw();
+            },
+            increment: 2,
+            startIndex: 0,
+            threshold: 20,
+            ttb: isTTB,
+            fit: false,
+            rtl: this.publication.rtl,
+            perPage: this.spread ? 2 : 1 // TODO detect whether need spread
+        });
     }
 
     switchDirection(direction) {
@@ -63,11 +110,11 @@ export default class Reader {
         if(this.direction == direction) // Already that direction
             return true;
         console.log("Setting direction: " + direction);
-        this.guideHidden = false;
+        this.config.guideHidden = false;
         clearTimeout(this.guideHider);
         this.guideHider = setTimeout(() => {
-            if(this.guideHidden) return;
-            this.guideHidden = true;
+            if(this.config.guideHidden) return;
+            this.config.guideHidden = true;
             m.redraw();
         }, 2000);
         this.hint = this.mobile ? "Swipe or tap " : "Navigate ";
@@ -83,17 +130,23 @@ export default class Reader {
         case "ttb":
             this.direction = "ttb"; // Top to bottom
             this.hint = "Scroll down";
-            if(this.slider) {
-                this.slider.config.ttb = true;
-                this.slider.config.rtl = false;
-                this.slider.resolveSlidesNumber();
-                this.slider.destroy(true, () => {
-                    this.binder.detachEvents();
-                    m.redraw(); // Need to redraw so items are in vertical alignment and we can ~slide~
-                    this.slider.slideToCurrent();
-                });
+            if(!this.slider) {
+                // TTB-only publication!
+                console.log("TTB lock");
+                this.makeSlider(true);
             }
-            this.binder.updateMovingParameters(this.direction);
+            this.slider.config.ttb = true;
+            this.slider.config.rtl = false;
+            this.slider.resolveSlidesNumber();
+            this.slider.destroy(true, () => {
+                //this.binder.detachEvents();
+                m.redraw(); // Need to redraw so items are in vertical alignment and we can ~slide~
+                this.slider.slideToCurrent();
+            });
+            setTimeout(() => {
+                this.binder.updateMovingParameters(this.direction);
+                this.binder.detachEvents();
+            });
             return true;
         default:
             this.hint = "Unknown flow!";
@@ -102,39 +155,13 @@ export default class Reader {
         }
         // Horizontal (RTL or LTR)
         if(!this.slider) {
-            this.slider = new Slider({
-                selector: "#br-book",
-                duration: 200,
-                easing: "ease-out",
-                onChange: () => {
-                    this.guideHidden = true;
-                    this.zoomer.scale = 1;
-                    m.redraw();
-                },
-                onInit: () => {
-                    this.zoomer = {
-                        scale: 1,
-                        translate: {
-                            X: 0,
-                            Y: 0
-                        },
-                    };
-                    m.redraw();
-                },
-                increment: 2,
-                startIndex: 0,
-                threshold: 20,
-                ttb: false,
-                fit: false,
-                rtl: this.publication.rtl,
-                perPage: this.spread ? 2 : 1 // TODO detect whether need spread
-            });
+            this.makeSlider(false);
             console.log("Slider initialized");
         } else {
             this.slider.config.ttb = false;
             this.slider.config.rtl = this.publication.rtl;
             this.slider.resizeHandler();
-            if (this.slider.currentSlide % 2 && this.slider.perPage > 1) // Prevent getting out of track
+            if (this.slider.currentSlide % 2 && !this.slider.single) // Prevent getting out of track
                 this.slider.currentSlide++;
             this.slider.init();
             this.binder.attachEvents();
@@ -161,24 +188,22 @@ export default class Reader {
                 }, 1500);
             }, 0);
         }).catch(error => {
-            console.error("Couldn't load publication");
             console.error(error);
             if(__DEV__)
                 alert(error.stack);
             else
                 alert("Publication loading failed!");
-            // TODO popup error
+            m.route.set("/error/:code/:message", { code: 9500, message: "Couldn't load publication" });
+            return;
         });
         console.log("Reader component created");
     }
 
     view(vnode) {
-        const overflow = vnode.state.slider ? (vnode.state.slider.config.ttb ? "auto" : "hidden") : "hidden";
-        const direction = vnode.state.slider ? (vnode.state.slider.config.rtl ? "rtl" : "ltr") : "ltr";
-        let lastLandscapeIndex = 0;
         let bookStyle = {
-            overflow: overflow,
-            direction: direction,
+            overflow: vnode.state.slider ? (vnode.state.slider.config.ttb ? "auto" : "hidden") : "hidden",
+            direction: vnode.state.slider ? (vnode.state.slider.config.rtl ? "rtl" : "ltr") : "ltr",
+            "overflow-y": vnode.state.slider ? (vnode.state.slider.config.perPage == 1 ? "scroll" : "auto") : "auto", // TODO SMALLS SCREEN!
         };
 
         // Cursor
@@ -202,6 +227,7 @@ export default class Reader {
             }, [
                 m("div#br-book", {
                     style: bookStyle,
+                    tabindex: -1, // Needed to be able to focus on this element (from peripherals)
                     oncontextmenu: (e) => {
                         this.interface.toggle();
                         e.preventDefault();
@@ -226,16 +252,13 @@ export default class Reader {
                         data: page,
                         key: page.href,
                         index: index,
-                        float: ((index - lastLandscapeIndex) % 2) ? "left" : "right",
                         slider: this.slider,
                     }));
-                    if(page.width > page.height)
-                        lastLandscapeIndex++;
                     return items;
                 })),
             ]),
             m("div.br-guide", {
-                class: "br-guide__" + this.direction + ((vnode.state.guideHidden || !vnode.state.publication.isReady) ? " hide" : "")
+                class: "br-guide__" + this.direction + ((vnode.state.config.guideHidden || !vnode.state.publication.isReady) ? " hide" : "")
             }, this.hint)
         ];
         if (this.publication.isReady && this.slider)

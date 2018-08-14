@@ -58,6 +58,33 @@ a {
     color: #000;
 }
 
+@media screen and (min-width: 600px) {
+    /* width */
+	::-webkit-scrollbar {
+		width: 15px;
+	}
+
+	/* Track */
+	::-webkit-scrollbar-track {
+		background: darken($tertiaryBackground, 5%); 
+	}
+	
+	/* Handle */
+	::-webkit-scrollbar-thumb {
+		background: lighten($tertiaryBackground, 5%); 
+	}
+
+	/* Handle on hover */
+	::-webkit-scrollbar-thumb:hover {
+		background: lighten($tertiaryBackground, 10%); 
+	}
+
+	/* Handle on active */
+	::-webkit-scrollbar-thumb:active {
+		background: lighten($tertiaryBackground, 10%); 
+	}
+}
+
 :not(.material-icons) {
     font-family: Roboto, "游ゴシック", YuGothic, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
 }
@@ -131,7 +158,8 @@ div#br-book {
     //height: calc(100% - #{$top-bar-height});
     height: 100%;
     transition: 0.3s ease-in-out;
-    transition-property: transform;
+	transition-property: transform;
+	outline: none;
 //		transform: translateY( 0  );
 //		html.panel-opened & { transform: translateY(36px); /* transform-origin: 50% 100%; transform: rotateX(-45deg); */ }
 }
