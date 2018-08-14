@@ -20,7 +20,7 @@ export default class Publication {
                 this.links = manifest.links;
                 //if(this.spine.length % 2) // Uneven number of pages, we good
                 this.ready = true;
-                this.navi = new Navigator(this.spine);
+                this.navi = new Navigator(this);
                 console.log("Publication loaded: " + this.metadata.title);
                 return true;
             } else {
@@ -33,6 +33,10 @@ export default class Publication {
 
     get pmetadata() {
         return this.metadata ? this.metadata : false;
+    }
+
+    get isTtb() {
+        return this.direction == "ttb";
     }
 
     get direction() {
