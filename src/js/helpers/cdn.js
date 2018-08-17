@@ -1,8 +1,29 @@
 import { parse } from "./parseUri";
-//import { MAX_FIT } from "../components/Page";
 import sML from "./sMLstub";
 import { MAX_FIT } from "../components/Page";
+import Platform from "./platform";
+
+const RESOLUTION_LOW = 1280;
+const RESOLUTION_MEDIUM = 1600;
+const RESOLUTION_HIGH = 2048;
+
+const PRIVATE_IPS = /(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)|(^[fF][cCdD])/;
+
 export default {
+    isApplicableHost: function(href) {
+        const ele = parse(href);
+        let applicable = true;
+        const devhosts = [
+            PRIVATE_IPS,
+            /^localhost/,
+        ];
+        devhosts.forEach((host) => {
+            if(ele.host.match(host)) {
+                applicable = false;
+            }
+        });
+        return applicable;
+    },
     seededRandom: function(seed, max, min) {
         max = max || 1;
         min = min || 0;
@@ -26,6 +47,14 @@ export default {
         }
         else
             quality *= 0.98;
+        switch (new Platform().networkType) {
+        case 1: // Medium network
+            height = Math.min(item.height, RESOLUTION_MEDIUM);
+            break;
+        case 2: // Slow network
+            height = Math.min(item.height, RESOLUTION_LOW);
+            break;
+        }
         return {
             quality: Math.floor(quality),
             height: height
@@ -61,6 +90,7 @@ export default {
     image: function(item, index) { // TODO preserve original query params
         if(!item) return null;
         if(!__CDN__) return item.href;
+        if(!this.isApplicableHost(item.href)) return item.href;
         return this.photon(item, index);
         //return this.google(item, index);
     }
