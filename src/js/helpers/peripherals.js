@@ -25,6 +25,7 @@ export default class Peripherals {
         };
         this.MovingParameters = {
             "Space": 1,
+            "Backspace": -1,
             "Page Up": -1,
             "Page Down": 1,
             "End": "foot",
@@ -83,7 +84,7 @@ export default class Peripherals {
             109: "Minus",
             45: "Zero",
             12: "Return",
-            //TODO:
+            // What mangadex does maybe implement
             /*
             F for fit toggle
             G for spread toggle
@@ -303,28 +304,28 @@ export default class Peripherals {
             const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) == sliderLength;
             if (this.slider.config.ttb) { // Vertical controls
                 switch (ev.Division.Y) {
-                    case "bottom":
-                        this.changeCursor(atLastSlide ? "not-allowed" : "s-resize");
-                        break;
-                    case "top":
-                        this.changeCursor(atFirstSlide ? "not-allowed" : "n-resize");
-                        break;
-                    case "middle":
-                        this.changeCursor("pointer");
-                        break;
+                case "bottom":
+                    this.changeCursor(atLastSlide ? "not-allowed" : "s-resize");
+                    break;
+                case "top":
+                    this.changeCursor(atFirstSlide ? "not-allowed" : "n-resize");
+                    break;
+                case "middle":
+                    this.changeCursor("pointer");
+                    break;
                 }
             } else { // Horizontal controls
                 const rtl = this.slider.config.rtl;
                 switch (ev.Division.X) {
-                    case "left":
-                        this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed" : "w-resize");
-                        break;
-                    case "right":
-                        this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed" : "e-resize");
-                        break;
-                    case "center":
-                        this.changeCursor("pointer");
-                        break;
+                case "left":
+                    this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed" : "w-resize");
+                    break;
+                case "right":
+                    this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed" : "e-resize");
+                    break;
+                case "center":
+                    this.changeCursor("pointer");
+                    break;
                 }
             }
         }
@@ -378,11 +379,15 @@ export default class Peripherals {
             sML.edit(this.MovingParameters, {
                 "Page Up": 0,
                 "Page Down": 0,
+                "End": 0,
+                "Home": 0,
             });
         else
             sML.edit(this.MovingParameters, {
                 "Page Up": -1,
                 "Page Down": 1,
+                "End": "foot",
+                "Home": "head",
             });
     }
 
@@ -460,7 +465,7 @@ export default class Peripherals {
                 "Minus": 0,
                 "Zero": 0,
             });
-    }
+        }
     }
 
     getKeyName(Eve) {
@@ -576,30 +581,30 @@ export default class Peripherals {
         const ev = this.coordinator.getBibiEvent(event);
         if (this.slider.config.ttb) { // Vertical controls
             switch (ev.Division.Y) {
-                case "bottom":
-                    this.moveBy(1);
-                    break;
-                case "top":
-                    this.moveBy(-1);
-                    break;
-                case "middle":
-                    this.interface.toggle();
-                    m.redraw();
-                    break;
+            case "bottom":
+                this.moveBy(1);
+                break;
+            case "top":
+                this.moveBy(-1);
+                break;
+            case "middle":
+                this.interface.toggle();
+                m.redraw();
+                break;
             }
         } else { // Horizontal controls
             const next = this.slider.config.rtl ? "left" : "right";
             const prev = this.slider.config.rtl ? "right" : "left";
             switch (ev.Division.X) {
-                case next:
-                    this.delayedMoveBy(1);
-                    break;
-                case prev:
-                    this.delayedMoveBy(-1);
-                    break;
-                case "center":
-                    this.delayedToggle();
-                    break;
+            case next:
+                this.delayedMoveBy(1);
+                break;
+            case prev:
+                this.delayedMoveBy(-1);
+                break;
+            case "center":
+                this.delayedToggle();
+                break;
             }
         }
     }
