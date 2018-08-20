@@ -299,7 +299,7 @@ export default class Peripherals {
             this.touchmoveHandler(e);
         } else {
             const ev = this.coordinator.getBibiEvent(e);
-            const sliderLength = this.slider.getLength() - 1;
+            const sliderLength = this.slider.length - 1;
             const atFirstSlide = Math.max(this.slider.currentSlide, 0) == 0;
             const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) == sliderLength;
             if (this.slider.config.ttb) { // Vertical controls
@@ -552,7 +552,7 @@ export default class Peripherals {
             if (MovingParameter === "head") {
                 this.slider.goTo(0);
             } else if (MovingParameter === "foot") {
-                this.slider.goTo(this.slider.getLength());
+                this.slider.goTo(this.slider.length);
             }
 
             // Zoom

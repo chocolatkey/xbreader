@@ -41,12 +41,12 @@ export default class Interface {
     }
 
     slider(slider, publication) {
-        return m("input.br-slider", {
+        const attrs = {
             type: "range",
             min: 0,
-            max: publication.isTtb ? 100 : (slider.getLength() % 2 ? slider.getLength() - 1 : slider.getLength()),
-            value: publication.isTtb ? slider.selector.scrollTop / slider.selector.scrollHeight * 100 : slider.currentSlide,
-            step: publication.isTtb ? "any" : slider.perPage,
+            max: slider.length - (slider.config.shift ? 1 : 2),//(slider.length % 2 ?  : slider.length),
+            value: slider.currentSlide,
+            step: slider.perPage,
             title: __("Select Page"),
             onchange: (e) => { // Activates when slider is released (mouse let go). Needed for IE compatibility
                 this.sliderMove(e, slider, publication);
@@ -55,7 +55,13 @@ export default class Interface {
                 this.sliderMove(e, slider, publication);
             },
             dir: publication.rtl ? "rtl" : "ltr"
-        });
+        };
+        if(publication.isTtb) {
+            attrs.max = 100;
+            attrs.value = slider.selector.scrollTop / slider.selector.scrollHeight * 100;
+            attrs.step = "any";
+        }
+        return m("input.br-slider", attrs);
     }
 
     sliderSystem(slider, publication) {        

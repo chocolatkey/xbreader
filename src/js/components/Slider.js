@@ -65,7 +65,7 @@ export default class Slider {
      */
     static mergeSettings(options) {
         const settings = {
-            selector: ".siema",
+            selector: "#br-book",
             duration: 200,
             easing: "ease-out",
             perPage: 1,
@@ -76,6 +76,7 @@ export default class Slider {
             rtl: false,
             ttb: false,
             fit: true,
+            shift: true,
             onInit: () => {},
             onChange: () => {},
         };
@@ -149,7 +150,7 @@ export default class Slider {
         }
         // Padding at beginning for first page offset
         let margin = 0;
-        if(this.perPage > 1)
+        if(this.perPage > 1 && this.config.shift)
             margin = `${this.selector.clientWidth / 2}px`;
         if(this.config.rtl)
             this.sliderFrame.style.marginRight = margin;
@@ -157,8 +158,7 @@ export default class Slider {
             this.sliderFrame.style.marginLeft = margin;
 
         const widthItem = this.selectorWidth / this.perPage;
-        const itemsToBuild = this.getLength();
-        this.sliderFrame.style.width = `${widthItem * itemsToBuild}px`;
+        this.sliderFrame.style.width = `${widthItem * this.length}px`;
 
         // Add fragment to the frame
         this.sliderFrame.appendChild(docFragment);
@@ -176,9 +176,9 @@ export default class Slider {
         elementContainer.style.cssFloat = this.config.rtl ? "right" : "left";
         elementContainer.style.float = this.config.rtl ? "right" : "left";
         if(this.perPage > 1 && elm.isLandscape)
-            elementContainer.style.width = `${100 / (this.getLength()) * 2}%`;
+            elementContainer.style.width = `${100 / (this.length) * 2}%`;
         else
-            elementContainer.style.width = `${100 / (this.getLength())}%`;
+            elementContainer.style.width = `${100 / (this.length)}%`;
         elementContainer.appendChild(elm);
         return elementContainer;
     }
@@ -241,7 +241,7 @@ export default class Slider {
 
         const beforeChange = this.currentSlide;
 
-        this.currentSlide = Math.min(this.currentSlide + howManySlides, this.getLength() - 1);
+        this.currentSlide = Math.min(this.currentSlide + howManySlides, this.length - 1);
         if(this.perPage > 1 && this.currentSlide % 2)
             this.currentSlide--;
 
@@ -276,7 +276,7 @@ export default class Slider {
     /**
      * Get current amount of pages
      */
-    getLength() {
+    get length() {
         if(this.perPage == 1)
             return this.innerElements.length;
         return this.innerElements.length + this.nLandscape;
@@ -289,11 +289,10 @@ export default class Slider {
      * @param {function} callback - Optional callback function.
      */
     goTo(index, callback) {
-        if (this.innerElements.length <= this.perPage) {
+        if (this.innerElements.length <= this.perPage)
             return;
-        }
         const beforeChange = this.currentSlide;
-        this.currentSlide = Math.min(Math.max(index, 0), this.getLength() - 1);
+        this.currentSlide = Math.min(Math.max(index, 0), this.length - 1);
         if (beforeChange !== this.currentSlide) {
             this.slideToCurrent(false);
             this.config.onChange.call(this);

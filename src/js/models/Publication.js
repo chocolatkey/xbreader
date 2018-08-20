@@ -18,10 +18,9 @@ export default class Publication {
                 this.metadata = manifest.metadata;
                 this.spine = manifest.spine;
                 this.links = manifest.links;
-                //if(this.spine.length % 2) // Uneven number of pages, we good
                 this.ready = true;
-                this.navi = new Navigator(this);
                 console.log("Publication loaded: " + this.metadata.title);
+                this.navi = new Navigator(this);
                 return true;
             } else {
                 throw "Couldn't get manifest!";
@@ -44,6 +43,10 @@ export default class Publication {
             return "ltr";
         else
             return this.pmetadata.direction;
+    }
+
+    get shift() {
+        return this.navi.shift;
     }
 
     get rtl() { // Right-to-left reading

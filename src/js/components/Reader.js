@@ -85,6 +85,7 @@ export default class Reader {
             ttb: isTTB,
             fit: false,
             rtl: this.publication.rtl,
+            shift: this.publication.shift,
             perPage: this.spread ? 2 : 1 // TODO detect whether need spread
         });
     }
