@@ -1,6 +1,6 @@
 import m from "mithril";
 import SmartLoader from "../helpers/lazyLoader";
-export const MAX_FIT = 1400;
+export const MAX_FIT = 1500;
 
 export default class Page {
     parseDimension(val) {
@@ -80,13 +80,12 @@ export default class Page {
                 if(this.data.height > MAX_FIT && !this.landscape && mFitWidth < docWidth) { // Too large to fit, compromise with maxFit
                     this.itemHeight = MAX_FIT;
                     this.itemWidth = mFitWidth;
-                } else { // Original image size
-                    this.itemHeight = "auto";
-                    this.itemWidth = "auto";
-                    itemAttrs.style = "height: auto; width: auto;";
+                } else { // Maximum image width
+                    this.itemWidth = docWidth;
+                    this.itemHeight = docWidth / this.data.width * this.data.height;
                 }
             }
-            itemAttrs.style = `height: ${this.itemHeight}px; width: ${this.itemWidth}px;`;
+            itemAttrs.style = `height: ${this.parseDimension(this.itemHeight)}; width: ${this.parseDimension(this.itemWidth)};`;
             if(slider.config.ttb)
                 itemAttrs.style += " margin: 0 auto;";
             else {
@@ -94,13 +93,11 @@ export default class Page {
                     this.marginLeft = (docWidth - this.itemWidth) / 2;
                 else if (this.float === "right" || this.float === "center")
                     this.marginRight = (docWidth - this.itemWidth) / 2;
-                //this.data.page = "none";
                 itemAttrs.style = this.styles;
             }
 
         } else // Horizontal (LTR & RTL)
             itemAttrs.style = this.styles;
-
         let innerItemIs = null;
         if (vnode.attrs.blank)
             innerItemIs = m("canvas.page-blank", {
