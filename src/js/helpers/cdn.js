@@ -16,6 +16,7 @@ export default {
         const devhosts = [
             PRIVATE_IPS,
             /^localhost/,
+            /\.local$/
         ];
         devhosts.forEach((host) => {
             if(ele.host.match(host)) {
@@ -42,10 +43,9 @@ export default {
             height = Math.min(item.height, window.innerHeight * ratio);
         }
         if(ratio < 2) {
-            height = MAX_FIT;
+            if(height > RESOLUTION_MEDIUM) height = Math.floor(height * 0.9);
             quality = 95;
-        }
-        else
+        } else
             quality *= 0.98;
         switch (new Platform().networkType) {
         case 1: // Medium network
