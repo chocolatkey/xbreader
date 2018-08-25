@@ -13,14 +13,16 @@ export default class Navigator {
     index(publication, redo = false) {
         let lastLandscapeIndex = 0;
         publication.spine.forEach((item, index) => {
+            item.xbr = item.xbr ? item.xbr : {};
+            item.properties = item.properties ? item.properties : {};
             if(!redo) {
-                item.number = index + 1;
+                item.xbr.number = index + 1;
                 if(item.type.indexOf("image/") != 0) // TODO somehow deal with instead of warning
                     console.warn(`Item #${index} (${item.href}) in spine is not an image`);
-                if(!item.orientation) item.orientation = item.width > item.height ? "landscape" : "portrait";
+                if(!item.properties.orientation) item.properties.orientation = item.width > item.height ? "landscape" : "portrait";
             }
-            const isLandscape = item.orientation === "landscape" ? true : false;
-            if(!item.page || redo) item.page = isLandscape ? "center" : ((((this.shift ? 0 : 1) + index - lastLandscapeIndex) % 2) ? (publication.rtl ? "right" : "left") : (publication.rtl ? "left" : "right"));
+            const isLandscape = item.properties.orientation === "landscape" ? true : false;
+            if(!item.properties.page || redo) item.properties.page = isLandscape ? "center" : ((((this.shift ? 0 : 1) + index - lastLandscapeIndex) % 2) ? (publication.rtl ? "right" : "left") : (publication.rtl ? "left" : "right"));
             if(isLandscape)
                 lastLandscapeIndex++;
         });
@@ -37,11 +39,11 @@ export default class Navigator {
             const single = item[0];
 
             // If last was a true single, and this spread is a center page, something's wrong
-            if(wasLastSingle && single.page === "center")
+            if(wasLastSingle && single.properties.page === "center")
                 this.shift = false;
             
             // If this single page spread is an orphaned component of a double page spread (and it's not the first page)
-            if(single.orientation === "portrait" && single.page !== "center" && single.number > 1)
+            if(single.properties.orientation === "portrait" && single.properties.page !== "center" && single.xbr.number > 1)
                 wasLastSingle = true;
         });
         if(!this.shift)
@@ -53,7 +55,7 @@ export default class Navigator {
         spine.forEach((item, index) => {
             if(!index && this.shift) {
                 this.spreads.push([item]);
-            } else if(item.page === "center") { // If a center (single) page spread, push immediately and reset current set
+            } else if(item.properties.page === "center") { // If a center (single) page spread, push immediately and reset current set
                 if(currentSet.length > 0) this.spreads.push(currentSet);
                 this.spreads.push([item]);
                 currentSet = [];
@@ -78,9 +80,9 @@ export default class Navigator {
             }
             spread.forEach((item, index) => {
                 if(!index)
-                    spreadString += item.number;
+                    spreadString += item.xbr.number;
                 else
-                    spreadString += "-" + item.number;
+                    spreadString += "-" + item.xbr.number;
             });
             return spreadString;
         } else

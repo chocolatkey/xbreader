@@ -22,15 +22,15 @@ export default class Page {
 
     get float() {
         // Get reverse of page alignment
-        if(this.data.page === "left")
+        if(this.data.properties.page === "left")
             return "right";
-        if(this.data.page === "right")
+        if(this.data.properties.page === "right")
             return "left";
-        return this.data.page;
+        return this.data.properties.page;
     }
 
     get landscape() {
-        return this.data.orientation === "landscape" ? true : false;
+        return this.data.properties.orientation === "landscape" ? true : false;
     }
 
     oninit(vnode) {
