@@ -15,6 +15,7 @@ export default class Navigator {
         publication.spine.forEach((item, index) => {
             item.xbr = item.xbr ? item.xbr : {};
             item.properties = item.properties ? item.properties : {};
+            item.properties.spread = item.properties.spread ? item.properties.spread : "landscape";
             if(!redo) {
                 item.xbr.number = index + 1;
                 if(item.type.indexOf("image/") != 0) // TODO somehow deal with instead of warning
