@@ -166,9 +166,9 @@ export default class Interface {
                     ]),
                     m("section.br-toolbar__tsection", [
                         m("a", {
-                            href: publication.pmetadata.belongs_to.series.identifier,
+                            href: publication.series.identifier,
                             title: __("Series")
-                        }, publication.pmetadata.belongs_to.series.name),
+                        }, publication.series.name),
                         m("span.spacer", "›"),
                         /*m("a#br-chapter", {
                             href: "#", // TODO

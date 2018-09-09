@@ -1,4 +1,4 @@
-
+import Publication from "../models/Publication";
 export default class Navigator {
     constructor(publication) {
         this.spreads = [];
@@ -18,7 +18,8 @@ export default class Navigator {
             item.properties.spread = item.properties.spread ? item.properties.spread : "landscape";
             if(!redo) {
                 item.xbr.number = index + 1;
-                if(item.type.indexOf("image/") != 0) // TODO somehow deal with instead of warning
+                Publication.fixDeprecated(item, "type", "mime");
+                if(item.mime.indexOf("image/") != 0) // TODO somehow deal with instead of warning
                     console.warn(`Item #${index} (${item.href}) in spine is not an image`);
                 if(!item.properties.orientation) item.properties.orientation = item.width > item.height ? "landscape" : "portrait";
             }

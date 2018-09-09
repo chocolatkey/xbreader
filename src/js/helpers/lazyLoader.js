@@ -6,7 +6,7 @@ const LOW_THRESHOLD = 3;
 export default class LazyLoader {
     constructor(imageData, imageIndex) {
         this.original = cdn.image(imageData, imageIndex);
-        this.mime = imageData.type;
+        this.mime = imageData.mime;
         this.index = imageIndex;
         this.loaded = false;
         this.blob = null;

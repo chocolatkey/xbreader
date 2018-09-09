@@ -191,9 +191,9 @@ export default class Reader {
         }).catch(error => {
             console.error(error);
             if(__DEV__)
-                alert(error.stack);
+                alert(error) && console.error(error.stack);
             else
-                alert("Publication loading failed!");
+                alert("Failed to load publication!");
             m.route.set("/error/:code/:message", { code: 9500, message: "Couldn't load publication" });
             return;
         });
