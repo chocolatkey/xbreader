@@ -1,5 +1,4 @@
 import m from "mithril";
-//import "whatwg-fetch";
 
 import readView from "./views/read";
 import errorView from "./views/error";
