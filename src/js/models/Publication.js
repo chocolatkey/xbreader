@@ -44,7 +44,7 @@ export default class Publication {
 
     static fixDeprecated(container, oldKey, newKey) {
         if(oldKey in container === true && newKey in container === false) {
-            console.warn(`Deprecated WebPub format: Change '${oldKey}' to '${newKey}'`);
+            console.warn(`Deprecated WebPub naming scheme: Change '${oldKey}' to '${newKey}'`);
             container[newKey] = container[oldKey];
         }
     }
