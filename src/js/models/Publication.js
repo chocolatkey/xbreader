@@ -90,7 +90,7 @@ export default class Publication {
     }
 
     get rtl() { // Right-to-left reading
-        return this.pmetadata.direction == "rtl" ? true : false;
+        return this.pmetadata.readingProgression == "rtl" ? true : false;
     }
 
     get isReady() {
