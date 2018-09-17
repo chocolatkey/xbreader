@@ -127,13 +127,13 @@ export default class LazyLoader {
             this.drawAsSoon();
         };
         this.preloader.onerror = () => {
-            this.draw(__("Error!"));
-            /*setTimeout(() => {
+            setTimeout(() => {
                 if(!this.loaded && this.preloader) {
                     console.error("Error loading page " + this.original);
+                    this.blob = null;
                     this.draw(__("Error!"));
                 }
-            }, 1000);*/
+            }, 1000);
         };
         this.preloader.src = this.original;
     }
