@@ -1,6 +1,5 @@
 import { parse } from "./parseUri";
 import sML from "./sMLstub";
-import { MAX_FIT } from "../components/Page";
 import Platform from "./platform";
 
 const RESOLUTION_LOW = 1280;
@@ -8,6 +7,7 @@ const RESOLUTION_MEDIUM = 1600;
 const RESOLUTION_HIGH = 2048;
 
 const PRIVATE_IPS = /(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)|(^[fF][cCdD])/;
+const NG_IMG_MATCHER = /^((.*)nebel\/img\/[A-Za-z0-9+\/=\-_.]+\/)(\d{1,5})\.jpg$/;
 
 export default {
     isApplicableHost: function(href) {
@@ -87,11 +87,37 @@ export default {
         const spec = this.buildAwareSpec(item);
         return `https://i${this.hash(ele.host, index, 0, 2)}.wp.com/${ele.authority + ele.path}?strip=all&quality=${spec.quality}&h=${spec.height}`;
     },
+    // NebelGrind Gate
+    nebelgrind: function(item, index) {
+        const match = item.href.match(NG_IMG_MATCHER);
+        if(!match) return item.href;
+        let givenDimension = this.buildAwareSpec(item).height;
+    
+        // Help backend by only requesting fixed resolutions, since this function is replicated in NG's backend anyway
+        if (givenDimension <= ((RESOLUTION_LOW + RESOLUTION_MEDIUM) / 2)) {
+            givenDimension = RESOLUTION_LOW
+        } else if (givenDimension <= ((RESOLUTION_MEDIUM + RESOLUTION_HIGH) / 2)) {
+            givenDimension = RESOLUTION_MEDIUM
+        } else {
+            givenDimension = RESOLUTION_HIGH
+        }
+
+        return `${match[1]}${givenDimension}.jpg`;
+        return item.href;
+    },
     image: function(item, index) { // TODO preserve original query params
         if(!item) return null;
-        if(!__CDN__) return item.href;
         if(!this.isApplicableHost(item.href)) return item.href;
-        return this.photon(item, index);
-        //return this.google(item, index);
+        const whatcdn = window.xbconfig.cdn; // TODO not the global
+        switch (whatcdn) {
+            case "photon":
+                return this.photon(item, index);
+            case "google":
+                return this.google(item, index);
+            case "nebelgrind":
+                return this.nebelgrind(item, index);
+            default:
+                return item.href;
+        }
     }
 };

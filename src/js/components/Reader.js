@@ -9,7 +9,8 @@ import Platform from "../helpers/platform";
 
 export default class Reader {
     constructor(config) {
-        this.config = Reader.mergeSettings(config);
+        this.config = window.xbconfig = Reader.mergeSettings(config);
+        this.guideHidden = this.config.guideHidden;
         this.r = Math.random();
         this.publication = new Publication();
         this.interface = new Interface(this);
@@ -35,16 +36,12 @@ export default class Reader {
 
     static mergeSettings(config) {
         const settings = { // TODO
-            next: null,
-            previous: null,
-            direction: "auto",
-            spread: "spread",
-            guideHidden: false
+            guideHidden: false,
+            cdn: false
         };
 
-        const userSttings = config;
-        for (const attrname in userSttings) {
-            settings[attrname] = userSttings[attrname];
+        for (const attrname in config) {
+            settings[attrname] = config[attrname];
         }
 
         return settings;
@@ -65,7 +62,7 @@ export default class Reader {
             duration: 200,
             easing: "ease-out",
             onChange: () => {
-                this.config.guideHidden = true;
+                this.guideHidden = true;
                 this.zoomer.scale = 1;
                 m.redraw();
             },
@@ -111,11 +108,11 @@ export default class Reader {
         if(this.direction == direction) // Already that direction
             return true;
         console.log("Setting direction: " + direction);
-        this.config.guideHidden = false;
+        this.guideHidden = this.config.guideHidden;
         clearTimeout(this.guideHider);
         this.guideHider = setTimeout(() => {
-            if(this.config.guideHidden) return;
-            this.config.guideHidden = true;
+            if(this.guideHidden) return;
+            this.guideHidden = true;
             m.redraw();
         }, 2000);
         this.hint = this.mobile ? "Swipe or tap " : "Navigate ";
@@ -259,7 +256,7 @@ export default class Reader {
                 })),
             ]),
             m("div.br-guide", {
-                class: "br-guide__" + this.direction + ((vnode.state.config.guideHidden || !vnode.state.publication.isReady) ? " hide" : "")
+                class: "br-guide__" + this.direction + ((vnode.state.guideHidden || !vnode.state.publication.isReady) ? " hide" : "")
             }, this.hint)
         ];
         if (this.publication.isReady && this.slider)

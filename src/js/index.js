@@ -8,7 +8,7 @@ window.xbreader = (config) => {
     const mountingPoint = config.mount ? config.mount : document.body;
     m.route(mountingPoint, "/error/404", {
         "/read/:id": new readView(config),
-        "/preview/:id": "ddddd",
+        "/preview/:id": "preview",
         "/comments": "comments",
         "/lastpage": "lastpage",
         "/settings": "settings",
