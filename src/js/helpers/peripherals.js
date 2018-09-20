@@ -640,7 +640,7 @@ export default class Peripherals {
         if (!this.reader.zoomer || this.disableDblClick)
             return;
 
-        const BibiEvent = this.coordinator.getBibiEvent(event);
+        const BibiEvent = this.coordinator.getBibiEvent(Eve);
         this.reader.zoomer.scale = this.isScaled ? 1 : 2;
         if (this.isScaled)
             this.reader.zoomer.translate = {
