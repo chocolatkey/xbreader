@@ -9,27 +9,41 @@ export default class Publication {
         this.ready = false;
     }
 
-    load(manifestPath) {
+    smartLoad(item) {
+        if (typeof item === 'string' || item instanceof String)
+            return this.loadFromPath(item + ".json");
+        else 
+            return this.loadFromData(item);
+        
+    }
+
+    loadFromPath(manifestPath) {
         return m.request({
             method: "GET",
             url: manifestPath
         }).then((manifest) => {
-            if(manifest){
-                if(!this.isValidManifest(manifest)) {
+            return this.loadFromData(manifest);
+        }).catch(error => {
+            throw error;
+        });
+    }
+
+    loadFromData(manifestData) {
+        return new Promise((resolve, reject) => {
+            if(manifestData){
+                if(!this.isValidManifest(manifestData)) {
                     throw new Error("Invalid WebPub manifest!");
                 }
-                this.metadata = manifest.metadata;
-                this.spine = manifest.readingOrder; // Legacy name
-                this.links = manifest.links;
+                this.metadata = manifestData.metadata;
+                this.spine = manifestData.readingOrder; // Legacy name
+                this.links = manifestData.links;
                 this.ready = true;
                 console.log("Publication loaded: " + this.metadata.title);
                 this.navi = new Navigator(this);
-                return true;
+                resolve();
             } else {
-                throw new Error("Manifest data empty!");
+                reject(new Error("Manifest data empty!"));
             }
-        }).catch(error => {
-            throw error;
         });
     }
 

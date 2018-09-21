@@ -37,7 +37,8 @@ export default class Reader {
     static mergeSettings(config) {
         const settings = { // TODO
             guideHidden: false,
-            cdn: false
+            cdn: false,
+            webpub: null,
         };
 
         for (const attrname in config) {
@@ -169,13 +170,14 @@ export default class Reader {
     }
 
     oncreate(vnode) {
-        vnode.item = vnode.attrs.uuid;
-        if (!vnode.item) {
+        let manifestPointer = vnode.attrs.urn
+        if(this.config.webpub)
+            manifestPointer = this.config.webpub;
+        else if (!manifestPointer) {
             console.error("No item specified!");
             return;
         }
-        //console.dir(vnode)
-        this.publication.load(vnode.item + ".json").then(() => {
+        this.publication.smartLoad(manifestPointer).then(() => {
             setTimeout(() => {
                 this.switchDirection(this.publication.direction);
                 this.binder = new Peripherals(this);
