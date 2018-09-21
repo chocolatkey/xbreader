@@ -47,7 +47,7 @@ export default {
             quality = 95;
         } else
             quality *= 0.98;
-        switch (new Platform().networkType) {
+        switch (Platform.networkType()) {
         case 1: // Medium network
             height = Math.min(item.height, RESOLUTION_MEDIUM);
             break;
@@ -92,7 +92,6 @@ export default {
         const match = item.href.match(NG_IMG_MATCHER);
         if(!match) return item.href;
         let givenDimension = this.buildAwareSpec(item).height;
-    
         // Help backend by only requesting fixed resolutions, since this function is replicated in NG's backend anyway
         if (givenDimension <= ((RESOLUTION_LOW + RESOLUTION_MEDIUM) / 2)) {
             givenDimension = RESOLUTION_LOW

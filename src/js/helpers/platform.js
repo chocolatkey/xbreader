@@ -46,7 +46,7 @@ export default class Platform {
      * 1 = medium (3G)
      * 2 = slow (2G)
      */
-    get networkType() {
+    static networkType() {
         const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
         if(!connection) // Not supported
             return 0;
@@ -57,7 +57,7 @@ export default class Platform {
         return 0; // Unknown or other
     }
 
-    get language() {
+    static language() {
         return navigator.language.split("-")[0];
     }
 }
