@@ -4,6 +4,9 @@ const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const I18nPlugin = require("i18n-webpack-plugin");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries"); // Will be unecessary in Webpack 5, apparently
 const webpack = require("webpack");
 const consts = require("./consts");
 const languages = {
@@ -13,21 +16,23 @@ const languages = {
     fr: require("./i18n/fr.json")
 };
 
-let exp = Object.keys(languages).map((language) => {
+module.exports = Object.keys(languages).map((language) => {
     return {
         entry: {
+            xbstyles: [
+                "./src/css/styles.scss"
+            ],
             xbreader: [
                 "./src/js/index.js",
-                "./src/css/styles.scss"
             ],
             loader: [
                 "./src/js/loader.js"
-            ]
+            ],
         },
         name: language,
         output: {
-            path: path.resolve(__dirname, "./bin"),
-            filename: `[name]-${language}.js`, // TODO [hash]?
+            path: path.resolve(__dirname, "./dist"),
+            filename: `[name]-${language}-${JSON.parse(consts.__VERSION__)}.js`,
         },
         module: {
             rules: [{
@@ -65,13 +70,21 @@ let exp = Object.keys(languages).map((language) => {
             }]
         },
         plugins: [
+            new CleanWebpackPlugin(['dist/*.js', 'dist/*.css'], {
+                verbose: false
+            }),
+            new HtmlWebpackPlugin({
+                title: "XBReader",
+                template: "src/index.html",
+                minify: true,
+                filename: `index-${language}.html`,
+                favicon: "src/favicon.ico",
+                excludeChunks: ['xbreader']
+            }),
             new I18nPlugin(languages[language]),
+            new FixStyleOnlyEntriesPlugin(),
             new MiniCssExtractPlugin({
-                // Options similar to the same options in webpackOptions.output
-                // both options are optional
-                // TODO prod
-                //filename: "[name]-[hash].css",
-                //chunkFilename: "[id].css"
+                filename: `[name]-${JSON.parse(consts.__VERSION__)}.css`,
             }),
             new UglifyJsPlugin({
                 parallel: true,
@@ -86,27 +99,3 @@ let exp = Object.keys(languages).map((language) => {
         ]
     };
 });
-
-exp.push({
-    entry: {
-        loader: [
-            "./src/js/loader.js"
-        ]
-    },
-    output: {
-        path: path.resolve(__dirname, "./bin"),
-        filename: "[name].js", // TODO [hash]?
-    },
-    module: {
-        rules: [{
-            test: /\.js$/,
-            exclude: /node_modules/,
-            loader: "babel-loader"
-        }]
-    },
-    plugins: [
-        new webpack.DefinePlugin(consts)
-    ]
-});
-
-module.exports = exp;

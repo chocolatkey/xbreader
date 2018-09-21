@@ -2,19 +2,27 @@
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const I18nPlugin = require("i18n-webpack-plugin");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries"); // Will be unecessary in Webpack 5, apparently
 const webpack = require("webpack");
 const consts = require("./consts");
 
-module.exports = [{
+module.exports = {
     entry: {
+        xbstyles: [
+            "./src/css/styles.scss"
+        ],
         xbreader: [
             "./src/js/index.js",
-            "./src/css/styles.scss"
-        ]
+        ],
+        loader: [
+            "./src/js/loader.js"
+        ],
     },
     output: {
         path: path.resolve(__dirname, "./bin"),
-        filename: "[name]-en.js", // TODO [hash]?
+        filename: `[name]-en-${JSON.parse(consts.__VERSION__)}.js`,
     },
     module: {
         rules: [{
@@ -52,34 +60,20 @@ module.exports = [{
         }]
     },
     plugins: [
+        new CleanWebpackPlugin(['bin/*.js', 'bin/*.css'], {
+            verbose: false
+        }),
+        new HtmlWebpackPlugin({
+            title: "XBReader",
+            template: "src/index.html",
+            favicon: "src/favicon.ico",
+            excludeChunks: ['xbreader']
+        }),
         new I18nPlugin(null),
+        new FixStyleOnlyEntriesPlugin(),
         new MiniCssExtractPlugin({
-            // Options similar to the same options in webpackOptions.output
-            // both options are optional
-            // TODO prod
-            //filename: "[name]-[hash].css",
-            //chunkFilename: "[id].css"
+            filename: `[name]-${JSON.parse(consts.__VERSION__)}.css`,
         }),
         new webpack.DefinePlugin(consts)
     ]
-}, {
-    entry: {
-        loader: [
-            "./src/js/loader.js"
-        ]
-    },
-    output: {
-        path: path.resolve(__dirname, "./bin"),
-        filename: "[name].js", // TODO [hash]?
-    },
-    module: {
-        rules: [{
-            test: /\.js$/,
-            exclude: /node_modules/,
-            loader: "babel-loader"
-        }]
-    },
-    plugins: [
-        new webpack.DefinePlugin(consts)
-    ]
-}];
+};

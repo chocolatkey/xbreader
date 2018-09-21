@@ -22,7 +22,7 @@ function getLanguage() {
 // TODO no IE smaller than 10
 document.addEventListener("DOMContentLoaded", function() {
     var reader = document.createElement("script");
-    reader.src = "./bin/" + __NAME__ + "-" + getLanguage() + ".js?v=" + __VERSION__;
+    reader.src = __NAME__ + "-" + getLanguage() + "-" +  __VERSION__ + ".js"
     document.head.appendChild(reader);
     reader.onload = function() {
         window.xbreader(window.xbconfig);
