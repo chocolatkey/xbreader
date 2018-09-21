@@ -24,8 +24,6 @@ document.addEventListener("DOMContentLoaded", function() {
     var reader = document.createElement("script");
     reader.src = __NAME__ + "-" + getLanguage() + "-" +  __VERSION__ + ".js"
     document.head.appendChild(reader);
-    if(!window.xbconfig)
-        window.xbconfig = {};
     reader.onload = function() {
         window.xbreader(window.xbconfig);
     };

@@ -5,6 +5,8 @@ import errorView from "./views/error";
 
 window.xbreader = (config) => {
     console.log(`${__NAME__} ${__VERSION__}`);
+    if(!config)
+        config = {};
     const mountingPoint = config.mount ? config.mount : document.body;
     if(config.webpub) // Reader-only mode
         m.route(mountingPoint, "", {
