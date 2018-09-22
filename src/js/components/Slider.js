@@ -325,22 +325,26 @@ export default class Slider {
             }
             const multiplier = ((this.currentSlide) * (this.selectorWidth / this.perPage))// - (nLandscape * this.selectorWidth); 
             offset = (this.config.rtl ? 1 : -1) * multiplier;
-        } else*/ 
-        const offset = (this.config.rtl ? 1 : -1) * this.currentSlide * (this.selectorWidth / this.perPage);
+        } else*/
 
-        if (enableTransition) {
-            // This one is tricky, I know but this is a perfect explanation:
-            // https://youtu.be/cCOL7MC4Pl0
-            requestAnimationFrame(() => {
+        clearTimeout(this.slideDelayer);
+        this.slideDelayer = setTimeout(() => {
+            const offset = (this.config.rtl ? 1 : -1) * this.currentSlide * (this.selectorWidth / this.perPage);
+
+            if (enableTransition) {
+                // This one is tricky, I know but this is a perfect explanation:
+                // https://youtu.be/cCOL7MC4Pl0
                 requestAnimationFrame(() => {
-                    this.enableTransition();
-                    this.sliderFrame.style[this.transformProperty] = `translate3d(${offset}px, 0, 0)`;
+                    requestAnimationFrame(() => {
+                        this.enableTransition();
+                        this.sliderFrame.style[this.transformProperty] = `translate3d(${offset}px, 0, 0)`;
+                    });
                 });
-            });
-        } else {
-            this.disableTransition();
-            this.sliderFrame.style[this.transformProperty] = `translate3d(${offset}px, 0, 0)`;
-        }
+            } else {
+                this.disableTransition();
+                this.sliderFrame.style[this.transformProperty] = `translate3d(${offset}px, 0, 0)`;
+            }
+        }, 20);
     }
 
 
