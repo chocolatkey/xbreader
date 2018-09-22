@@ -5,6 +5,7 @@ import { Promise } from "core-js";
 const HIGH_THRESHOLD = 5;
 const LOW_THRESHOLD = 3;
 const workerSupported = typeof(Worker) === "undefined" ? false : true;
+// TODO if worker not supported don't make below objects
 
 const f = () => {
     //const useFetch = typeof(fetch) !== "undefined" ? true : false;

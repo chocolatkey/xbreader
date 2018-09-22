@@ -327,24 +327,21 @@ export default class Slider {
             offset = (this.config.rtl ? 1 : -1) * multiplier;
         } else*/
 
-        clearTimeout(this.slideDelayer);
-        this.slideDelayer = setTimeout(() => {
-            const offset = (this.config.rtl ? 1 : -1) * this.currentSlide * (this.selectorWidth / this.perPage);
+        const offset = (this.config.rtl ? 1 : -1) * this.currentSlide * (this.selectorWidth / this.perPage);
 
-            if (enableTransition) {
-                // This one is tricky, I know but this is a perfect explanation:
-                // https://youtu.be/cCOL7MC4Pl0
+        if (enableTransition) {
+            // This one is tricky, I know but this is a perfect explanation:
+            // https://youtu.be/cCOL7MC4Pl0
+            requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        this.enableTransition();
-                        this.sliderFrame.style[this.transformProperty] = `translate3d(${offset}px, 0, 0)`;
-                    });
+                    this.enableTransition();
+                    this.sliderFrame.style[this.transformProperty] = `translate3d(${offset}px, 0, 0)`;
                 });
-            } else {
-                this.disableTransition();
-                this.sliderFrame.style[this.transformProperty] = `translate3d(${offset}px, 0, 0)`;
-            }
-        }, 20);
+            });
+        } else {
+            this.disableTransition();
+            this.sliderFrame.style[this.transformProperty] = `translate3d(${offset}px, 0, 0)`;
+        }
     }
 
 
