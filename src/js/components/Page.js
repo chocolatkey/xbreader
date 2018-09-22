@@ -1,6 +1,6 @@
 import m from "mithril";
 import SmartLoader from "../helpers/lazyLoader";
-export const MAX_FIT = 1500;
+export const MAX_FIT = 1400;
 
 export default class Page {
     parseDimension(val) {
@@ -81,21 +81,23 @@ export default class Page {
                     this.itemHeight = MAX_FIT;
                     this.itemWidth = mFitWidth;
                 } else { // Maximum image width
-                    this.itemWidth = docWidth;
-                    this.itemHeight = docWidth / this.data.width * this.data.height;
+                    this.itemWidth = "auto";
+                    this.itemHeight = "auto";
+                    //this.itemWidth = docWidth;
+                    //this.itemHeight = docWidth / this.data.width * this.data.height;
                 }
             }
-            itemAttrs.style = `height: ${this.parseDimension(this.itemHeight)}; width: ${this.parseDimension(this.itemWidth)};`;
-            if(slider.config.ttb)
-                itemAttrs.style += " margin: 0 auto;";
-            else {
+            itemAttrs.style = `height: ${this.parseDimension(this.itemHeight)}; width: ${this.parseDimension(this.itemWidth)}; margin: 0 auto;`;
+            if(slider.single) {
+                if(!slider.config.ttb)
+                    itemAttrs.style += ` margin-top: ${this.marginTop}px;`;
+            } else {
                 if (this.float === "left")
                     this.marginLeft = (docWidth - this.itemWidth) / 2;
                 else if (this.float === "right" || this.float === "center")
                     this.marginRight = (docWidth - this.itemWidth) / 2;
                 itemAttrs.style = this.styles;
             }
-
         } else // Horizontal (LTR & RTL)
             itemAttrs.style = this.styles;
         let innerItemIs = null;
@@ -116,8 +118,6 @@ export default class Page {
                 this.loader.provoke(innerItemIs, slider.currentSlide);
             });
         }
-        //this.canvas = innerItemIs;
-
         return m(".item.noselect", itemAttrs, [
             innerItemIs
         ]);

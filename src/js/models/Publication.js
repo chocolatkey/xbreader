@@ -12,7 +12,7 @@ export default class Publication {
     smartLoad(item) {
         if (typeof item === 'string' || item instanceof String)
             return this.loadFromPath(item + ".json");
-        else 
+        else
             return this.loadFromData(item);
         
     }
@@ -37,9 +37,9 @@ export default class Publication {
                 this.metadata = manifestData.metadata;
                 this.spine = manifestData.readingOrder; // Legacy name
                 this.links = manifestData.links;
-                this.ready = true;
                 console.log("Publication loaded: " + this.metadata.title);
                 this.navi = new Navigator(this);
+                this.ready = true;
                 resolve();
             } else {
                 reject(new Error("Manifest data empty!"));
@@ -60,6 +60,7 @@ export default class Publication {
         if(oldKey in container === true && newKey in container === false) {
             console.warn(`Deprecated WebPub naming scheme: Change '${oldKey}' to '${newKey}'`);
             container[newKey] = container[oldKey];
+            delete container[oldKey];
         }
     }
 
