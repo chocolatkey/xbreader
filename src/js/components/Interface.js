@@ -35,7 +35,7 @@ export default class Interface {
     sliderMove(e, slider, publication) {
         e.redraw = false;
         if(publication.isTtb)
-            slider.selector.scrollTo(0, slider.selector.scrollHeight * e.target.value / 100);
+            window.scrollTo(0, slider.selector.scrollHeight * e.target.value / 100);
         else
             slider.goTo(parseInt(e.target.value));
     }
@@ -58,7 +58,7 @@ export default class Interface {
         };
         if(publication.isTtb) {
             attrs.max = 100;
-            attrs.value = slider.selector.scrollTop / slider.selector.scrollHeight * 100;
+            attrs.value = document.documentElement.scrollTop / document.documentElement.scrollHeight * 100;
             attrs.step = "any";
         }
         return m("input.br-slider", attrs);

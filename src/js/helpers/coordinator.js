@@ -23,8 +23,8 @@ export default class Coordinator {
             Coord.Y = Eve.pageY;
         }
         if(Eve.target.ownerDocument.documentElement == this.HTML) {
-            Coord.X -= this.Body.scrollLeft;
-            Coord.Y -= this.Body.scrollTop;
+            Coord.X -= this.HTML.scrollLeft;
+            Coord.Y -= this.HTML.scrollTop;
         } else {
             /*
             var Item = Eve.target.ownerDocument.documentElement.Item;

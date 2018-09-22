@@ -174,7 +174,9 @@ export default class Reader {
         if(this.config.webpub)
             manifestPointer = this.config.webpub;
         else if (!manifestPointer) {
-            console.error("No item specified!");
+            if(__DEV__)
+                alert("No item specified!") && console.error("No item specified!");
+            m.route.set("/error/:code/:message", { code: 9400, message: "No item specified" });
             return;
         }
         this.publication.smartLoad(manifestPointer).then(() => {
@@ -191,8 +193,6 @@ export default class Reader {
             console.error(error);
             if(__DEV__)
                 alert(error) && console.error(error.stack);
-            else
-                alert("Failed to load publication!");
             m.route.set("/error/:code/:message", { code: 9500, message: "Couldn't load publication" });
             return;
         });
@@ -200,11 +200,15 @@ export default class Reader {
     }
 
     view(vnode) {
+        
+        // Additional
         let bookStyle = {
-            overflow: vnode.state.slider ? (vnode.state.slider.config.ttb ? "auto" : "hidden") : "hidden",
+            //overflow: vnode.state.slider ? (vnode.state.slider.config.ttb ? "auto" : "hidden") : "hidden",
             direction: vnode.state.slider ? (vnode.state.slider.config.rtl ? "rtl" : "ltr") : "ltr",
-            "overflow-y": vnode.state.slider ? (vnode.state.slider.config.perPage == 1 ? "scroll" : "auto") : "auto", // TODO SMALLS SCREEN!
+            //"overflow-y": vnode.state.slider ? (vnode.state.slider.config.perPage == 1 ? "scroll" : "auto") : "auto", // TODO SMALLS SCREEN!
         };
+
+        document.documentElement.style.overflow = vnode.state.slider ? ((vnode.state.slider.config.ttb || vnode.state.slider.config.perPage === 1) ? "auto" : "hidden") : "hidden";
 
         // Cursor
         const bnd = vnode.state.binder;
@@ -212,12 +216,16 @@ export default class Reader {
             bookStyle.cursor = bnd.cursor;
         }
 
+
         // Zoomer
         const zmr = vnode.state.zoomer;
         if(zmr) {
             bookStyle.transform = `scale(${zmr.scale})`;
             bookStyle.transformOrigin = `${zmr.translate.X}px ${zmr.translate.Y}px 0px`;
-            bookStyle.cursor = zmr.scale > 1 ? "move" : bookStyle.cursor;
+            if(zmr.scale > 1) {
+                bookStyle.cursor = "move";
+                document.documentElement.style.overflow = "hidden";
+            }
         }
 
         // Rendering

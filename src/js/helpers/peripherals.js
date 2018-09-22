@@ -92,11 +92,9 @@ export default class Peripherals {
             */
         });
 
-        //E.add("bibi:updated-settings", (   ) => { this.updateMovingParameters(); });
         this.updateMovingParameters(Reader.direction);
-        //E.add("bibi:opened",           (   ) => { this.updateMovingParameters(); this.observe(); });
         this.observe(this.slider.selector);
-        this.observe(document.body);
+        this.observe(window);
         let tx = document.documentElement;
         tx.addEventListener("pointermove", event => this.onpointermove(event));
         this.slider.selector.addEventListener("click", event => this.onclick(event));
@@ -665,10 +663,11 @@ export default class Peripherals {
     processVScroll() {
         if (!this.slider.config.ttb)
             return false;
+        
         const pages = this.slider.selector.children;
         let totalHeight = 0;
         for (let index = 0; index < pages.length; index++) {
-            if (Math.abs(this.slider.selector.scrollTop - totalHeight) < (pages[index].clientHeight * 0.6)) {
+            if (Math.abs(document.documentElement.scrollTop - totalHeight) < (pages[index].clientHeight * 0.6)) {
                 if (index != this.slider.currentSlide) {
                     this.slider.currentSlide = index;
                     this.interface.toggle(false);
