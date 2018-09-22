@@ -1,7 +1,41 @@
+import m from "mithril";
 import cdn from "../helpers/cdn";
+import { Promise } from "core-js";
 
 const HIGH_THRESHOLD = 5;
 const LOW_THRESHOLD = 3;
+
+const f = () => {
+    self.addEventListener('message', e => {
+        const src = e.data;
+        if(typeof(fetch) !== "undefined") {
+            fetch(src, { mode: 'cors' })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    self.postMessage({ src, url });
+                }).catch(err => {
+                    self.postMessage({ src, error: new String(err) });
+                });
+        } else {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", src, true);
+            xhr.responseType = "blob";
+            xhr.onloadend = () => {
+                if(xhr.status && xhr.status < 400) {
+                    const url = URL.createObjectURL(xhr.response);
+                    self.postMessage({ src, url });
+                } else {
+                    // todo new Error();
+                    const error = `Failed to load image ${src}, status ${xhr.status}`;
+                    self.postMessage({ src, error });
+                }
+            };
+            xhr.send(null);
+        }        
+    });
+};
+const worker =  new Worker(URL.createObjectURL(new Blob([`(${f})()`])));
 
 export default class LazyLoader {
     constructor(imageData, imageIndex) {
@@ -101,7 +135,7 @@ export default class LazyLoader {
         if(this.image) {
             if(this.loaded) {
                 this.image.src = this.preloader.src;
-                window.URL.revokeObjectURL(this.blob);
+                URL.revokeObjectURL(this.blob);
                 return;
             } else {
                 if(this.blob)
@@ -113,29 +147,66 @@ export default class LazyLoader {
         window.requestAnimationFrame(this.drawAsSoon.bind(this));
     }
 
+    lazyWorker(src) {
+        return new Promise((resolve, reject) => {
+            function handler(e) {
+                if (e.data.src === src) {
+                    worker.removeEventListener('message', handler);
+                    if (e.data.error) {
+                        reject(e.data.error);
+                    }
+                    resolve(e.data.url);
+                }
+            }
+            worker.addEventListener('message', handler);
+            worker.postMessage(src);
+        });
+    }
+
     prepare() {
         if (this.preloader)
             return;
         if (!this.loaded) {
             this.draw(__("Loading..."));
         }
-        this.preloader = document.createElement("img");
-        this.preloader.onload = () => {
-            if (!this.preloader)
-                return;
-            this.loaded = true;
-            this.drawAsSoon();
-        };
-        this.preloader.onerror = () => {
-            setTimeout(() => {
-                if(!this.loaded && this.preloader) {
-                    console.error("Error loading page " + this.original);
-                    this.blob = null;
-                    this.draw(__("Error!"));
-                }
-            }, 1000);
-        };
-        this.preloader.src = this.original;
+        if (typeof(Worker) === "undefined") {
+            this.preloader = document.createElement("img");
+            this.preloader.onload = () => {
+                if (!this.preloader)
+                    return;
+                this.loaded = true;
+                this.drawAsSoon();
+            };
+            this.preloader.onerror = () => {
+                setTimeout(() => {
+                    if(!this.loaded && this.preloader) {
+                        console.error("Error loading page " + this.original);
+                        this.blob = null;
+                        this.draw(__("Error!"));
+                    }
+                }, 1000);
+            };
+            this.preloader.src = this.original;
+        } else {
+            this.preloader = {
+                src: null
+            }
+            this.lazyWorker(this.original).then(img => {
+                if (!this.preloader)
+                    return;
+                this.preloader.src = img;
+                this.loaded = true;
+                this.drawAsSoon();
+            }).catch(err => {
+                setTimeout(() => {
+                    if(!this.loaded && this.preloader) {
+                        console.error(`Error fetching page ${this.original}\n${err}`);
+                        this.blob = null;
+                        this.draw(__("Error!"));
+                    }
+                }, 1000);
+            });
+        }
     }
 
     get preloaded() {
