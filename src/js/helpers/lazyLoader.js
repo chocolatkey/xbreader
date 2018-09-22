@@ -4,38 +4,91 @@ import { Promise } from "core-js";
 
 const HIGH_THRESHOLD = 5;
 const LOW_THRESHOLD = 3;
+const workerSupported = typeof(Worker) === "undefined" ? false : true;
 
 const f = () => {
+    //const useFetch = typeof(fetch) !== "undefined" ? true : false;
+    const useFetch = false;
+    let queued = [];
+    const locate = (src) => queued.map((o) => o.src).indexOf(src);
+    const isQueued = (src) => locate(src) !== -1;
+    const deqeue = (src) => {
+        const i = locate(src);
+        if (i != -1)
+            queued.splice(i, 1);
+    }
     self.addEventListener('message', e => {
-        const src = e.data;
-        if(typeof(fetch) !== "undefined") {
-            fetch(src, { mode: 'cors' })
-                .then(response => response.blob())
-                .then(blob => {
-                    const url = URL.createObjectURL(blob);
-                    self.postMessage({ src, url });
-                }).catch(err => {
-                    self.postMessage({ src, error: new String(err) });
-                });
-        } else {
-            const xhr = new XMLHttpRequest();
-            xhr.open("GET", src, true);
-            xhr.responseType = "blob";
-            xhr.onloadend = () => {
-                if(xhr.status && xhr.status < 400) {
-                    const url = URL.createObjectURL(xhr.response);
-                    self.postMessage({ src, url });
-                } else {
-                    // todo new Error();
-                    const error = `Failed to load image ${src}, status ${xhr.status}`;
-                    self.postMessage({ src, error });
+        const src = e.data.src;
+        let xhr;
+        switch (e.data.mode) {
+            case "FETCH":
+                if(isQueued(src)) // If already queued
+                    return; // Do nothing
+
+                /*
+                 * I'm not going to consider using fetch until
+                 * https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort
+                 * is more widely supported, because you have browser
+                 * 1. With fetch and AbortController support (bleeding edge)
+                 * 2. With fetch, but not AbortController
+                 * 3. With neither, in which case we implement XHR instead of using fetch
+                 * So why not just use XHR in all of them?
+                 * 
+                if(useFetch) { // If fetch is supported by the browser
+                    queued.push({src, xhr});
+                    fetch(src, { mode: 'cors' })
+                        .then(response => {
+                            if(!isQueued(src)) // Stop because canceled
+                                return null;
+                            return response.blob();
+                        })
+                        .then(blob => {
+                            if(!isQueued(src) || !blob) // Stop because canceled
+                                return;
+                            const url = URL.createObjectURL(blob);
+                            self.postMessage({ src, url });
+                            deqeue(src);
+                        }).catch(err => {
+                            self.postMessage({ src, error: new String(err) });
+                            deqeue(src);
+                        });
+                    return;
                 }
-            };
-            xhr.send(null);
-        }        
+                // Fall back to using XHR when fetch is not supported
+                */
+                xhr = new XMLHttpRequest();
+                queued.push({src, xhr});
+                xhr.open("GET", src, true);
+                xhr.responseType = "blob";
+                xhr.onloadend = () => {
+                    if(!isQueued(src)) // Stop because canceled
+                        return;
+                    if(xhr.status && xhr.status < 400) {
+                        const url = URL.createObjectURL(xhr.response);
+                        self.postMessage({ src, url });
+                    } else {
+                        // todo new Error();
+                        const error = `Failed to load image ${src}, status ${xhr.status}`;
+                        self.postMessage({ src, error });
+                    }
+                    deqeue(src);
+                };
+                xhr.send(null);
+                break;
+            case "CANCEL": // Cancel an item's loading
+                const item = queued[locate(src)];
+                if(!item)
+                    return;
+                if(item.xhr)
+                    item.xhr.abort();
+                deqeue(src);
+                break;
+        }
+        
+              
     });
 };
-const worker =  new Worker(URL.createObjectURL(new Blob([`(${f})()`])));
+const worker = new Worker(URL.createObjectURL(new Blob([`(${f})()`])));
 
 export default class LazyLoader {
     constructor(imageData, imageIndex) {
@@ -67,7 +120,10 @@ export default class LazyLoader {
 
         // If still loading image but moved away from it in the meantime
         } else if (this.preloader && !this.loaded) {
-            this.preloader.src = ""; // Cancels currently loading image
+            if(workerSupported)
+                worker.postMessage({src: this.original, mode: "CANCEL"});
+            else
+                this.preloader.src = ""; // Cancels currently loading image
             this.preloader = null; // Reset the preloader
         }
     }
@@ -83,16 +139,8 @@ export default class LazyLoader {
             });
         } else {
             let binStr = atob(this.canvas.toDataURL(type, quality).split(",")[1]),
-                len = binStr.length;
-            /*const hash = type + len;
-            if(hash == this.chash) {
-                console.log("ff");
-                return;
-            }
-            else
-                this.chash = hash;*/
-
-            let arr = new Uint8Array(len);
+                len = binStr.length,
+                arr = new Uint8Array(len);
 
             for (var i = 0; i < len; i++)
                 arr[i] = binStr.charCodeAt(i);
@@ -159,7 +207,7 @@ export default class LazyLoader {
                 }
             }
             worker.addEventListener('message', handler);
-            worker.postMessage(src);
+            worker.postMessage({src, mode: "FETCH"});
         });
     }
 
@@ -169,7 +217,7 @@ export default class LazyLoader {
         if (!this.loaded) {
             this.draw(__("Loading..."));
         }
-        if (typeof(Worker) === "undefined") {
+        if (!workerSupported) {
             this.preloader = document.createElement("img");
             this.preloader.onload = () => {
                 if (!this.preloader)
@@ -190,7 +238,7 @@ export default class LazyLoader {
         } else {
             this.preloader = {
                 src: null
-            }
+            };
             this.lazyWorker(this.original).then(img => {
                 if (!this.preloader)
                     return;
