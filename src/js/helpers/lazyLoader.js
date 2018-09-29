@@ -9,7 +9,7 @@ const workerSupported = typeof(Worker) === "undefined" ? false : true;
 
 const f = () => {
     //const useFetch = typeof(fetch) !== "undefined" ? true : false;
-    const useFetch = false;
+    //const useFetch = false;
     let queued = [];
     const locate = (src) => queued.map((o) => o.src).indexOf(src);
     const isQueued = (src) => locate(src) !== -1;
@@ -17,14 +17,14 @@ const f = () => {
         const i = locate(src);
         if (i != -1)
             queued.splice(i, 1);
-    }
-    self.addEventListener('message', e => {
+    };
+    self.addEventListener("message", e => {
         const src = e.data.src;
         let xhr;
         switch (e.data.mode) {
-            case "FETCH":
-                if(isQueued(src)) // If already queued
-                    return; // Do nothing
+        case "FETCH":
+            if(isQueued(src)) // If already queued
+                return; // Do nothing
 
                 /*
                  * I'm not going to consider using fetch until
@@ -57,33 +57,34 @@ const f = () => {
                 }
                 // Fall back to using XHR when fetch is not supported
                 */
-                xhr = new XMLHttpRequest();
-                queued.push({src, xhr});
-                xhr.open("GET", src, true);
-                xhr.responseType = "blob";
-                xhr.onloadend = () => {
-                    if(!isQueued(src)) // Stop because canceled
-                        return;
-                    if(xhr.status && xhr.status < 400) {
-                        const url = URL.createObjectURL(xhr.response);
-                        self.postMessage({ src, url });
-                    } else {
-                        // todo new Error();
-                        const error = `Failed to load image ${src}, status ${xhr.status}`;
-                        self.postMessage({ src, error });
-                    }
-                    deqeue(src);
-                };
-                xhr.send(null);
-                break;
-            case "CANCEL": // Cancel an item's loading
-                const item = queued[locate(src)];
-                if(!item)
+            xhr = new XMLHttpRequest();
+            queued.push({src, xhr});
+            xhr.open("GET", src, true);
+            xhr.responseType = "blob";
+            xhr.onloadend = () => {
+                if(!isQueued(src)) // Stop because canceled
                     return;
-                if(item.xhr)
-                    item.xhr.abort();
+                if(xhr.status && xhr.status < 400) {
+                    const url = URL.createObjectURL(xhr.response);
+                    self.postMessage({ src, url });
+                } else {
+                    // todo new Error();
+                    const error = `Failed to load image ${src}, status ${xhr.status}`;
+                    self.postMessage({ src, error });
+                }
                 deqeue(src);
-                break;
+            };
+            xhr.send(null);
+            break;
+        case "CANCEL": { // Cancel an item's loading
+            const item = queued[locate(src)];
+            if(!item)
+                return;
+            if(item.xhr)
+                item.xhr.abort();
+            deqeue(src);
+            break;
+        }
         }
         
               
@@ -183,8 +184,10 @@ export default class LazyLoader {
     drawAsSoon() {
         if(this.image) {
             if(this.loaded) {
-                this.image.src = this.preloader.src;
-                URL.revokeObjectURL(this.blob);
+                if(!workerSupported)
+                    this.image.src = this.preloader.src;
+                if(this.blob)
+                    URL.revokeObjectURL(this.blob);
                 return;
             } else {
                 if(this.blob)
@@ -200,14 +203,14 @@ export default class LazyLoader {
         return new Promise((resolve, reject) => {
             function handler(e) {
                 if (e.data.src === src) {
-                    worker.removeEventListener('message', handler);
+                    worker.removeEventListener("message", handler);
                     if (e.data.error) {
                         reject(e.data.error);
                     }
                     resolve(e.data.url);
                 }
             }
-            worker.addEventListener('message', handler);
+            worker.addEventListener("message", handler);
             worker.postMessage({src, mode: "FETCH"});
         });
     }
@@ -243,9 +246,8 @@ export default class LazyLoader {
             this.lazyWorker(this.original).then(img => {
                 if (!this.preloader)
                     return;
-                this.preloader.src = img;
                 this.loaded = true;
-                this.drawAsSoon();
+                this.image.src = img;
             }).catch(err => {
                 setTimeout(() => {
                     if(!this.loaded && this.preloader) {
