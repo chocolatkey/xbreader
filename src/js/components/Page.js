@@ -81,16 +81,18 @@ export default class Page {
                     this.itemHeight = MAX_FIT;
                     this.itemWidth = mFitWidth;
                 } else { // Maximum image width
-                    this.itemWidth = "auto";
-                    this.itemHeight = "auto";
-                    //this.itemWidth = docWidth;
-                    //this.itemHeight = docWidth / this.data.width * this.data.height;
+                    // this.itemWidth = "auto";
+                    // this.itemHeight = "auto";
+                    this.itemWidth = docWidth;
+                    this.itemHeight = docWidth / this.data.width * this.data.height;
                 }
             }
             itemAttrs.style = `height: ${this.parseDimension(this.itemHeight)}; width: ${this.parseDimension(this.itemWidth)}; margin: 0 auto;`;
             if(slider.single) {
-                if(!slider.config.ttb)
-                    itemAttrs.style += ` margin-top: ${this.marginTop}px;`;
+                if(slider.config.ttb)
+                    this.marginTop = vnode.attrs.index > 0 ? 10 : 0;
+                    
+                itemAttrs.style += ` margin-top: ${this.marginTop}px;`;
             } else {
                 if (this.float === "left")
                     this.marginLeft = (docWidth - this.itemWidth) / 2;
