@@ -58,7 +58,7 @@ export default class Interface {
         };
         if(publication.isTtb) {
             attrs.max = 100;
-            attrs.value = document.documentElement.scrollTop / document.documentElement.scrollHeight * 100;
+            attrs.value = (document.documentElement.scrollTop + document.body.scrollTop) / document.documentElement.scrollHeight * 100;
             attrs.step = "any";
         }
         return m("input.br-slider", attrs);
@@ -107,14 +107,6 @@ export default class Interface {
         const self = vnode.attrs.reader.interface;
         const slider = vnode.attrs.reader.slider;
         const publication = vnode.attrs.reader.publication;
-        let bClass = "default available"; // TODO when actually available
-        let fClass = "default available";
-        if (this.hoverBack) {
-            bClass += " hover";
-        }
-        if (this.hoverForward) {
-            fClass += " hover";
-        }
         slider.resolveSlidesNumber();
         const isPortrait = window.innerHeight > window.innerWidth ? true : false;
 
@@ -235,18 +227,6 @@ export default class Interface {
                     ])
                 ])
             ]),
-            m("div#bibi-arrow-back", {
-                title: "Previous",
-                onmouseover: () => this.hoverBack = true,
-                onmouseout: () => this.hoverBack = false,
-                class: bClass
-            }),
-            m("div#bibi-arrow-forward", {
-                title: "Next",
-                onmouseover: () => this.hoverForward = true,
-                onmouseout: () => this.hoverForward = false,
-                class: fClass
-            }),
             m("div#br-botbar.noselect", {
                 class: self.isHidden ? "hidden" : "shown"
             }, [

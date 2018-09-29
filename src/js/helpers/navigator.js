@@ -72,7 +72,7 @@ export default class Navigator {
 
     getPageString(slider) {
         if(this.ttb) {
-            return `${Math.floor(slider.selector.scrollTop / slider.selector.scrollHeight * 100)}%`;
+            return `${Math.floor((document.documentElement.scrollTop + document.body.scrollTop) / slider.selector.scrollHeight * 100)}%`;
         } else if (!slider.single) {
             let spreadString = "";
             const spread = this.spreads[Math.floor(slider.currentSlide / slider.perPage)];

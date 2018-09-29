@@ -312,8 +312,7 @@ export default class Slider {
             return;
         }
         if(this.single && !this.config.ttb)
-            //this.selector.scrollTo(this.selector.pageXOffset, 0);
-            document.documentElement.scrollBy(0, -9999); // Scroll back to top for next page
+            window.scrollTo(0, 0); // Scroll back to top for next page
 
 
         /*let offset = 0;
