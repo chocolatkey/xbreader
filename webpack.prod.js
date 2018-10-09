@@ -4,8 +4,8 @@ const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const I18nPlugin = require("i18n-webpack-plugin");
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CleanWebpackPlugin = require("clean-webpack-plugin");
 const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries"); // Will be unecessary in Webpack 5, apparently
 const webpack = require("webpack");
 const consts = require("./consts");
@@ -70,7 +70,7 @@ module.exports = Object.keys(languages).map((language) => {
             }]
         },
         plugins: [
-            new CleanWebpackPlugin(['dist/*.js', 'dist/*.css'], {
+            new CleanWebpackPlugin(["dist/*.js", "dist/*.css"], {
                 verbose: false
             }),
             new HtmlWebpackPlugin({
@@ -79,7 +79,7 @@ module.exports = Object.keys(languages).map((language) => {
                 minify: true,
                 filename: `index-${language}.html`,
                 favicon: "src/favicon.ico",
-                excludeChunks: ['xbreader']
+                excludeChunks: ["xbreader"]
             }),
             new I18nPlugin(languages[language]),
             new FixStyleOnlyEntriesPlugin(),

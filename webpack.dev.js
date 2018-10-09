@@ -2,8 +2,8 @@
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const I18nPlugin = require("i18n-webpack-plugin");
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CleanWebpackPlugin = require("clean-webpack-plugin");
 const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries"); // Will be unecessary in Webpack 5, apparently
 const webpack = require("webpack");
 const consts = require("./consts");
@@ -18,7 +18,7 @@ module.exports = {
         ],
         loader: [
             "./src/js/loader.js"
-        ],
+        ]
     },
     output: {
         path: path.resolve(__dirname, "./bin"),
