@@ -36,6 +36,15 @@ export default class Reader {
 
     static mergeSettings(config) {
         const settings = { // TODO
+            brand: { // TODO implement
+                name: null,
+                logo: null
+            },
+            hooks: { // TODO implement
+                onReady: () => {}, // When reader is ready
+                onPageChange: () => {}, // When page is changed
+                onLastPage: () => {}, // When trying to go further after the last page
+            },
             guideHidden: false,
             cdn: false,
             webpub: null,
@@ -170,7 +179,7 @@ export default class Reader {
     }
 
     oncreate(vnode) {
-        let manifestPointer = vnode.attrs.urn
+        let manifestPointer = vnode.attrs.urn;
         if(this.config.webpub)
             manifestPointer = this.config.webpub;
         else if (!manifestPointer) {
@@ -180,6 +189,7 @@ export default class Reader {
             return;
         }
         this.publication.smartLoad(manifestPointer).then(() => {
+            m.redraw();
             setTimeout(() => {
                 this.switchDirection(this.publication.direction);
                 this.binder = new Peripherals(this);

@@ -10,17 +10,17 @@ export default class Publication {
     }
 
     smartLoad(item) {
-        if (typeof item === 'string' || item instanceof String)
+        if (typeof item === "string" || item instanceof String)
             return this.loadFromPath(item + ".json");
         else
-            return this.loadFromData(item);
-        
+            return this.loadFromData(item);        
     }
 
     loadFromPath(manifestPath) {
         return m.request({
             method: "GET",
-            url: manifestPath
+            url: manifestPath,
+            background: true
         }).then((manifest) => {
             return this.loadFromData(manifest);
         }).catch(error => {
@@ -44,7 +44,7 @@ export default class Publication {
             } else {
                 reject(new Error("Manifest data empty!"));
             }
-        });
+        }, 100);
     }
 
     keysInObj(keys, obj) {

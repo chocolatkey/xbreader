@@ -49,10 +49,10 @@ export default {
             quality *= 0.98;
         switch (Platform.networkType()) {
         case 1: // Medium network
-            height = Math.min(item.height, RESOLUTION_MEDIUM);
+            height = Math.min(item.height, RESOLUTION_MEDIUM, height);
             break;
         case 2: // Slow network
-            height = Math.min(item.height, RESOLUTION_LOW);
+            height = Math.min(item.height, RESOLUTION_LOW, height);
             break;
         }
         return {
@@ -94,29 +94,28 @@ export default {
         let givenDimension = this.buildAwareSpec(item).height;
         // Help backend by only requesting fixed resolutions, since this function is replicated in NG's backend anyway
         if (givenDimension <= ((RESOLUTION_LOW + RESOLUTION_MEDIUM) / 2)) {
-            givenDimension = RESOLUTION_LOW
+            givenDimension = RESOLUTION_LOW;
         } else if (givenDimension <= ((RESOLUTION_MEDIUM + RESOLUTION_HIGH) / 2)) {
-            givenDimension = RESOLUTION_MEDIUM
+            givenDimension = RESOLUTION_MEDIUM;
         } else {
-            givenDimension = RESOLUTION_HIGH
+            givenDimension = RESOLUTION_HIGH;
         }
 
         return `${match[1]}${givenDimension}.jpg`;
-        return item.href;
     },
     image: function(item, index) { // TODO preserve original query params
         if(!item) return null;
         if(!this.isApplicableHost(item.href)) return item.href;
         const whatcdn = window.xbconfig.cdn; // TODO not the global
         switch (whatcdn) {
-            case "photon":
-                return this.photon(item, index);
-            case "google":
-                return this.google(item, index);
-            case "nebelgrind":
-                return this.nebelgrind(item, index);
-            default:
-                return item.href;
+        case "photon":
+            return this.photon(item, index);
+        case "google":
+            return this.google(item, index);
+        case "nebelgrind":
+            return this.nebelgrind(item, index);
+        default:
+            return item.href;
         }
     }
 };
