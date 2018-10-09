@@ -60,6 +60,9 @@ const f = () => {
             xhr = new XMLHttpRequest();
             queued.push({src, xhr});
             xhr.open("GET", src, true);
+            // xhr.setRequestHeader("Content-Type", "image/*"); would preflight request
+            if(e.data.modernImage)
+                xhr.setRequestHeader("Accept", "image/webp,image/*,*/*;q=0.8"); // Support WebP where available
             xhr.responseType = "blob";
             xhr.onloadend = () => {
                 if(!isQueued(src)) // Stop because canceled
@@ -91,6 +94,18 @@ const f = () => {
     });
 };
 const worker = new Worker(URL.createObjectURL(new Blob([`(${f})()`])));
+
+// https://stackoverflow.com/a/27232658/2052267
+const WebPChecker = () => {
+    const elem = document.createElement("canvas");
+    if (elem.getContext && elem.getContext("2d"))
+        // was able or not to get WebP representation
+        return elem.toDataURL("image/webp").indexOf("data:image/webp") == 0;
+    else
+        // very old browser like IE 8, canvas not supported
+        return false;
+};
+const canWebP = WebPChecker();
 
 export default class LazyLoader {
     constructor(imageData, imageIndex) {
@@ -211,7 +226,7 @@ export default class LazyLoader {
                 }
             }
             worker.addEventListener("message", handler);
-            worker.postMessage({src, mode: "FETCH"});
+            worker.postMessage({src, mode: "FETCH", modernImage: canWebP});
         });
     }
 
