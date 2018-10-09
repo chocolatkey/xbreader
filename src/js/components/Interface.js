@@ -4,7 +4,6 @@ import Logo from "../partials/Logo";
 export default class Interface {
     oninit() {
         this.isHidden = true; // == vnode.state.hidden
-        this.hello = "world";
         this.menuShown = false;
         console.log("Interface initialized");
     }
@@ -105,6 +104,8 @@ export default class Interface {
 
     view(vnode) {
         const self = vnode.attrs.reader.interface;
+        const brand = vnode.attrs.reader.config.brand;
+        const tabConfig = vnode.attrs.reader.config.tabs;
         const slider = vnode.attrs.reader.slider;
         const publication = vnode.attrs.reader.publication;
         slider.resolveSlidesNumber();
@@ -143,6 +144,17 @@ export default class Interface {
                 })
             ]);
 
+        const tabs = [];
+        tabConfig.forEach(tab => {
+            tabs.push(m("a.br-tab", {
+                title: tab.title,
+                href: tab.href
+            }, [
+                m(`i.br-i-${tab.icon}`, {
+                    "aria-hidden": "true"
+                })
+            ]));
+        });
         return [
             m("div.noselect#br-topbar", {
                 class: self.isHidden ? "hidden" : "shown"
@@ -153,7 +165,7 @@ export default class Interface {
                             title: "Menu"
                         }),*/
                         m("a.logo[href=/]", [
-                            m(Logo)
+                            m(Logo, brand)
                         ])
                     ]),
                     m("section.br-toolbar__tsection", [
@@ -197,32 +209,7 @@ export default class Interface {
                         class: self.menuShown ? "shown" : "gone"
                     }, [
                         m("div", [
-                            m("nav.br-tab-bar", [
-                                m("a.br-tab", {
-                                    title: "Latest",
-                                    href: "/r/latest"
-                                }, [
-                                    m("i.br-i-latest", {
-                                        "aria-hidden": "true"
-                                    })
-                                ]),
-                                m("a.br-tab", {
-                                    title: "Directory",
-                                    href: "/r/directory"
-                                }, [
-                                    m("i.br-i-list", {
-                                        "aria-hidden": "true"
-                                    })
-                                ]),
-                                m("a.br-tab", {
-                                    title: "Search",
-                                    href: "/r/search"
-                                }, [
-                                    m("i.br-i-search", {
-                                        "aria-hidden": "true"
-                                    })
-                                ])
-                            ])
+                            m("nav.br-tab-bar", tabs)
                         ])
                     ])
                 ])

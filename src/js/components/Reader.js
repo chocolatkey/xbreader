@@ -40,6 +40,7 @@ export default class Reader {
                 name: null,
                 logo: null
             },
+            tabs: [], // Tabs on right side of top bar
             hooks: { // TODO implement
                 onReady: () => {}, // When reader is ready
                 onPageChange: () => {}, // When page is changed
