@@ -79,7 +79,7 @@ div#br-topbar {
             text-decoration: underline;
         }
 
-        & option {
+        & option, & optgroup {
             color: $secondaryForeground;
             background: $secondaryBackground;
             -o-text-overflow: ellipsis;

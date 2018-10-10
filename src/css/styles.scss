@@ -118,6 +118,27 @@ html.slider-opened div#bibi-slider {
 	text-align: center;
 }
 
+.br-loader__container {
+	position: absolute;
+	top: 42%;
+    left: 0;
+    right: 0;
+
+    & #br-loader__message {
+        position: inherit;
+        width: 100%;
+        margin: 0 auto;
+        font-size: 26px;
+        color: $tertiaryForeground;
+        text-align: center;
+        user-select: text;
+    }
+
+    & .spinner {
+        margin: 50px auto;
+    }
+}
+
 div#br-main {
 	-webkit-overflow-scrolling: touch;
 	//overflow: hidden;

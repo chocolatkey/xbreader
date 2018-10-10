@@ -21,6 +21,15 @@ $w: calc(100% - 160px);
     //margin-top: -0.25em;
     margin-left: .05em;
     cursor: pointer;
+
+    &:hover {
+        border: solid 1px $hoverColor;
+    }
+
+    &:active {
+        box-shadow: 1px 1px 3px 0 rgba(0,0,0,.8);
+        border: solid 1px $activeColor;
+    }
 }
 
 
@@ -58,13 +67,6 @@ $w: calc(100% - 160px);
     &::-webkit-slider-thumb {
         @include thumb();
     }
-    &::-webkit-slider-thumb:hover {
-        border: solid 1px $hoverColor;
-    }
-    &::-webkit-slider-thumb:active {
-        box-shadow: 1px 1px 3px 0 rgba(0,0,0,.8);
-        border: solid 1px $activeColor;
-    } // TODO for moz and ms too
     &::-moz-range-thumb {
         @include thumb();
     }
