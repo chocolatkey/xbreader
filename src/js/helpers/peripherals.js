@@ -670,6 +670,7 @@ export default class Peripherals {
                 if (index != this.slider.currentSlide) {
                     this.slider.currentSlide = index;
                     this.interface.toggle(false);
+                    this.reader.guideHidden = true;
                     m.redraw();
                 }
                 return true;
@@ -688,8 +689,11 @@ export default class Peripherals {
         } else if (!this.slider.config.ttb && !this.slider.single) { // Vertical scrolling for horizontal view, only in spread view though
             CW.Distance = (Eve.deltaY < 0 ? -1 : 1);
             CW.Delta = Math.abs(Eve.deltaY);
-        } else {
-            if(this.interface.toggle(false) && !this.slider.config.ttb) m.redraw();
+        } else { // Single page scroll instantly hides interface
+            if(!this.interface.isHidden && !this.slider.config.ttb) {
+                this.interface.toggle(false);
+                m.redraw();
+            }
             return;
         }
         if (!PWs[PWl - 1]) {
