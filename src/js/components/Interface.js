@@ -2,7 +2,9 @@ import m from "mithril";
 import Logo from "../partials/Logo";
 
 export default class Interface {
-    oninit() {
+    oninit(vnode) {
+        // Wonderful...
+        vnode.attrs.reader.interface.toggleCallback = vnode.attrs.reader.config.onToggleInterface;
         this.isHidden = true; // == vnode.state.hidden
         this.menuShown = false;
         console.log("Interface initialized");
@@ -28,6 +30,7 @@ export default class Interface {
         }
         if(this.isHidden)
             this.toggleMenu(false);
+        this.toggleCallback(!this.isHidden);
         return true;
     }
 
@@ -84,21 +87,33 @@ export default class Interface {
                 items.push(pageAmountIndicator);
         }
 
-        items.unshift([
-            m("span.br-slider__lgo", { // Leftmost slider control
-                title: publication.rtl ? __("Go to the next chapter") : __("Go to the previous chapter")
-            }, m("a", {
-                href: "#"
-            }, publication.rtl ? __("Next") : __("Prev")))
-        ]);
-        items.push([ // Rightmost slider control
-            m("span.br-slider__rgo", {
-                title: publication.rtl ? __("Go to the previous chapter") : __("Go to the next chapter")
-            }, m("a", {
-                href: "#"
-            }, publication.rtl ? __("Prev") : __("Next")))
-        ]);
-
+        const sseries = publication.pmetadata.xbr.series;
+        if(sseries && sseries.next) { // Has a next chapter
+            const nextLink = [
+                m(`span.br-slider__${publication.rtl ? "lgo" : "rgo"}`, { // Leftmost slider control
+                    title: __("Go to the next chapter")
+                }, m(`a[href=/${sseries.next.uuid}]`, {
+                    oncreate: m.route.link({replace: true})
+                }, __("Next")))
+            ];
+            if(publication.rtl)
+                items.unshift(nextLink);
+            else
+                items.push(nextLink);
+        }
+        if(sseries && sseries.prev) {
+            const prevLink = [ // Has a previous chapter
+                m(`span.br-slider__${publication.rtl ? "rgo" : "lgo"}`, {
+                    title: __("Go to the previous chapter")
+                }, m(`a[href=/${sseries.next.uuid}]`, {
+                    oncreate: m.route.link({replace: true})
+                }, __("Prev")))
+            ];
+            if(publication.rtl)
+                items.push(prevLink);
+            else
+                items.unshift(prevLink);
+        }
         return m("div.br-botbar-container", items);
     }
 
@@ -145,6 +160,8 @@ export default class Interface {
             ]);
 
         const tabs = [];
+        const tabBar = [];
+        const tabToggle = [];
         tabConfig.forEach(tab => {
             tabs.push(m("a.br-tab", {
                 title: tab.title,
@@ -155,15 +172,25 @@ export default class Interface {
                 })
             ]));
         });
+        if(tabs.length > 0) { // Tabs exist, show tab functionality
+            tabToggle.push(m("button.br-tab.br-cmenu__toggle", {
+                title: __("Menu"),
+                onclick: () => {
+                    self.toggleMenu();
+                }
+            }, [
+                m("i.br-i-apps", {
+                    "aria-hidden": "true"
+                })
+            ]));
+            tabBar.push(m("nav.br-tab-bar", tabs));
+        }
         return [
             m("div.noselect#br-topbar", {
                 class: self.isHidden ? "hidden" : "shown"
             }, [
                 m("div.br-topbar__row", [
                     m("section.br-toolbar__section.br-toolbar__section--align-start", [
-                        /*m("a.br-i-menu.br-topbar__icon.menu-toggle[href=#]", {
-                            title: "Menu"
-                        }),*/
                         m("a.logo[href=/]", [
                             m(Logo, brand)
                         ])
@@ -174,43 +201,17 @@ export default class Interface {
                             title: __("Series")
                         }, publication.series.name),
                         m("span.spacer", "›"),
-                        /*m("a#br-chapter", {
-                            href: "#", // TODO
-                            title: "Chapter selection"
-                        }, publication.pmetadata.title),*/
-                        m("select#br-chapter", {
-                            title: __("Chapter selection")
-                        }, [
-                            // TODO options loader
-                            m("option", {
-                                value: "b38fc336-531d-4eff-be25-311d21bf2902",
-                                selected: "",
-                            }, publication.pmetadata.title),
-                            m("option", __("Loading...")),
-                        ])
+                        vnode.attrs.reader.series.selector
                     ]),
                     m("section.br-toolbar__section.br-toolbar__section--align-end.dhide", [
                         m("div", [
-                            m("nav.br-tab-bar", [
-                                m("button.br-tab.br-cmenu__toggle", {
-                                    title: __("Menu"),
-                                    onclick: () => {
-                                        self.toggleMenu();
-                                    }
-                                }, [
-                                    m("i.br-i-apps", {
-                                        "aria-hidden": "true"
-                                    })
-                                ])
-                            ])
+                            m("nav.br-tab-bar", tabToggle)
                         ])
                     ]),
                     m("section.br-toolbar__section.br-toolbar__section--align-end.br-cmenu", {
                         class: self.menuShown ? "shown" : "gone"
                     }, [
-                        m("div", [
-                            m("nav.br-tab-bar", tabs)
-                        ])
+                        m("div", tabBar)
                     ])
                 ])
             ]),

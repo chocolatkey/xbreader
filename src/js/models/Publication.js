@@ -3,17 +3,35 @@ import Navigator from "../helpers/navigator";
 
 export default class Publication {
     constructor() {
-        this.metadata = {};
+        this.metadata = {
+            xbr: {} // Special attributes for internal use only, not part of WebPub
+        };
         this.spine = [];
         this.links = [];
         this.ready = false;
     }
 
+    setSpecial(attr, val) {
+        this.metadata.xbr[attr] = val;
+    }
+
     smartLoad(item) {
-        if (typeof item === "string" || item instanceof String)
-            return this.loadFromPath(item + ".json");
+        if(typeof item === "function" || item instanceof Function) // Is a function
+            return this.loadFromData(item());
+        if(!!item && (typeof item === "object" || typeof item === "function") && typeof item.then === "function") { // Is a successful Promise
+            return item.then(data => this.loadFromData(data)).catch(error => { throw error; });
+        } if (typeof item === "string" || item instanceof String) // Is a string (URL we hope)
+            return this.loadFromPath(item);
         else
-            return this.loadFromData(item);        
+            try { // We can't tell if the item is a rejected promise, so we try and catch it, and if that fails, assume it's an object
+                return item.catch((err) =>
+                    new Promise((_, reject) => {
+                        reject(err);
+                    })
+                );
+            } catch (error) {
+                return this.loadFromData(item); // Object or other
+            }
     }
 
     loadFromPath(manifestPath) {
@@ -23,8 +41,8 @@ export default class Publication {
             background: true
         }).then((manifest) => {
             return this.loadFromData(manifest);
-        }).catch(error => {
-            throw error;
+        }).catch(() => {
+            throw __("Failed loading manifest");
         });
     }
 
@@ -32,17 +50,21 @@ export default class Publication {
         return new Promise((resolve, reject) => {
             if(manifestData){
                 if(!this.isValidManifest(manifestData)) {
-                    throw new Error("Invalid WebPub manifest!");
+                    throw __("Invalid WebPub manifest");
                 }
+                const specialAttrs = this.metadata.xbr;
                 this.metadata = manifestData.metadata;
-                this.spine = manifestData.readingOrder; // Legacy name
+                for (const attrname in specialAttrs) { // Merge new and old specials
+                    this.metadata.xbr[attrname] = specialAttrs[attrname];
+                }
+                this.spine = manifestData.readingOrder;
                 this.links = manifestData.links;
                 console.log("Publication loaded: " + this.metadata.title);
                 this.navi = new Navigator(this);
                 this.ready = true;
                 resolve();
             } else {
-                reject(new Error("Manifest data empty!"));
+                reject(__("Manifest data empty"));
             }
         }, 100);
     }

@@ -6,6 +6,7 @@ import sML from "../helpers/sMLstub";
 import Page from "./Page";
 import Interface from "./Interface";
 import Platform from "../helpers/platform";
+import Series from "../models/Series";
 
 export default class Reader {
     constructor(config) {
@@ -13,7 +14,8 @@ export default class Reader {
         this.guideHidden = this.config.guideHidden;
         this.r = Math.random();
         this.publication = new Publication();
-        this.interface = new Interface(this);
+        this.series = null;
+        this.interface = new Interface();
         if (sML.Mobile)
             this.mobile = true;
         else
@@ -29,26 +31,33 @@ export default class Reader {
         this.direction = "auto"; // page-progression-direction
         this.spread = true;
         this.hint = "";
+
+        this.loadingStatus = __("Initializing...");
+        this.loadingFailed = false;
+
+
         window.addEventListener("resize", this.resizeHandler);
         window.addEventListener("orientationchange", this.resizeHandler);
         Platform.checkRequestAnimationFrame();
     }
 
     static mergeSettings(config) {
-        const settings = { // TODO
-            brand: { // TODO implement
+        const settings = {
+            brand: {
                 name: null,
                 logo: null
             },
             tabs: [], // Tabs on right side of top bar
-            hooks: { // TODO implement
-                onReady: () => {}, // When reader is ready
-                onPageChange: () => {}, // When page is changed
-                onLastPage: () => {}, // When trying to go further after the last page
-            },
-            guideHidden: false,
-            cdn: false,
-            webpub: null,
+            guideHidden: false, // Skip showing the reading direction guide
+            cdn: false, // What CDN to use. False = no CDN
+            webpub: null, // WebPub Object to pass directly and load
+            series: [], // Volume/Chapter data
+            // Callback/Hooks
+            loader: () => {}, // Custom loader for the webpub. Can return a URL, WebPub Object or Promise
+            onReady: () => {}, // When reader is ready
+            onPageChange: () => {}, // When page is changed
+            onLastPage: () => {}, // When trying to go further after the last page
+            onToggleInterface: () => {}, // When interface is shown/hidden
         };
 
         for (const attrname in config) {
@@ -56,6 +65,15 @@ export default class Reader {
         }
 
         return settings;
+    }
+
+    /**
+     * To update the message shown during loading
+     * @param {string} message 
+     */
+    updateStatus(message) {
+        this.loadingStatus = message;
+        m.redraw();
     }
 
     resizeHandler() {
@@ -126,19 +144,19 @@ export default class Reader {
             this.guideHidden = true;
             m.redraw();
         }, 2000);
-        this.hint = this.mobile ? "Swipe or tap " : "Navigate ";
+        this.hint = this.mobile ? __("Swipe or tap ") : __("Navigate ");
         switch (direction) {
         case "ltr":
             this.direction = "ltr"; // Left to right
-            this.hint = this.hint + "left-to-right";
+            this.hint = this.hint + __("left-to-right");
             break;
         case "rtl":
             this.direction = "rtl"; // Right to left
-            this.hint = this.hint + "right-to-left";
+            this.hint = this.hint + __("right-to-left");
             break;
         case "ttb":
             this.direction = "ttb"; // Top to bottom
-            this.hint = "Scroll down";
+            this.hint = __("Scroll down");
             if(!this.slider) {
                 // TTB-only publication!
                 console.log("TTB lock");
@@ -158,7 +176,7 @@ export default class Reader {
             });
             return true;
         default:
-            this.hint = "Unknown flow!";
+            this.hint = __("Unknown flow!");
             console.errror("Invalid flow direction: " + direction);
             return false;
         }
@@ -180,18 +198,20 @@ export default class Reader {
     }
 
     oncreate(vnode) {
-        let manifestPointer = vnode.attrs.urn;
-        if(this.config.webpub)
-            manifestPointer = this.config.webpub;
+        let manifestPointer = this.config.loader(vnode.attrs.cid);
+        if(!manifestPointer)
+            manifestPointer = vnode.attrs.cid + ".json";
         else if (!manifestPointer) {
-            if(__DEV__)
-                alert("No item specified!") && console.error("No item specified!");
-            m.route.set("/error/:code/:message", { code: 9400, message: "No item specified" });
+            console.warning("No item specified");
+            m.route.set("/error/:code/:message", { code: 9400, message: __("No item specified") });
             return;
         }
+        this.updateStatus(__("Fetching info..."));
         this.publication.smartLoad(manifestPointer).then(() => {
+            this.series = new Series(this.publication, this.config.series);
             m.redraw();
             setTimeout(() => {
+                this.series.setRelations();
                 this.switchDirection(this.publication.direction);
                 this.binder = new Peripherals(this);
                 m.redraw();
@@ -199,19 +219,22 @@ export default class Reader {
                     this.interface.toggle(false);
                     m.redraw();
                 }, 1500);
+                this.config.onReady(this);
             }, 0);
         }).catch(error => {
             console.error(error);
-            if(__DEV__)
-                alert(error) && console.error(error.stack);
-            m.route.set("/error/:code/:message", { code: 9500, message: "Couldn't load publication" });
+            m.route.set("/error/:code/:message", { code: 9500, message: new String(error) });
             return;
         });
         console.log("Reader component created");
     }
 
     view(vnode) {
-        
+        if(!(vnode.state.publication && vnode.state.publication.ready))
+            return m("div.br-loader__container", [
+                m("div.spinner#br-loader__spinner"),
+                m("span#br-loader__message", vnode.state.loadingStatus)
+            ]);
         // Additional
         let bookStyle = {
             //overflow: vnode.state.slider ? (vnode.state.slider.config.ttb ? "auto" : "hidden") : "hidden",
@@ -258,7 +281,7 @@ export default class Reader {
                         e.preventDefault();
                     }
                 }, vnode.state.publication.spine.map((page, index) => {
-                    let items = [];
+                    const items = [];
                     /*if (!index) // First push a blank
                         items.push(m(Page, {
                             data: page,
