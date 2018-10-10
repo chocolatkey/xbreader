@@ -10,10 +10,6 @@ const errorMappings = {
 };
 
 export default class Error {
-    constructor(config) {
-        
-    }
-
     oninit(vnode) {
         if(vnode.attrs.message)
             this.errorMessage = vnode.attrs.message;

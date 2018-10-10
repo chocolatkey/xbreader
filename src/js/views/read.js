@@ -4,29 +4,27 @@ import Reader from "../components/Reader";
 
 export default class Read {
     constructor(config) {
-        this.urn = null;
-        this.reader = new Reader(config);
+        this.config = config;
+        this.cid = null; // Content ID
+        this.reader = null;
     }
 
     oninit(vnode) { // Welcome
+        this.reader = new Reader(this.config);
         if(vnode.attrs.id) {
-            this.urn = vnode.attrs.id;
-            const uuidV4Regex = /^[A-F\d]{8}-[A-F\d]{4}-4[A-F\d]{3}-[89AB][A-F\d]{3}-[A-F\d]{12}$/i;
-            if(!uuidV4Regex.test(this.urn)) {
+            this.cid = vnode.attrs.id;
+            const xRegex = /^[@-Za-z(-;=\\_!]+$/i;
+            if(!xRegex.test(this.cid)) {
                 console.error("Invalid content ID");
                 m.route.set("/error/:code/:message", { code: 400, message: "Invalid content ID" }, { replace: true });
-                this.urn = null;
+                this.cid = null;
             }
         }
     }
 
-    oncreate() { // Initialize 
-
-    }
-
-    view() {
+    view(vnode) {
         return [
-            m(this.reader, {urn: this.urn}),
+            m(this.reader, {cid: vnode.attrs.id}),
         ];
     }
 }
