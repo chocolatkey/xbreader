@@ -668,10 +668,13 @@ export default class Peripherals {
         for (let index = 0; index < pages.length; index++) {
             if (Math.abs(document.documentElement.scrollTop + document.body.scrollTop - totalHeight) < (pages[index].clientHeight * 0.6)) {
                 if (index != this.slider.currentSlide) {
+                    if(!this.reader.binder) // before ready
+                        return;
                     this.slider.currentSlide = index;
                     this.interface.toggle(false);
                     this.reader.guideHidden = true;
                     m.redraw();
+                    this.slider.config.onChange.call(this);
                 }
                 return true;
             }

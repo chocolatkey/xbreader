@@ -291,6 +291,8 @@ export default class Slider {
     goTo(index, callback) {
         if (this.innerElements.length <= this.perPage)
             return;
+        if (index % 2 && !this.single) // Prevent getting out of track
+            index++;
         const beforeChange = this.currentSlide;
         this.currentSlide = Math.min(Math.max(index, 0), this.length - 1);
         if (beforeChange !== this.currentSlide) {

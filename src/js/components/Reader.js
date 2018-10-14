@@ -51,9 +51,10 @@ export default class Reader {
             guideHidden: false, // Skip showing the reading direction guide
             cdn: false, // What CDN to use. False = no CDN
             webpub: null, // WebPub Object to pass directly and load
-            series: [], // Volume/Chapter data
+            series: null, // Volume/Chapter data
             // Callback/Hooks
             loader: () => {}, // Custom loader for the webpub. Can return a URL, WebPub Object or Promise
+            onBeforeReady: () => {}, // Right before final preparations are carried out
             onReady: () => {}, // When reader is ready
             onPageChange: () => {}, // When page is changed
             onLastPage: () => {}, // When trying to go further after the last page
@@ -91,9 +92,11 @@ export default class Reader {
             duration: 200,
             easing: "ease-out",
             onChange: () => {
-                this.guideHidden = true;
+                if(this.binder)
+                    this.guideHidden = true;
                 this.zoomer.scale = 1;
                 m.redraw();
+                this.config.onPageChange(this.slider.currentSlide + (this.slider.single ? 1 : 0), this.direction, !this.slider.single);
             },
             onInit: () => {
                 this.zoomer = {
@@ -213,6 +216,7 @@ export default class Reader {
             setTimeout(() => {
                 this.series.setRelations();
                 this.switchDirection(this.publication.direction);
+                this.config.onBeforeReady(this);
                 this.binder = new Peripherals(this);
                 m.redraw();
                 setTimeout(() => {
@@ -222,8 +226,7 @@ export default class Reader {
                 this.config.onReady(this);
             }, 0);
         }).catch(error => {
-            console.error(error);
-            m.route.set("/error/:code/:message", { code: 9500, message: new String(error) });
+            m.route.set("/error/:code", { code: error.export() });
             return;
         });
         console.log("Reader component created");
@@ -307,7 +310,6 @@ export default class Reader {
             rend.push(m(this.interface, {
                 reader: this
             }));
-        //console.log("rerendered");
         return rend;
     }
 }

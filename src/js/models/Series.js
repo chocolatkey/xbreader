@@ -3,7 +3,7 @@ import m from "mithril";
 export default class Series {
     constructor(publication, series) {
         this.publication = publication;
-        this.volumes = series ? series : (publication.metadata.xbr.volumes ? publication.metadata.xbr.volumes : []);
+        this.volumes = series ? series : (publication.pmetadata.xbr.volumes ? publication.pmetadata.xbr.volumes : []);
 
         this.chapters = this.buildChapterList();
 

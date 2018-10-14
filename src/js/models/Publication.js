@@ -1,5 +1,6 @@
 import m from "mithril";
 import Navigator from "../helpers/navigator";
+import { xbError } from "../helpers/errors";
 
 export default class Publication {
     constructor() {
@@ -42,7 +43,7 @@ export default class Publication {
         }).then((manifest) => {
             return this.loadFromData(manifest);
         }).catch(() => {
-            throw __("Failed loading manifest");
+            throw new xbError(9400, __("Failed loading manifest"));
         });
     }
 
@@ -50,10 +51,12 @@ export default class Publication {
         return new Promise((resolve, reject) => {
             if(manifestData){
                 if(!this.isValidManifest(manifestData)) {
-                    throw __("Invalid WebPub manifest");
+                    throw new xbError(9400, __("Invalid WebPub manifest"));
                 }
                 const specialAttrs = this.metadata.xbr;
                 this.metadata = manifestData.metadata;
+                if(!this.metadata.xbr)
+                    this.metadata.xbr = {};
                 for (const attrname in specialAttrs) { // Merge new and old specials
                     this.metadata.xbr[attrname] = specialAttrs[attrname];
                 }
@@ -64,7 +67,7 @@ export default class Publication {
                 this.ready = true;
                 resolve();
             } else {
-                reject(__("Manifest data empty"));
+                reject(new xbError(9400, __("Manifest data empty")));
             }
         }, 100);
     }

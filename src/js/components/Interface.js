@@ -92,8 +92,10 @@ export default class Interface {
             const nextLink = [
                 m(`span.br-slider__${publication.rtl ? "lgo" : "rgo"}`, { // Leftmost slider control
                     title: __("Go to the next chapter")
-                }, m(`a[href=/${sseries.next.uuid}]`, {
-                    oncreate: m.route.link({replace: true})
+                }, m("a", {
+                    href: "/" + sseries.next.uuid,
+                    oncreate: m.route.link,
+                    onupdate: m.route.link
                 }, __("Next")))
             ];
             if(publication.rtl)
@@ -105,8 +107,10 @@ export default class Interface {
             const prevLink = [ // Has a previous chapter
                 m(`span.br-slider__${publication.rtl ? "rgo" : "lgo"}`, {
                     title: __("Go to the previous chapter")
-                }, m(`a[href=/${sseries.next.uuid}]`, {
-                    oncreate: m.route.link({replace: true})
+                }, m("a", {
+                    href: "/" + sseries.prev.uuid,
+                    oncreate: m.route.link,
+                    onupdate: m.route.link
                 }, __("Prev")))
             ];
             if(publication.rtl)
