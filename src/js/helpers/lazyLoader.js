@@ -1,99 +1,102 @@
-import m from "mithril";
 import cdn from "../helpers/cdn";
 import { Promise } from "core-js";
 
 const HIGH_THRESHOLD = 5;
 const LOW_THRESHOLD = 3;
 const workerSupported = typeof(Worker) === "undefined" ? false : true;
-// TODO if worker not supported don't make below objects
 
-const f = () => {
-    //const useFetch = typeof(fetch) !== "undefined" ? true : false;
-    //const useFetch = false;
-    let queued = [];
-    const locate = (src) => queued.map((o) => o.src).indexOf(src);
-    const isQueued = (src) => locate(src) !== -1;
-    const deqeue = (src) => {
-        const i = locate(src);
-        if (i != -1)
-            queued.splice(i, 1);
-    };
-    self.addEventListener("message", e => {
-        const src = e.data.src;
-        let xhr;
-        switch (e.data.mode) {
-        case "FETCH":
-            if(isQueued(src)) // If already queued
-                return; // Do nothing
-
-                /*
-                 * I'm not going to consider using fetch until
-                 * https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort
-                 * is more widely supported, because you have browser
-                 * 1. With fetch and AbortController support (bleeding edge)
-                 * 2. With fetch, but not AbortController
-                 * 3. With neither, in which case we implement XHR instead of using fetch
-                 * So why not just use XHR in all of them?
-                 * 
-                if(useFetch) { // If fetch is supported by the browser
-                    queued.push({src, xhr});
-                    fetch(src, { mode: 'cors' })
-                        .then(response => {
-                            if(!isQueued(src)) // Stop because canceled
-                                return null;
-                            return response.blob();
-                        })
-                        .then(blob => {
-                            if(!isQueued(src) || !blob) // Stop because canceled
-                                return;
-                            const url = URL.createObjectURL(blob);
-                            self.postMessage({ src, url });
-                            deqeue(src);
-                        }).catch(err => {
-                            self.postMessage({ src, error: new String(err) });
-                            deqeue(src);
-                        });
+let f, worker;
+if(workerSupported) {
+    f = () => {
+        //const useFetch = typeof(fetch) !== "undefined" ? true : false;
+        //const useFetch = false;
+        let queued = [];
+        const locate = (src) => queued.map((o) => o.src).indexOf(src);
+        const isQueued = (src) => locate(src) !== -1;
+        const deqeue = (src) => {
+            const i = locate(src);
+            if (i != -1)
+                queued.splice(i, 1);
+        };
+        self.addEventListener("message", e => {
+            const src = e.data.src;
+            let xhr;
+            switch (e.data.mode) {
+            case "FETCH":
+                if(isQueued(src)) // If already queued
+                    return; // Do nothing
+    
+                    /*
+                     * I'm not going to consider using fetch until
+                     * https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort
+                     * is more widely supported, because you have browsers
+                     * 1. With fetch and AbortController support (bleeding edge)
+                     * 2. With fetch, but not AbortController
+                     * 3. With neither, in which case we implement XHR instead of using fetch
+                     * So why not just use XHR in all of them?
+                     * 
+                    if(useFetch) { // If fetch is supported by the browser
+                        queued.push({src, xhr});
+                        fetch(src, { mode: 'cors' })
+                            .then(response => {
+                                if(!isQueued(src)) // Stop because canceled
+                                    return null;
+                                return response.blob();
+                            })
+                            .then(blob => {
+                                if(!isQueued(src) || !blob) // Stop because canceled
+                                    return;
+                                const url = URL.createObjectURL(blob);
+                                self.postMessage({ src, url });
+                                deqeue(src);
+                            }).catch(err => {
+                                self.postMessage({ src, error: new String(err) });
+                                deqeue(src);
+                            });
+                        return;
+                    }
+                    // Fall back to using XHR when fetch is not supported
+                    */
+                xhr = new XMLHttpRequest();
+                queued.push({src, xhr});
+                xhr.open("GET", src, true);
+                // xhr.setRequestHeader("Content-Type", "image/*"); would preflight request
+                if(e.data.modernImage)
+                    xhr.setRequestHeader("Accept", "image/webp,image/*,*/*;q=0.8"); // Support WebP where available
+                xhr.responseType = "blob";
+                xhr.onloadend = () => {
+                    if(!isQueued(src)) // Stop because canceled
+                        return;
+                    if(xhr.status && xhr.status < 400) {
+                        const url = URL.createObjectURL(xhr.response);
+                        self.postMessage({ src, url });
+                    } else {
+                        // todo new Error();
+                        const error = `Failed to load image ${src}, status ${xhr.status}`;
+                        self.postMessage({ src, error });
+                    }
+                    deqeue(src);
+                };
+                xhr.send(null);
+                break;
+            case "CANCEL": { // Cancel an item's loading
+                const item = queued[locate(src)];
+                if(!item)
                     return;
-                }
-                // Fall back to using XHR when fetch is not supported
-                */
-            xhr = new XMLHttpRequest();
-            queued.push({src, xhr});
-            xhr.open("GET", src, true);
-            // xhr.setRequestHeader("Content-Type", "image/*"); would preflight request
-            if(e.data.modernImage)
-                xhr.setRequestHeader("Accept", "image/webp,image/*,*/*;q=0.8"); // Support WebP where available
-            xhr.responseType = "blob";
-            xhr.onloadend = () => {
-                if(!isQueued(src)) // Stop because canceled
-                    return;
-                if(xhr.status && xhr.status < 400) {
-                    const url = URL.createObjectURL(xhr.response);
-                    self.postMessage({ src, url });
-                } else {
-                    // todo new Error();
-                    const error = `Failed to load image ${src}, status ${xhr.status}`;
-                    self.postMessage({ src, error });
-                }
+                if(item.xhr)
+                    item.xhr.abort();
                 deqeue(src);
-            };
-            xhr.send(null);
-            break;
-        case "CANCEL": { // Cancel an item's loading
-            const item = queued[locate(src)];
-            if(!item)
-                return;
-            if(item.xhr)
-                item.xhr.abort();
-            deqeue(src);
-            break;
-        }
-        }
-        
-              
-    });
-};
-const worker = new Worker(URL.createObjectURL(new Blob([`(${f})()`])));
+                break;
+            }
+            }
+            
+                  
+        });
+    };
+    worker = new Worker(URL.createObjectURL(new Blob([`(${f})()`])));
+}
+
+
 
 // https://stackoverflow.com/a/27232658/2052267
 const WebPChecker = () => {

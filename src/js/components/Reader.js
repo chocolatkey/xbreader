@@ -54,6 +54,7 @@ export default class Reader {
             series: null, // Volume/Chapter data
             // Callback/Hooks
             loader: () => {}, // Custom loader for the webpub. Can return a URL, WebPub Object or Promise
+            onPublicationLoad: () => {}, // Right after the publication is fully loaded
             onBeforeReady: () => {}, // Right before final preparations are carried out
             onReady: () => {}, // When reader is ready
             onPageChange: () => {}, // When page is changed
@@ -115,7 +116,7 @@ export default class Reader {
             fit: false,
             rtl: this.publication.rtl,
             shift: this.publication.shift,
-            perPage: this.spread ? 2 : 1 // TODO detect whether need spread
+            perPage: this.spread === true ? 2 : 1
         });
     }
 
@@ -211,6 +212,7 @@ export default class Reader {
         }
         this.updateStatus(__("Fetching info..."));
         this.publication.smartLoad(manifestPointer).then(() => {
+            this.config.onPublicationLoad(this);
             this.series = new Series(this.publication, this.config.series);
             m.redraw();
             setTimeout(() => {
