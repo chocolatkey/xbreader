@@ -228,7 +228,10 @@ export default class Reader {
                 this.config.onReady(this);
             }, 0);
         }).catch(error => {
-            m.route.set("/error/:code", { code: error.export() });
+            if(typeof error.export === "function")
+                m.route.set("/error/:code", { error: error.export() });
+            else
+                m.route.set("/error/:code/:message", { code: 9500, message: new String(error) });
             return;
         });
         console.log("Reader component created");
