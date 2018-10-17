@@ -35,8 +35,9 @@ export default class Page {
 
     oninit(vnode) {
         this.data = vnode.attrs.data;
+        this.drmed = this.data.properties && this.data.properties.encrypted;
         if (!vnode.attrs.blank)
-            this.loader = new SmartLoader(this.data, vnode.attrs.index);
+            this.loader = new SmartLoader(this.data, vnode.attrs.index, vnode.attrs.drmCallback);
     }
 
     view(vnode) {
@@ -111,7 +112,7 @@ export default class Page {
                 draggable: false
             });
         else if (this.loader && slider) {
-            innerItemIs = m("img.page-img.noget.noselect", {
+            innerItemIs = m((this.drmed ? "canvas" : "img") + ".page-img.noget.noselect", {
                 height: this.data.height,
                 width: this.data.width,
                 draggable: false

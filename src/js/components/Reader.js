@@ -60,6 +60,7 @@ export default class Reader {
             onPageChange: () => {}, // When page is changed
             onLastPage: () => {}, // When trying to go further after the last page
             onToggleInterface: () => {}, // When interface is shown/hidden
+            onDRM: () => {}, // When images are protected, this function provides DRM capabilities
         };
 
         for (const attrname in config) {
@@ -303,6 +304,7 @@ export default class Reader {
                         key: page.href,
                         index: index,
                         slider: this.slider,
+                        drmCallback: this.config.onDRM
                     }));
                     return items;
                 })),

@@ -68,8 +68,14 @@ if(workerSupported) {
                     if(!isQueued(src)) // Stop because canceled
                         return;
                     if(xhr.status && xhr.status < 400) {
-                        const url = URL.createObjectURL(xhr.response);
-                        self.postMessage({ src, url });
+                        if(e.data.bitmap && (typeof(ImageBitmap) !== "undefined")) { // ImageBitmap supported
+                            createImageBitmap(xhr.response).then((bitmap) => {
+                                self.postMessage({ src, bitmap }, [bitmap]);
+                            });
+                        } else {
+                            const url = URL.createObjectURL(xhr.response);
+                            self.postMessage({ src, url });
+                        } 
                     } else {
                         // todo new Error();
                         const error = `Failed to load image ${src}, status ${xhr.status}`;
@@ -96,8 +102,6 @@ if(workerSupported) {
     worker = new Worker(URL.createObjectURL(new Blob([`(${f})()`])));
 }
 
-
-
 // https://stackoverflow.com/a/27232658/2052267
 const WebPChecker = () => {
     const elem = document.createElement("canvas");
@@ -111,20 +115,25 @@ const WebPChecker = () => {
 const canWebP = WebPChecker();
 
 export default class LazyLoader {
-    constructor(imageData, imageIndex) {
+    constructor(imageData, imageIndex, drmCallback) {
         this.original = cdn.image(imageData, imageIndex);
-        this.mime = imageData.mime;
+        this.data = imageData;
         this.index = imageIndex;
         this.loaded = false;
         this.blob = null;
 
-        this.canvas = document.createElement("canvas");
-        this.canvas.height = imageData.height;
-        this.canvas.width = imageData.width;
+        if(imageData.properties && imageData.properties.encrypted) {
+            this.drm = drmCallback;
+        } else {
+            this.canvas = document.createElement("canvas");
+            this.canvas.height = imageData.height;
+            this.canvas.width = imageData.width;
+        }        
     }
 
     provoke(imageItem, currentIndex) {
         this.image = imageItem.dom;
+        this.canvas = this.image; // C
         const diff = Math.abs(this.index - currentIndex); // Distance of this page from current page
         clearTimeout(this.highTime);
 
@@ -202,16 +211,16 @@ export default class LazyLoader {
     drawAsSoon() {
         if(this.image) {
             if(this.loaded) {
-                if(!workerSupported)
+                if(!workerSupported && !this.drm) // C
                     this.image.src = this.preloader.src;
                 if(this.blob)
                     URL.revokeObjectURL(this.blob);
                 return;
             } else {
-                if(this.blob)
+                if(this.blob || this.drm) // C
                     return;
                 this.blob = "empty";
-                this.toBlob(/*this.mime*/);
+                this.toBlob();
             }
         }
         window.requestAnimationFrame(this.drawAsSoon.bind(this));
@@ -225,11 +234,16 @@ export default class LazyLoader {
                     if (e.data.error) {
                         reject(e.data.error);
                     }
-                    resolve(e.data.url);
+                    if(e.data.url)
+                        resolve(e.data.url);
+                    else if(e.data.bitmap)
+                        resolve(e.data.bitmap);
+                    else
+                        reject("No data received from worker!");
                 }
             }
             worker.addEventListener("message", handler);
-            worker.postMessage({src, mode: "FETCH", modernImage: canWebP});
+            worker.postMessage({src, mode: "FETCH", modernImage: canWebP, bitmap: this.drm ? true : false});
         });
     }
 
@@ -244,8 +258,12 @@ export default class LazyLoader {
             this.preloader.onload = () => {
                 if (!this.preloader)
                     return;
-                this.loaded = true;
-                this.drawAsSoon();
+                if(this.drm)
+                    this.drm(this, this.preloader.src);
+                else {
+                    this.loaded = true;
+                    this.drawAsSoon();
+                }
             };
             this.preloader.onerror = () => {
                 setTimeout(() => {
@@ -264,8 +282,13 @@ export default class LazyLoader {
             this.lazyWorker(this.original).then(img => {
                 if (!this.preloader)
                     return;
-                this.loaded = true;
-                this.image.src = img;
+                if(this.drm)
+                    this.drm(this, img);
+                else {
+                    this.loaded = true;
+                    this.image.src = img;
+                }
+                // this.blob = img;
             }).catch(err => {
                 setTimeout(() => {
                     if(!this.loaded && this.preloader) {

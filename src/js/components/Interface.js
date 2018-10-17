@@ -30,7 +30,8 @@ export default class Interface {
         }
         if(this.isHidden)
             this.toggleMenu(false);
-        this.toggleCallback(!this.isHidden);
+        if(this.toggleCallback)
+            this.toggleCallback(!this.isHidden);
         return true;
     }
 

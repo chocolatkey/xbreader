@@ -32,6 +32,10 @@ export default {
         var rnd = seed / 233280;
         return min + rnd * (max - min);
     },
+    makeNewDimensions: function(item, newHeight) {
+        item.width = Math.floor(newHeight / item.height * item.width);
+        item.height = newHeight;
+    },
     buildAwareSpec: function(item) {
         const ratio = window.devicePixelRatio || 1;
         let quality = 100;
@@ -72,9 +76,10 @@ export default {
     google: function(item, index) {
         const ele = parse(item.href);
         let spec = this.buildAwareSpec(item);
-        if (spec.height == item.height)
-            spec.height = 0;
-        return `https://images${this.hash(ele.host, index, 0, 2)}-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&gadget=a&no_expand=1&resize_h=${spec.height}&rewriteMime=image/*&url=${item.href}`;
+        /* if (spec.height >= item.height)
+            spec.height = 0; */
+        this.makeNewDimensions(item, spec.height);
+        return `https://images${this.hash(ele.host, index, 0, 2)}-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&gadget=a&no_expand=1&resize_h=${item.height}&rewriteMime=image/*&url=${item.href}`;
     },
     // Photon CDN
     photon: function(item, index) {
@@ -85,6 +90,7 @@ export default {
             hash = hash & hash; // Convert to 32bit integer
         }
         const spec = this.buildAwareSpec(item);
+        this.makeNewDimensions(item, spec.height);
         return `https://i${this.hash(ele.host, index, 0, 2)}.wp.com/${ele.authority + ele.path}?strip=all&quality=${spec.quality}&h=${spec.height}`;
     },
     // NebelGrind Gate
@@ -100,7 +106,7 @@ export default {
         } else {
             givenDimension = RESOLUTION_HIGH;
         }
-
+        this.makeNewDimensions(item, givenDimension);
         return `${match[1]}${givenDimension}.jpg`;
     },
     image: function(item, index) { // TODO preserve original query params

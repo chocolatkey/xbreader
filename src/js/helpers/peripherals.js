@@ -180,6 +180,13 @@ export default class Peripherals {
             return;
 
         e.stopPropagation();
+
+        if(e.touches.length === 3) { // Three or more fingers
+            this.interface.toggle();
+            m.redraw();
+            return;
+        }
+
         this.pointerDown = true;
         this.drag.startX = e.touches[0].pageX;
         this.drag.startY = e.touches[0].pageY;
