@@ -303,7 +303,18 @@ export default class Peripherals {
             this.addTouch(e);
             this.touchmoveHandler(e);
         } else {
+            clearTimeout(this.mtimer);
             const ev = this.coordinator.getBibiEvent(e);
+            if(ev.Ratio.Y > 0.95 || ev.Ratio.Y < 0.05) {
+                this.interface.toggle(true);
+                m.redraw();
+                return;
+            }
+
+            this.mtimer = setTimeout(() => {
+                this.interface.toggle(false);
+                m.redraw();
+            }, 500);
             const sliderLength = this.slider.length - 1;
             const atFirstSlide = Math.max(this.slider.currentSlide, 0) == 0;
             const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) == sliderLength;
@@ -502,6 +513,7 @@ export default class Peripherals {
     }
 
     onkeyup(Eve) {
+        clearTimeout(this.mtimer);
         if (!this.onEvent(Eve)) return false;
         if (this.ActiveKeys[Eve.KeyName] && Date.now() - this.ActiveKeys[Eve.KeyName] < 300) {
             this.updateSpecialParamters();
@@ -533,6 +545,7 @@ export default class Peripherals {
             if(this.interface.toggle(false)) m.redraw();
             return false;
         }
+        this.changeCursor("none");
         Eve.preventDefault();
         this.moveBy(MovingParameter);
     }

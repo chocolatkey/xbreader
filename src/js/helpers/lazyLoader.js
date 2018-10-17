@@ -133,7 +133,8 @@ export default class LazyLoader {
 
     provoke(imageItem, currentIndex) {
         this.image = imageItem.dom;
-        this.canvas = this.image; // C
+        if(this.drm)
+            this.canvas = this.image; // C
         const diff = Math.abs(this.index - currentIndex); // Distance of this page from current page
         clearTimeout(this.highTime);
 
