@@ -50,7 +50,7 @@ export default class Reader {
             tabs: [], // Tabs on right side of top bar
             guideHidden: false, // Skip showing the reading direction guide
             cdn: false, // What CDN to use. False = no CDN
-            webpub: null, // WebPub Object to pass directly and load
+            link: null, // WebPub URL to pass directly and load
             series: null, // Volume/Chapter data
             // Callback/Hooks
             loader: () => {}, // Custom loader for the webpub. Can return a URL, WebPub Object or Promise
@@ -205,7 +205,10 @@ export default class Reader {
     oncreate(vnode) {
         let manifestPointer = this.config.loader(vnode.attrs.cid);
         if(!manifestPointer)
-            manifestPointer = vnode.attrs.cid + ".json";
+            if(this.config.link)
+                manifestPointer = this.config.link;
+            else
+                manifestPointer = vnode.attrs.cid + ".json";
         else if (!manifestPointer) {
             console.warning("No item specified");
             m.route.set("/error/:code/:message", { code: 9400, message: __("No item specified") });
@@ -229,10 +232,11 @@ export default class Reader {
                 this.config.onReady(this);
             }, 0);
         }).catch(error => {
-            if(typeof error.export === "function")
-                m.route.set("/error/:code", { error: error.export() });
-            else
-                m.route.set("/error/:code/:message", { code: 9500, message: new String(error) });
+            if(typeof error.export === "function") {
+                const exp = error.export();
+                m.route.set("/error/:code/:message", { code: exp.code, message: exp.message });
+            } else
+                m.route.set("/error/:code/:message", { code: error.code ? error.code : 9500, message: error.message ? error.message : new String(error) });
             return;
         });
         console.log("Reader component created");

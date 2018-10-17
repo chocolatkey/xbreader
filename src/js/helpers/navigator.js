@@ -13,6 +13,8 @@ export default class Navigator {
     index(publication, redo = false) {
         let lastLandscapeIndex = 0;
         publication.spine.forEach((item, index) => {
+            if (!/^(?:[a-z]+:)?\/\//i.test(item.href)) // convert URL relative to manifest to absolute URL
+                item.href = new URL(item.href, publication.url).href;
             item.xbr = item.xbr ? item.xbr : {};
             item.properties = item.properties ? item.properties : {};
             item.properties.spread = item.properties.spread ? item.properties.spread : "landscape";

@@ -124,7 +124,7 @@ export default class LazyLoader {
 
         if(imageData.properties && imageData.properties.encrypted) {
             this.drm = drmCallback;
-        } else {
+        } else if(imageData.height && imageData.width) {
             this.canvas = document.createElement("canvas");
             this.canvas.height = imageData.height;
             this.canvas.width = imageData.width;

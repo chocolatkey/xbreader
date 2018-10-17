@@ -13,6 +13,6 @@ export class xbError {
     }
 
     export() {
-        return JSON.stringify({code: this.code, message: this.message});
+        return {code: this.code, message: this.message};
     }
 }

@@ -10,6 +10,7 @@ export default class Publication {
         this.spine = [];
         this.links = [];
         this.ready = false;
+        this.url = "";
     }
 
     setSpecial(attr, val) {
@@ -39,11 +40,12 @@ export default class Publication {
         return m.request({
             method: "GET",
             url: manifestPath,
-            background: true
+            background: true,
         }).then((manifest) => {
+            this.url = manifestPath;
             return this.loadFromData(manifest);
-        }).catch(() => {
-            throw new xbError(9400, __("Failed loading manifest"));
+        }).catch((error) => {
+            throw error;
         });
     }
 
@@ -62,6 +64,8 @@ export default class Publication {
                 }
                 this.spine = manifestData.readingOrder;
                 this.links = manifestData.links;
+                if(!this.url && this.links.length)
+                    this.url = this.links[0].href;
                 console.log("Publication loaded: " + this.metadata.title);
                 this.navi = new Navigator(this);
                 this.ready = true;
@@ -97,7 +101,10 @@ export default class Publication {
         
         Publication.fixDeprecated(manifest.metadata, "belongs_to", "belongsTo");
         Publication.fixDeprecated(manifest.metadata, "direction", "readingProgression");
-        const requiredMetadataKeys = ["title", "numberOfPages", "belongsTo"];
+
+        if(!manifest.metadata.numberOfPages)
+            manifest.metadata.numberOfPages = manifest.readingOrder.length;
+        const requiredMetadataKeys = ["title", /*"belongsTo"*/];
         if(!this.keysInObj(requiredMetadataKeys, manifest.metadata))
             return false;
 
@@ -113,9 +120,14 @@ export default class Publication {
     }
 
     get series() {
-        if(this.pmetadata.belongsTo.series[0])
-            return this.pmetadata.belongsTo.series[0];
-        return this.pmetadata.belongsTo.series;
+        if(this.pmetadata.belongsTo && this.pmetadata.belongsTo.series) {
+            if(this.pmetadata.belongsTo.series[0])
+                return this.pmetadata.belongsTo.series[0];
+            return this.pmetadata.belongsTo.series;                    
+        } else return {
+            identifier: "",
+        };
+        
     }
 
     get direction() {

@@ -23,6 +23,8 @@ export default {
                 applicable = false;
             }
         });
+        if (!/^(?:[a-z]+:)?\/\//i.test(href))
+            applicable = false;
         return applicable;
     },
     seededRandom: function(seed, max, min) {
@@ -79,7 +81,7 @@ export default {
         /* if (spec.height >= item.height)
             spec.height = 0; */
         this.makeNewDimensions(item, spec.height);
-        return `https://images${this.hash(ele.host, index, 0, 2)}-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&gadget=a&no_expand=1&resize_h=${item.height}&rewriteMime=image/*&url=${item.href}`;
+        return `https://images${this.hash(ele.host, index, 0, 2)}-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&gadget=a&no_expand=1${item.height ? "&resize_h=" + item.height : ""}&rewriteMime=image/*&url=${item.href}`;
     },
     // Photon CDN
     photon: function(item, index) {
@@ -91,12 +93,13 @@ export default {
         }
         const spec = this.buildAwareSpec(item);
         this.makeNewDimensions(item, spec.height);
-        return `https://i${this.hash(ele.host, index, 0, 2)}.wp.com/${ele.authority + ele.path}?strip=all&quality=${spec.quality}&h=${spec.height}`;
+        return `https://i${this.hash(ele.host, index, 0, 2)}.wp.com/${ele.authority + ele.path}?strip=all&quality=${spec.quality}${item.height ? "&h=" + item.height : ""}`;
     },
     // NebelGrind Gate
     nebelgrind: function(item, index) {
         const match = item.href.match(NG_IMG_MATCHER);
         if(!match) return item.href;
+        if(!item.height) return item.href;
         let givenDimension = this.buildAwareSpec(item).height;
         // Help backend by only requesting fixed resolutions, since this function is replicated in NG's backend anyway
         if (givenDimension <= ((RESOLUTION_LOW + RESOLUTION_MEDIUM) / 2)) {
