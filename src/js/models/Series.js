@@ -79,7 +79,7 @@ export default class Series {
             title: __("Chapter selection"),
             onchange: (e) => {
                 const st = e.target;
-                m.route.set("/:id", { id: st[st.selectedIndex].value, }, { replace: true });
+                m.route.set("/:id", { id: st[st.selectedIndex].value, }, { replace: false });
             }
         }, this.volumes.map(volume => {
             const chapters = [];

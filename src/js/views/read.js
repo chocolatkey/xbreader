@@ -6,11 +6,9 @@ export default class Read {
     constructor(config) {
         this.config = config;
         this.cid = null; // Content ID
-        this.reader = null;
     }
 
     oninit(vnode) { // Welcome
-        this.reader = new Reader(this.config);
         if(vnode.attrs.id) {
             this.cid = vnode.attrs.id;
             const xRegex = /^[@-Za-z(-;=\\_!]+$/i;
@@ -24,7 +22,7 @@ export default class Read {
 
     view(vnode) {
         return [
-            m(this.reader, {cid: vnode.attrs.id}),
+            m(Reader, {cid: vnode.attrs.id, config: this.config}),
         ];
     }
 }

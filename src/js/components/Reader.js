@@ -1,5 +1,6 @@
 import m from "mithril";
 import Publication from "../models/Publication";
+import Ui from "../models/Ui";
 import Peripherals from "../helpers/peripherals";
 import Slider from "./Slider";
 import sML from "../helpers/sMLstub";
@@ -9,13 +10,13 @@ import Platform from "../helpers/platform";
 import Series from "../models/Series";
 
 export default class Reader {
-    constructor(config) {
-        this.config = window.xbconfig = Reader.mergeSettings(config);
+    constructor(vnode) {
+        this.config = window.xbconfig = Reader.mergeSettings(vnode.attrs.config);
         this.guideHidden = this.config.guideHidden;
         this.r = Math.random();
         this.publication = new Publication();
         this.series = null;
-        this.interface = new Interface();
+        this.ui = new Ui(this.config.onToggleInterface);
         if (sML.Mobile)
             this.mobile = true;
         else
@@ -211,7 +212,7 @@ export default class Reader {
                 manifestPointer = vnode.attrs.cid + ".json";
         else if (!manifestPointer) {
             console.warning("No item specified");
-            m.route.set("/error/:code/:message", { code: 9400, message: __("No item specified") });
+            m.route.set("/error/:code/:message", { code: 9400, message: __("No item specified") }, { replace: true });
             return;
         }
         this.updateStatus(__("Fetching info..."));
@@ -226,7 +227,8 @@ export default class Reader {
                 this.binder = new Peripherals(this);
                 m.redraw();
                 setTimeout(() => {
-                    this.interface.toggle(false);
+                    if(!this.ui.mousing)
+                        this.ui.toggle(false);
                     m.redraw();
                 }, 1500);
                 this.config.onReady(this);
@@ -234,9 +236,9 @@ export default class Reader {
         }).catch(error => {
             if(typeof error.export === "function") {
                 const exp = error.export();
-                m.route.set("/error/:code/:message", { code: exp.code, message: exp.message });
+                m.route.set("/error/:code/:message", { code: exp.code, message: exp.message }, { replace: true });
             } else
-                m.route.set("/error/:code/:message", { code: error.code ? error.code : 9500, message: error.message ? error.message : new String(error) });
+                m.route.set("/error/:code/:message", { code: error.code ? error.code : 9500, message: error.message ? error.message : new String(error) }, { replace: true });
             return;
         });
         console.log("Reader component created");
@@ -284,7 +286,7 @@ export default class Reader {
                     style: bookStyle,
                     tabindex: -1, // Needed to be able to focus on this element (from peripherals)
                     oncontextmenu: (e) => {
-                        this.interface.toggle();
+                        this.ui.toggle();
                         e.preventDefault();
                     },
                     ondblclick: (e) => {
@@ -318,8 +320,9 @@ export default class Reader {
             }, this.hint)
         ];
         if (this.publication.isReady && this.slider)
-            rend.push(m(this.interface, {
-                reader: this
+            rend.push(m(Interface, {
+                reader: this,
+                model: this.ui,
             }));
         return rend;
     }

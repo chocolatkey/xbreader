@@ -6,7 +6,7 @@ import Platform from "./platform";
 export default class Peripherals {
     constructor(Reader) {
         this.slider = Reader.slider;
-        this.interface = Reader.interface;
+        this.ui = Reader.ui;
         this.reader = Reader;
 
         this.transformProperty = Platform.webkitOrNot();
@@ -84,7 +84,7 @@ export default class Peripherals {
             109: "Minus",
             45: "Zero",
             12: "Return",
-            // What mangadex does maybe implement
+            // What MD does maybe implement
             /*
             F for fit toggle
             G for spread toggle
@@ -95,18 +95,19 @@ export default class Peripherals {
         this.updateMovingParameters(Reader.direction);
         this.observe(this.slider.selector);
         this.observe(window);
-        let tx = document.documentElement;
+        const tx = document.documentElement;
         tx.addEventListener("pointermove", event => this.onpointermove(event));
         this.slider.selector.addEventListener("click", event => this.onclick(event));
         //this.slider.selector.addEventListener("dblclick", event => this.ondblclick(event));
 
 
         // Bind all event handlers for referencability
-        ["touchstartHandler", "touchendHandler", "touchmoveHandler", "mousedownHandler", "mouseupHandler", "mousemoveHandler"].forEach(method => {
+        ["touchstartHandler", "touchendHandler", "touchmoveHandler", "mousedownHandler", "mouseupHandler", "mousemoveHandler", "mousemoveUpdater"].forEach(method => {
             this[method] = this[method].bind(this);
         });
         this.attachEvents();
         // Mousemove applies to TTB view as well because it controls cursors.
+        tx.addEventListener("mousemove", this.mousemoveUpdater);
         this.slider.selector.addEventListener("mousemove", this.mousemoveHandler);
 
         console.log("Peripherals ready");
@@ -182,7 +183,7 @@ export default class Peripherals {
         e.stopPropagation();
 
         if(e.touches.length === 3) { // Three or more fingers
-            this.interface.toggle();
+            this.ui.toggle();
             m.redraw();
             return;
         }
@@ -207,6 +208,7 @@ export default class Peripherals {
             this.updateAfterDrag();
         }
         setTimeout(() => {
+            clearTimeout(this.mtimer);
             this.clearDrag();
         }, 50);
     }
@@ -277,6 +279,9 @@ export default class Peripherals {
      * mousedown event handler
      */
     mousedownHandler(e) {
+        setTimeout(() => {
+            clearTimeout(this.mtimer);
+        }, 50);
         if (this.isScaled) {
             this.addTouch(e);
             this.touchstartHandler(e);
@@ -288,12 +293,25 @@ export default class Peripherals {
      * mouseup event handler
      */
     mouseupHandler(e) {
+        setTimeout(() => {
+            clearTimeout(this.mtimer);
+        }, 50);
         if (this.isScaled) {
             this.addTouch(e);
             this.touchendHandler(e);
         }
     }
 
+    get mousePosOut() {
+        if(this.mousePos.Ratio.Y > 0.95 || this.mousePos.Ratio.Y < 0.05)
+            return true;
+        return false;
+    }
+
+    mousemoveUpdater(e) {
+        this.mousePos = this.coordinator.getBibiEvent(e);
+        this.ui.mousing = true;
+    }
 
     /**
      * mousemove event handler
@@ -304,22 +322,29 @@ export default class Peripherals {
             this.touchmoveHandler(e);
         } else {
             clearTimeout(this.mtimer);
-            const ev = this.coordinator.getBibiEvent(e);
-            if(ev.Ratio.Y > 0.95 || ev.Ratio.Y < 0.05) {
-                this.interface.toggle(true);
+            const mouseIt = setTimeout(() => {
+                this.ui.mousing = false; // Race!
+            }, 50);
+            this.mousePos = this.coordinator.getBibiEvent(e);
+            if(this.mousePosOut) {
+                clearTimeout(mouseIt); // Cancel override
+                this.ui.mousing = true;
+                this.ui.toggle(true);
                 m.redraw();
-                return;
+            } else {
+                this.mtimer = setTimeout(() => {
+                    if(this.mousePosOut || this.ui.mousing)
+                        return;
+                    this.ui.toggle(false);
+                    m.redraw();
+                }, 500);
             }
 
-            this.mtimer = setTimeout(() => {
-                this.interface.toggle(false);
-                m.redraw();
-            }, 500);
             const sliderLength = this.slider.length - 1;
             const atFirstSlide = Math.max(this.slider.currentSlide, 0) == 0;
             const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) == sliderLength;
             if (this.slider.config.ttb) { // Vertical controls
-                switch (ev.Division.Y) {
+                switch (this.mousePos.Division.Y) {
                 case "bottom":
                     this.changeCursor(atLastSlide ? "not-allowed" : "s-resize");
                     break;
@@ -332,7 +357,7 @@ export default class Peripherals {
                 }
             } else { // Horizontal controls
                 const rtl = this.slider.config.rtl;
-                switch (ev.Division.X) {
+                switch (this.mousePos.Division.X) {
                 case "left":
                     this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed" : "w-resize");
                     break;
@@ -350,6 +375,7 @@ export default class Peripherals {
     changeCursor(newCursor) {
         if (newCursor == this.currentCursor)
             return;
+        console.log(newCursor);
         this.currentCursor = newCursor;
         m.redraw();
     }
@@ -383,7 +409,7 @@ export default class Peripherals {
         } else if (movement < 0 && movementDistance > this.slider.config.threshold && this.slider.innerElements.length > this.slider.perPage) {
             this.slider.next(howManySliderToSlide);
         }
-        this.interface.toggle(false);
+        this.ui.toggle(false);
         this.slider.slideToCurrent(true); // slideToNegativeClone || slideToPositiveClone
         m.redraw();
     }
@@ -542,7 +568,7 @@ export default class Peripherals {
         if (!MovingParameter) {
             //Eve.target = this.slider.selector;
             this.slider.selector.focus();
-            if(this.interface.toggle(false)) m.redraw();
+            if(this.ui.toggle(false)) m.redraw();
             return false;
         }
         this.changeCursor("none");
@@ -585,9 +611,9 @@ export default class Peripherals {
             }
         }
         if (MovingParameter === "menu")
-            this.interface.toggle();
+            this.ui.toggle();
         else
-            this.interface.toggle(false);
+            this.ui.toggle(false);
         m.redraw();
     }
 
@@ -606,7 +632,7 @@ export default class Peripherals {
                 this.moveBy(-1);
                 break;
             case "middle":
-                this.interface.toggle();
+                this.ui.toggle();
                 m.redraw();
                 break;
             }
@@ -629,7 +655,7 @@ export default class Peripherals {
 
     delayedToggle() {
         if (!this.pdblclick) {
-            this.interface.toggle();
+            this.ui.toggle();
             m.redraw();
         }
         this.pdblclick = false;
@@ -654,7 +680,7 @@ export default class Peripherals {
         clearTimeout(this.dtimer);
         this.pdblclick = true;
 
-        this.interface.toggle(false);
+        this.ui.toggle(false);
         if (!this.reader.zoomer || this.disableDblClick)
             return;
 
@@ -691,7 +717,7 @@ export default class Peripherals {
                     if(!this.reader.binder) // before ready
                         return;
                     this.slider.currentSlide = index;
-                    this.interface.toggle(false);
+                    this.ui.toggle(false);
                     this.reader.guideHidden = true;
                     m.redraw();
                     this.slider.config.onChange.call(this);
@@ -713,8 +739,8 @@ export default class Peripherals {
             CW.Distance = (Eve.deltaY < 0 ? -1 : 1);
             CW.Delta = Math.abs(Eve.deltaY);
         } else { // Single page scroll instantly hides interface
-            if(!this.interface.isHidden && !this.slider.config.ttb) {
-                this.interface.toggle(false);
+            if(!this.ui.isHidden && !this.slider.config.ttb) {
+                this.ui.toggle(false);
                 m.redraw();
             }
             return;

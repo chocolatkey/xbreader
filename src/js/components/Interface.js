@@ -2,37 +2,8 @@ import m from "mithril";
 import Logo from "../partials/Logo";
 
 export default class Interface {
-    oninit(vnode) {
-        // Wonderful...
-        vnode.attrs.reader.interface.toggleCallback = vnode.attrs.reader.config.onToggleInterface;
-        this.isHidden = true; // == vnode.state.hidden
-        this.menuShown = false;
+    oninit() {
         console.log("Interface initialized");
-    }
-
-    toggleMenu(newState) {
-        if (newState == null)
-            this.menuShown = !this.menuShown;
-        else if (this.menuShown != newState)
-            this.menuShown = newState;
-        else
-            return;
-    }
-
-    // TODO this.isHidden undefined for retardedness, move to config state
-    toggle(newState) {
-        if (newState == null)
-            this.isHidden = !this.isHidden;
-        else if (!!this.isHidden == newState) {
-            this.isHidden = !newState;
-        } else {
-            return false;
-        }
-        if(this.isHidden)
-            this.toggleMenu(false);
-        if(this.toggleCallback)
-            this.toggleCallback(!this.isHidden);
-        return true;
     }
 
     sliderMove(e, slider, publication) {
@@ -95,8 +66,8 @@ export default class Interface {
                     title: __("Go to the next chapter")
                 }, m("a", {
                     href: "/" + sseries.next.uuid,
-                    oncreate: m.route.link,
-                    onupdate: m.route.link
+                    oncreate: m.route.link({ replace: false }),
+                    onupdate: m.route.link({ replace: false })
                 }, __("Next")))
             ];
             if(publication.rtl)
@@ -110,8 +81,8 @@ export default class Interface {
                     title: __("Go to the previous chapter")
                 }, m("a", {
                     href: "/" + sseries.prev.uuid,
-                    oncreate: m.route.link,
-                    onupdate: m.route.link
+                    oncreate: m.route.link({ replace: false }),
+                    onupdate: m.route.link({ replace: false })
                 }, __("Prev")))
             ];
             if(publication.rtl)
@@ -123,7 +94,7 @@ export default class Interface {
     }
 
     view(vnode) {
-        const self = vnode.attrs.reader.interface;
+        const ui = vnode.attrs.model;
         const brand = vnode.attrs.reader.config.brand;
         const tabConfig = vnode.attrs.reader.config.tabs;
         const slider = vnode.attrs.reader.slider;
@@ -181,7 +152,7 @@ export default class Interface {
             tabToggle.push(m("button.br-tab.br-cmenu__toggle", {
                 title: __("Menu"),
                 onclick: () => {
-                    self.toggleMenu();
+                    ui.toggleMenu();
                 }
             }, [
                 m("i.br-i-apps", {
@@ -192,7 +163,7 @@ export default class Interface {
         }
         return [
             m("div.noselect#br-topbar", {
-                class: self.isHidden ? "hidden" : "shown"
+                class: ui.isHidden ? "hidden" : "shown"
             }, [
                 m("div.br-topbar__row", [
                     m("section.br-toolbar__section.br-toolbar__section--align-start", [
@@ -214,14 +185,14 @@ export default class Interface {
                         ])
                     ]),
                     m("section.br-toolbar__section.br-toolbar__section--align-end.br-cmenu", {
-                        class: self.menuShown ? "shown" : "gone"
+                        class: ui.menuShown ? "shown" : "gone"
                     }, [
                         m("div", tabBar)
                     ])
                 ])
             ]),
             m("div#br-botbar.noselect", {
-                class: self.isHidden ? "hidden" : "shown"
+                class: ui.isHidden ? "hidden" : "shown"
             }, [
                 this.sliderSystem(slider, publication),
                 m("div.br-botbar-controls", {
