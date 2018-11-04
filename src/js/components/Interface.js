@@ -44,7 +44,13 @@ export default class Interface {
         ];
 
         const currentPageIndicator = m("span.br-slider__pagenum", {
-            title: __("Current Page")
+            title: __("Current Page"),
+            onclick: () => {
+                const newPage = parseInt(prompt(`${__("Input a page number")} (${1}-${publication.pmetadata.numberOfPages})`, slider.currentSlide + 1)) - 1;
+                console.log(newPage);
+                if(newPage !== (slider.currentSlide + 1) && newPage >= 0 && newPage < publication.pmetadata.numberOfPages)
+                    slider.goTo(newPage);
+            }
         }, publication.navi.getPageString(slider));
         const pageAmountIndicator = m("span.br-slider__pagenum-last", {
             title: __("# of Pages")

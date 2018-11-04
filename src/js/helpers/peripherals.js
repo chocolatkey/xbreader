@@ -718,7 +718,8 @@ export default class Peripherals {
                     if(!this.reader.binder) // before ready
                         return;
                     this.slider.currentSlide = index;
-                    this.ui.toggle(false);
+                    if(!this.ui.mousing)
+                        this.ui.toggle(false); // Hide UI when changing pages
                     this.reader.guideHidden = true;
                     m.redraw();
                     this.slider.config.onChange.call(this);

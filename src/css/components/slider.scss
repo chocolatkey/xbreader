@@ -127,6 +127,7 @@ $w: calc(100% - 160px);
     
     &__pagenum {
         min-width: 25px;
+        cursor: pointer;
 
         @media (max-width: 699px) {
             & {
