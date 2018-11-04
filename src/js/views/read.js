@@ -2,7 +2,7 @@ import m from "mithril";
 // Components
 import Reader from "../components/Reader";
 
-export default class Read {
+export default class ReadView {
     constructor(config) {
         this.config = config;
         this.cid = null; // Content ID

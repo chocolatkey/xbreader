@@ -79,6 +79,7 @@ export default class Slider {
             shift: true,
             onInit: () => {},
             onChange: () => {},
+            onLastPage: () => {}
         };
 
         const userSttings = options;
@@ -244,6 +245,11 @@ export default class Slider {
         this.currentSlide = Math.min(this.currentSlide + howManySlides, this.length - 1);
         if(this.perPage > 1 && this.currentSlide % 2)
             this.currentSlide--;
+
+        if(this.currentSlide === beforeChange && this.currentSlide + 1 === this.innerElements.length) {
+            // At end and trying to go further, means trigger "last page" callback
+            this.config.onLastPage.call(this);
+        }
 
         if (beforeChange !== this.currentSlide) {
             this.slideToCurrent(true);

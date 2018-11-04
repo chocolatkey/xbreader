@@ -10,7 +10,7 @@ export default class Peripherals {
         this.reader = Reader;
 
         this.transformProperty = Platform.webkitOrNot();
-        this.onwheel.PreviousWheels = [];
+        this.PreviousWheels = [];
         this.PreviousCoord = {
             X: 0,
             Y: 0
@@ -91,20 +91,26 @@ export default class Peripherals {
             H for direction toggle
             */
         });
-
+ 
         this.updateMovingParameters(Reader.direction);
+
+        this.observers = ["keydown", "keyup", "keypress", "wheel", "scroll", "touchmove"];
+
+        this.handlers = [
+            "touchstartHandler", "touchendHandler", "touchmoveHandler", "mousedownHandler", "mouseupHandler", "mousemoveHandler", "mousemoveUpdater", "mtimerUpdater", "onkeydown", "onkeyup", "onkeypress", "onwheel", "onscroll", "ontouchmove", "onpointermove", "onclick", "ondblclick"
+        ];
+
+        // Bind all event handlers for referencability
+        this.handlers.forEach(method => {
+            this[method] = this[method].bind(this);
+        });
         this.observe(this.slider.selector);
         this.observe(window);
         const tx = document.documentElement;
-        tx.addEventListener("pointermove", event => this.onpointermove(event));
-        this.slider.selector.addEventListener("click", event => this.onclick(event));
-        //this.slider.selector.addEventListener("dblclick", event => this.ondblclick(event));
+        tx.addEventListener("pointermove", this.onpointermove);
+        this.slider.selector.addEventListener("click", this.onclick);
+        //this.slider.selector.addEventListener("dblclick", this.ondblclick);
 
-
-        // Bind all event handlers for referencability
-        ["touchstartHandler", "touchendHandler", "touchmoveHandler", "mousedownHandler", "mouseupHandler", "mousemoveHandler", "mousemoveUpdater", "mtimerUpdater"].forEach(method => {
-            this[method] = this[method].bind(this);
-        });
         this.attachEvents();
         // Mousemove applies to TTB view as well because it controls cursors.
         tx.addEventListener("mousemove", this.mousemoveUpdater);
@@ -114,6 +120,25 @@ export default class Peripherals {
         this.slider.selector.addEventListener("mousemove", this.mousemoveHandler);
 
         console.log("Peripherals ready");
+    }
+
+
+    /**
+     * Remove all event listeners and nullify
+     */
+    destroy() {
+        this.unobserve(this.slider.selector);
+        this.unobserve(window);
+        const tx = document.documentElement;
+        tx.removeEventListener("pointermove", this.onpointermove);
+        this.detachEvents();
+        tx.removeEventListener("mousemove", this.mousemoveUpdater);
+        this.slider.selector.removeEventListener("touchend", this.mtimerUpdater);
+        this.slider.selector.removeEventListener("mouseup", this.mtimerUpdater);
+        this.slider.selector.removeEventListener("mousedown", this.mtimerUpdater);
+        this.slider.selector.removeEventListener("mousemove", this.mousemoveHandler);
+
+        this.coordinator = null;
     }
 
 
@@ -189,6 +214,15 @@ export default class Peripherals {
             this.ui.toggle();
             m.redraw();
             return;
+        }
+
+        switch (e.touches.length) {
+        case 3:
+            this.ui.toggle();
+            m.redraw();
+            return;
+        case 2:
+            // Pinch
         }
 
         this.pointerDown = true;
@@ -557,9 +591,15 @@ export default class Peripherals {
         if (!this.onEvent(Eve)) return false;
     }
 
+    unobserve(item) {
+        this.observers.forEach((EventName) => {
+            item.removeEventListener(EventName, this["on" + EventName], false);
+        });
+    }
+
     observe(item) {
-        ["keydown", "keyup", "keypress", "wheel", "scroll", "touchmove"].forEach((EventName) => {
-            item.addEventListener(EventName, (e) => this["on" + EventName](e), false);
+        this.observers.forEach((EventName) => {
+            item.addEventListener(EventName, this["on" + EventName], false);
         });
     }
 
@@ -732,7 +772,7 @@ export default class Peripherals {
 
     onwheel(Eve) {
         let CW = {},
-            PWs = this.onwheel.PreviousWheels,
+            PWs = this.PreviousWheels,
             PWl = PWs.length;
         if (Math.abs(Eve.deltaX) > Math.abs(Eve.deltaY)) { // Horizontal scrolling
             CW.Distance = (Eve.deltaX < 0 ? -1 : 1) * (this.slider.config.rtl ? -1 : 1);
@@ -772,9 +812,9 @@ export default class Peripherals {
         }
         if (PWl >= 3) PWs.shift();
         PWs.push(CW);
-        clearTimeout(this.onwheel.Timer_stop);
-        this.onwheel.Timer_stop = setTimeout(() => {
-            this.onwheel.PreviousWheels = [];
+        clearTimeout(this.onwheelTimer_stop);
+        this.onwheelTimer_stop = setTimeout(() => {
+            this.PreviousWheels = [];
         }, 192);
     }
 

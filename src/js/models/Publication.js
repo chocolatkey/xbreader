@@ -115,6 +115,13 @@ export default class Publication {
         return this.metadata ? this.metadata : false;
     }
 
+    get uuid() {
+        if(!this.pmetadata)
+            return null;
+        const uuidParts = this.pmetadata.identifier.split(":");
+        return uuidParts[uuidParts.length - 1];
+    }
+
     get isTtb() {
         return this.direction == "ttb";
     }

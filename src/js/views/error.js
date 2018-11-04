@@ -9,12 +9,12 @@ const errorMappings = {
     503: __("Content is temporarily unavailable."),
 };
 
-export default class Error {
+export default class ErrorView {
     oninit(vnode) {
         this.errorCode = 666;
         if(vnode.attrs.message) {
             try {
-                this.errorMessage = window.atob(vnode.attrs.message);
+                this.errorMessage = window.atob(decodeURIComponent(vnode.attrs.message));
             } catch(e) {
                 console.error("Failed decoding error message", e);
                 this.errorMessage = __("Invalid error");

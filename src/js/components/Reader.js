@@ -59,7 +59,7 @@ export default class Reader {
             onBeforeReady: () => {}, // Right before final preparations are carried out
             onReady: () => {}, // When reader is ready
             onPageChange: () => {}, // When page is changed
-            onLastPage: () => {}, // When trying to go further after the last page
+            onLastPage: () => true, // When trying to go further after the last page. If returns true, auto-advance
             onToggleInterface: () => {}, // When interface is shown/hidden
             onDRM: () => {}, // When images are protected, this function provides DRM capabilities
         };
@@ -111,6 +111,17 @@ export default class Reader {
                 };
                 m.redraw();
             },
+            onLastPage: () => {
+                if(this.config.onLastPage(this.series)) {
+                    const next = this.series.next;
+                    if(!next) { // No more chapters left
+                        alert(__("Reached the end of this publication!"));
+                        return;
+                    }
+                    // Go to next chapter
+                    m.route.set("/:id", { id: next.uuid, }, { replace: false });
+                }
+            },
             increment: 2,
             startIndex: 0,
             threshold: 20,
@@ -143,6 +154,7 @@ export default class Reader {
         if(this.direction == direction) // Already that direction
             return true;
         console.log("Setting direction: " + direction);
+        if(this.zoomer) this.zoomer.scale = 1;
         this.guideHidden = this.config.guideHidden;
         clearTimeout(this.guideHider);
         this.guideHider = setTimeout(() => {
@@ -203,6 +215,18 @@ export default class Reader {
         return true;
     }
 
+    /**
+     * Called when reader is being destroyed, for example when changing chapters
+     */
+    onremove() {
+        // Slider and binder
+        this.binder.destroy();
+        this.slider.destroy(false);
+
+        // Destroy classes & objects
+        this.binder = this.slider = this.publication = this.series = this.ui = this.config = null;
+    }
+
     oncreate(vnode) {
         let manifestPointer = this.config.loader(vnode.attrs.cid);
         if(!manifestPointer)
@@ -239,7 +263,6 @@ export default class Reader {
                 const encodedMessage = encodeURIComponent(window.btoa(exp.message));
                 m.route.set("/error/:code/:message", { code: exp.code, message: encodedMessage }, { replace: true });
             } else {
-                console.dir(error);
                 const encodedMessage = encodeURIComponent(window.btoa(error.message ? error.message : new String(error)));
                 m.route.set("/error/:code/:message", { code: error.code ? error.code : 9500, message: encodedMessage }, { replace: true });
             }
