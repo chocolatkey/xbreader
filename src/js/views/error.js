@@ -13,7 +13,12 @@ export default class Error {
     oninit(vnode) {
         this.errorCode = 666;
         if(vnode.attrs.message) {
-            this.errorMessage = vnode.attrs.message;
+            try {
+                this.errorMessage = window.atob(vnode.attrs.message);
+            } catch(e) {
+                console.error("Failed decoding error message", e);
+                this.errorMessage = __("Invalid error");
+            }
         }
         else if(errorMappings[vnode.attrs.code]) {
             this.errorMessage = errorMappings[vnode.attrs.code];

@@ -236,9 +236,13 @@ export default class Reader {
         }).catch(error => {
             if(typeof error.export === "function") {
                 const exp = error.export();
-                m.route.set("/error/:code/:message", { code: exp.code, message: exp.message }, { replace: true });
-            } else
-                m.route.set("/error/:code/:message", { code: error.code ? error.code : 9500, message: error.message ? error.message : new String(error) }, { replace: true });
+                const encodedMessage = encodeURIComponent(window.btoa(exp.message));
+                m.route.set("/error/:code/:message", { code: exp.code, message: encodedMessage }, { replace: true });
+            } else {
+                console.dir(error);
+                const encodedMessage = encodeURIComponent(window.btoa(error.message ? error.message : new String(error)));
+                m.route.set("/error/:code/:message", { code: error.code ? error.code : 9500, message: encodedMessage }, { replace: true });
+            }
             return;
         });
         console.log("Reader component created");
