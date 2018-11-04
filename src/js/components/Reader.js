@@ -232,7 +232,7 @@ export default class Reader {
                     m.redraw();
                 }, 1500);
                 this.config.onReady(this);
-            }, 0);
+            }, 50); // TODO fix need for timeout when making Slider a mithril component
         }).catch(error => {
             if(typeof error.export === "function") {
                 const exp = error.export();

@@ -375,7 +375,6 @@ export default class Peripherals {
     changeCursor(newCursor) {
         if (newCursor == this.currentCursor)
             return;
-        console.log(newCursor);
         this.currentCursor = newCursor;
         m.redraw();
     }
