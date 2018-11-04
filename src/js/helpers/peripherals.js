@@ -102,12 +102,15 @@ export default class Peripherals {
 
 
         // Bind all event handlers for referencability
-        ["touchstartHandler", "touchendHandler", "touchmoveHandler", "mousedownHandler", "mouseupHandler", "mousemoveHandler", "mousemoveUpdater"].forEach(method => {
+        ["touchstartHandler", "touchendHandler", "touchmoveHandler", "mousedownHandler", "mouseupHandler", "mousemoveHandler", "mousemoveUpdater", "mtimerUpdater"].forEach(method => {
             this[method] = this[method].bind(this);
         });
         this.attachEvents();
         // Mousemove applies to TTB view as well because it controls cursors.
         tx.addEventListener("mousemove", this.mousemoveUpdater);
+        this.slider.selector.addEventListener("touchend", this.mtimerUpdater);
+        this.slider.selector.addEventListener("mouseup", this.mtimerUpdater);
+        this.slider.selector.addEventListener("mousedown", this.mtimerUpdater);
         this.slider.selector.addEventListener("mousemove", this.mousemoveHandler);
 
         console.log("Peripherals ready");
@@ -197,6 +200,12 @@ export default class Peripherals {
         }
     }
 
+    mtimerUpdater(e) {
+        setTimeout(() => {
+            clearTimeout(this.mtimer);
+        }, 100);
+    }
+
     /**
      * touchend event handler
      */
@@ -208,7 +217,6 @@ export default class Peripherals {
             this.updateAfterDrag();
         }
         setTimeout(() => {
-            clearTimeout(this.mtimer);
             this.clearDrag();
         }, 50);
     }
@@ -279,9 +287,6 @@ export default class Peripherals {
      * mousedown event handler
      */
     mousedownHandler(e) {
-        setTimeout(() => {
-            clearTimeout(this.mtimer);
-        }, 50);
         if (this.isScaled) {
             this.addTouch(e);
             this.touchstartHandler(e);
@@ -293,9 +298,6 @@ export default class Peripherals {
      * mouseup event handler
      */
     mouseupHandler(e) {
-        setTimeout(() => {
-            clearTimeout(this.mtimer);
-        }, 50);
         if (this.isScaled) {
             this.addTouch(e);
             this.touchendHandler(e);
