@@ -53,6 +53,7 @@ export default class Reader {
             cdn: false, // What CDN to use. False = no CDN
             link: null, // WebPub URL to pass directly and load
             series: null, // Volume/Chapter data
+
             // Callback/Hooks
             loader: () => {}, // Custom loader for the webpub. Can return a URL, WebPub Object or Promise
             onPublicationLoad: () => {}, // Right after the publication is fully loaded
@@ -220,8 +221,10 @@ export default class Reader {
      */
     onremove() {
         // Slider and binder
-        this.binder.destroy();
-        this.slider.destroy(false);
+        if(this.binder)
+            this.binder.destroy();
+        if(this.slider)
+            this.slider.destroy(false);
 
         // Destroy classes & objects
         this.binder = this.slider = this.publication = this.series = this.ui = this.config = null;
