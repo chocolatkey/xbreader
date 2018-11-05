@@ -1,6 +1,6 @@
 import m from "mithril";
 import Navigator from "../helpers/navigator";
-import { xbError } from "../helpers/errors";
+import xbError from "../models/xbError";
 
 export default class Publication {
     constructor() {
@@ -45,7 +45,9 @@ export default class Publication {
             this.url = manifestPath;
             return this.loadFromData(manifest);
         }).catch((error) => {
-            throw error;
+            if(error.message.indexOf("Invalid JSON") === 0)
+                throw new xbError(404);
+            throw new xbError(9400, error);
         });
     }
 

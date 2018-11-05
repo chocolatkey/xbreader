@@ -262,9 +262,7 @@ export default class Reader {
             }, 50); // TODO fix need for timeout when making Slider a mithril component
         }).catch(error => {
             if(typeof error.export === "function") {
-                const exp = error.export();
-                const encodedMessage = encodeURIComponent(window.btoa(exp.message));
-                m.route.set("/error/:code/:message", { code: exp.code, message: encodedMessage }, { replace: true });
+                error.go();
             } else {
                 const encodedMessage = encodeURIComponent(window.btoa(error.message ? error.message : new String(error)));
                 m.route.set("/error/:code/:message", { code: error.code ? error.code : 9500, message: encodedMessage }, { replace: true });

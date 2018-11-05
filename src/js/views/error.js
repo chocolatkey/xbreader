@@ -19,6 +19,7 @@ export default class ErrorView {
                 console.error("Failed decoding error message", e);
                 this.errorMessage = __("Invalid error");
             }
+            this.errorCode = vnode.attrs.code;
         }
         else if(errorMappings[vnode.attrs.code]) {
             this.errorMessage = errorMappings[vnode.attrs.code];
