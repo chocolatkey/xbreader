@@ -24,6 +24,7 @@ export default class Interface {
             title: __("Select Page"),
             onchange: (e) => { // Activates when slider is released (mouse let go). Needed for IE compatibility
                 this.sliderMove(e, slider, publication);
+                e.target.blur();
             },
             oninput: (e) => { // Triggered on slider value changed (while dragging it!), works in evergreen browsers
                 this.sliderMove(e, slider, publication);
@@ -47,7 +48,6 @@ export default class Interface {
             title: __("Current Page"),
             onclick: () => {
                 const newPage = parseInt(prompt(`${__("Input a page number")} (${1}-${publication.pmetadata.numberOfPages})`, slider.currentSlide + 1)) - 1;
-                console.log(newPage);
                 if(newPage !== (slider.currentSlide + 1) && newPage >= 0 && newPage < publication.pmetadata.numberOfPages)
                     slider.goTo(newPage);
             }
