@@ -114,7 +114,7 @@ export default {
     },
     image: function(item, index) { // TODO preserve original query params
         if(!item) return null;
-        if(!this.isApplicableHost(item.href)) return item.href;
+        if(!this.isApplicableHost(item.href) || !item.xbr.isImage) return item.href;
         const whatcdn = window.xbconfig.cdn; // TODO not the global
         switch (whatcdn) {
         case "photon":

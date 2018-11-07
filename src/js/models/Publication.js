@@ -1,6 +1,6 @@
 import m from "mithril";
-import Navigator from "../helpers/navigator";
-import xbError from "../models/xbError";
+import Navigator from "./Navigator";
+import xbError from "./xbError";
 
 export default class Publication {
     constructor() {
@@ -66,7 +66,7 @@ export default class Publication {
                 }
                 this.spine = manifestData.readingOrder;
                 this.links = manifestData.links;
-                if(!this.url && this.links.length)
+                if(!/^(?:[a-z]+:)?\/\//i.test(this.url) && this.links.length)
                     this.url = this.links[0].href;
                 console.log("Publication loaded: " + this.metadata.title);
                 this.navi = new Navigator(this);

@@ -1,4 +1,4 @@
-import Publication from "../models/Publication";
+import Publication from "./Publication";
 export default class Navigator {
     constructor(publication) {
         this.spreads = [];
@@ -20,9 +20,9 @@ export default class Navigator {
             item.properties.spread = item.properties.spread ? item.properties.spread : "landscape";
             if(!redo) {
                 item.xbr.number = index + 1;
-                Publication.fixDeprecated(item, "type", "mime");
-                if(item.mime.indexOf("image/") != 0) // TODO somehow deal with instead of warning
-                    console.warn(`Item #${index} (${item.href}) in spine is not an image`);
+                Publication.fixDeprecated(item, "mime", "type");
+                if(item.type.indexOf("image/") == 0)
+                    item.xbr.isImage = true;
                 if(!item.properties.orientation) item.properties.orientation = item.width > item.height ? "landscape" : "portrait";
             }
             const isLandscape = item.properties.orientation === "landscape" ? true : false;
@@ -82,6 +82,8 @@ export default class Navigator {
                 console.error(`Went off the edge of the spine @${slider.currentSlide}`);
                 return "?";
             }
+            if(spread.length && spread[0].xbr.final)
+                return __("END");
             spread.forEach((item, index) => {
                 if(!index)
                     spreadString += item.xbr.number;
@@ -89,7 +91,11 @@ export default class Navigator {
                     spreadString += "-" + item.xbr.number;
             });
             return spreadString;
-        } else
+        } else {
+            const spread = this.spreads[Math.floor((slider.currentSlide + 1) / slider.perPage / 2)];
+            if(spread && spread.length && spread[0].xbr.final)
+                return __("END");
             return slider.currentSlide + 1;
+        }
     }
 }
