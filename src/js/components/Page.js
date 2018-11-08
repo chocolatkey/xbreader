@@ -88,19 +88,9 @@ export default class Page {
                     this.itemHeight = docWidth / this.data.width * this.data.height;
                 }
             }
-            itemAttrs.style = `height: ${this.parseDimension(this.itemHeight)}; width: ${this.parseDimension(this.itemWidth)}; margin: 0 auto;`;
-            if(slider.single) {
-                if(slider.ttb)
-                    this.marginTop = vnode.attrs.index > 0 ? 10 : 0;
-                    
-                itemAttrs.style += ` margin-top: ${this.marginTop}px;`;
-            } else {
-                if (this.float === "left")
-                    this.marginLeft = (docWidth - this.itemWidth) / 2;
-                else if (this.float === "right" || this.float === "center")
-                    this.marginRight = (docWidth - this.itemWidth) / 2;
-                itemAttrs.style = this.styles;
-            }
+            if(slider.ttb)
+                this.marginTop = vnode.attrs.index > 0 ? 10 : 0;
+            itemAttrs.style = `height: ${this.parseDimension(this.itemHeight)}; width: ${this.parseDimension(this.itemWidth)}; margin: ${this.marginTop}px auto 0 auto;`;
         } else // Horizontal (LTR & RTL)
             itemAttrs.style = this.styles;
         let innerItemIs = null;
