@@ -1,9 +1,10 @@
 import m from "mithril";
 import Publication from "../models/Publication";
 import Ui from "../models/Ui";
+import Slider from "../models/Slider";
 import Peripherals from "../helpers/peripherals";
-import Slider from "./Slider";
 import sML from "../helpers/sMLstub";
+import Spine from "./Spine";
 import Page from "./Page";
 import Interface from "./Interface";
 import Platform from "../helpers/platform";
@@ -30,14 +31,11 @@ export default class Reader {
                 
         }
         this.direction = "auto"; // page-progression-direction
-        this.spread = true;
         this.hint = "";
 
         this.loadingStatus = __("Initializing...");
         this.loadingFailed = false;
 
-
-        window.addEventListener("resize", this.resizeHandler);
         window.addEventListener("orientationchange", this.resizeHandler);
         Platform.checkRequestAnimationFrame();
     }
@@ -58,7 +56,7 @@ export default class Reader {
             loader: () => {}, // Custom loader for the webpub. Can return a URL, WebPub Object or Promise
             onPublicationLoad: () => {}, // Right after the publication is fully loaded
             onBeforeReady: () => {}, // Right before final preparations are carried out
-            onReady: () => {}, // When reader is ready
+            onReady: () => {}, // When redrawing has finished
             onPageChange: () => {}, // When page is changed
             onLastPage: () => true, // When trying to go further after the last page. If returns true, auto-advance
             onToggleInterface: () => {}, // When interface is shown/hidden
@@ -90,50 +88,6 @@ export default class Reader {
         }, 50);
     }
 
-    makeSlider(isTTB) {
-        this.slider = new Slider({
-            selector: "#br-book", // TODO dynamic
-            duration: 200,
-            easing: "ease-out",
-            onChange: () => {
-                if(this.binder)
-                    this.guideHidden = true;
-                this.zoomer.scale = 1;
-                m.redraw();
-                this.config.onPageChange(this.slider.currentSlide + (this.slider.single ? 1 : 0), this.direction, !this.slider.single);
-            },
-            onInit: () => {
-                this.zoomer = {
-                    scale: 1,
-                    translate: {
-                        X: 0,
-                        Y: 0
-                    },
-                };
-                m.redraw();
-            },
-            onLastPage: () => {
-                if(this.config.onLastPage(this.series)) {
-                    const next = this.series.next;
-                    if(!next) { // No more chapters left
-                        alert(__("Reached the end of this publication!"));
-                        return;
-                    }
-                    // Go to next chapter
-                    m.route.set("/:id", { id: next.uuid, }, { replace: false });
-                }
-            },
-            increment: 2,
-            startIndex: 0,
-            threshold: 20,
-            ttb: isTTB,
-            fit: false,
-            rtl: this.publication.rtl,
-            shift: this.publication.shift,
-            perPage: this.spread === true ? 2 : 1
-        });
-    }
-
     switchDirection(direction) {
         const pdir = this.publication.direction;
         if(direction == null) {
@@ -155,7 +109,7 @@ export default class Reader {
         if(this.direction == direction) // Already that direction
             return true;
         console.log("Setting direction: " + direction);
-        if(this.zoomer) this.zoomer.scale = 1;
+        if(this.slider.zoomer) this.slider.zoomer.scale = 1;
         this.guideHidden = this.config.guideHidden;
         clearTimeout(this.guideHider);
         this.guideHider = setTimeout(() => {
@@ -179,20 +133,13 @@ export default class Reader {
             if(!this.slider) {
                 // TTB-only publication!
                 console.log("TTB lock");
-                this.makeSlider(true);
+                this.slider.ttb = true;
             }
-            this.slider.config.ttb = true;
-            this.slider.config.rtl = false;
-            this.slider.resolveSlidesNumber();
-            this.slider.destroy(true, () => {
-                //this.binder.detachEvents();
-                m.redraw(); // Need to redraw so items are in vertical alignment and we can ~slide~
-                this.slider.slideToCurrent();
-            });
-            setTimeout(() => {
-                this.binder.updateMovingParameters(this.direction);
-                this.binder.detachEvents();
-            });
+            this.slider.ttb = true;
+            this.slider.rtl = false;
+            this.slider.resizeHandler(true);
+            // maybe settimeout?
+            this.binder.updateMovingParameters(this.direction);
             return true;
         default:
             this.hint = __("Unknown flow!");
@@ -200,19 +147,13 @@ export default class Reader {
             return false;
         }
         // Horizontal (RTL or LTR)
-        if(!this.slider) {
-            this.makeSlider(false);
-            console.log("Slider initialized");
-        } else {
-            this.slider.config.ttb = false;
-            this.slider.config.rtl = this.publication.rtl;
-            this.slider.resizeHandler();
-            if (this.slider.currentSlide % 2 && !this.slider.single) // Prevent getting out of track
-                this.slider.currentSlide++;
-            this.slider.init();
-            this.binder.attachEvents();
-            this.binder.updateMovingParameters(this.direction);
-        }
+        this.slider.ttb = false;
+        this.slider.rtl = this.publication.rtl;
+        if (this.slider.currentSlide % 2 && !this.slider.single) // Prevent getting out of track
+            this.slider.currentSlide++;
+        this.slider.resizeHandler(true);
+        this.binder.attachEvents();
+        this.binder.updateMovingParameters(this.direction);
         return true;
     }
 
@@ -224,7 +165,7 @@ export default class Reader {
         if(this.binder)
             this.binder.destroy();
         if(this.slider)
-            this.slider.destroy(false);
+            this.slider.destroy();
 
         // Destroy classes & objects
         this.binder = this.slider = this.publication = this.series = this.ui = this.config = null;
@@ -246,20 +187,18 @@ export default class Reader {
         this.publication.smartLoad(manifestPointer).then(() => {
             this.config.onPublicationLoad(this);
             this.series = new Series(this.publication, this.config.series);
+            this.series.setRelations();
+            this.slider = new Slider(this.series, this.publication, this.binder, this.config);
+            this.binder = new Peripherals(this);
+            this.switchDirection(this.publication.direction);
+            this.config.onBeforeReady(this);
             m.redraw();
             setTimeout(() => {
-                this.series.setRelations();
-                this.switchDirection(this.publication.direction);
-                this.config.onBeforeReady(this);
-                this.binder = new Peripherals(this);
+                if(this.ui && !this.ui.mousing)
+                    this.ui.toggle(false);
                 m.redraw();
-                setTimeout(() => {
-                    if(!this.ui.mousing)
-                        this.ui.toggle(false);
-                    m.redraw();
-                }, 1500);
-                this.config.onReady(this);
-            }, 50); // TODO fix need for timeout when making Slider a mithril component
+            }, 1500);
+            this.config.onReady(this);
         }).catch(error => {
             if(typeof error.export === "function") {
                 error.go();
@@ -273,6 +212,7 @@ export default class Reader {
     }
 
     view(vnode) {
+        const sldr = vnode.state.slider;
         if(!(vnode.state.publication && vnode.state.publication.ready))
             return m("div.br-loader__container", [
                 m("div.spinner#br-loader__spinner"),
@@ -280,12 +220,12 @@ export default class Reader {
             ]);
         // Additional
         let bookStyle = {
-            //overflow: vnode.state.slider ? (vnode.state.slider.config.ttb ? "auto" : "hidden") : "hidden",
-            direction: vnode.state.slider ? (vnode.state.slider.config.rtl ? "rtl" : "ltr") : "ltr",
-            //"overflow-y": vnode.state.slider ? (vnode.state.slider.config.perPage == 1 ? "scroll" : "auto") : "auto", // TODO SMALLS SCREEN!
+            overflow: "hidden",//vnode.state.slider ? (vnode.state.slider.ttb ? "auto" : "hidden") : "hidden",
+            direction: sldr ? (vnode.state.slider.rtl ? "rtl" : "ltr") : "ltr",
+            //"overflow-y": vnode.state.slider ? (vnode.state.slider.perPage == 1 ? "scroll" : "auto") : "auto", // TODO SMALLS SCREEN!
         };
 
-        document.documentElement.style.overflow = vnode.state.slider ? ((vnode.state.slider.config.ttb || vnode.state.slider.config.perPage === 1) ? "auto" : "hidden") : "hidden";
+        document.documentElement.style.overflow = sldr ? ((sldr.ttb || !sldr.spread) ? "auto" : "hidden") : "hidden";
 
         // Cursor
         const bnd = vnode.state.binder;
@@ -295,7 +235,7 @@ export default class Reader {
 
 
         // Zoomer
-        const zmr = vnode.state.zoomer;
+        const zmr = sldr ? sldr.zoomer : null;
         if(zmr) {
             bookStyle.transform = `scale(${zmr.scale})`;
             bookStyle.transformOrigin = `${zmr.translate.X}px ${zmr.translate.Y}px 0px`;
@@ -305,8 +245,30 @@ export default class Reader {
             }
         }
 
+        const pages = vnode.state.publication.spine.map((page, index) => {
+            //const items = [];
+            /*if (!index) // First push a blank
+                items.push(m(Page, {
+                    data: page,
+                    key: page.href,
+                    blank: true,
+                    float: "left",
+                    slider: this.slider,
+                }));*/
+            return m(Page, {
+                data: page,
+                key: page.href,
+                isImage: page.xbr.isImage,
+                index: index,
+                slider: sldr,
+                drmCallback: this.config.onDRM,
+                binder: bnd
+            });
+            //return items;
+        });
+
         // Rendering
-        let rend = [
+        const rend = [
             m("div#br-main", {
                 style: vnode.state.publication.isReady ? null : "visibility: hidden;"
             }, [
@@ -318,30 +280,21 @@ export default class Reader {
                         e.preventDefault();
                     },
                     ondblclick: (e) => {
-                        if(vnode.state.slider.config.ttb || !this.binder)
+                        if(vnode.state.slider.ttb || !bnd)
                             return;
-                        this.binder.ondblclick(e);
+                        bnd.ondblclick(e);
                         e.preventDefault();
-                    }
-                }, vnode.state.publication.spine.map((page, index) => {
-                    const items = [];
-                    /*if (!index) // First push a blank
-                        items.push(m(Page, {
-                            data: page,
-                            key: page.href,
-                            blank: true,
-                            float: "left",
-                            slider: this.slider,
-                        }));*/
-                    items.push(m(Page, {
-                        data: page,
-                        key: page.href,
-                        index: index,
-                        slider: this.slider,
-                        drmCallback: this.config.onDRM
-                    }));
-                    return items;
-                })),
+                    },
+                    onclick: bnd ? bnd.onclick : null,
+                    ontouchend: bnd ? bnd.mtimerUpdater : null,
+                    onmouseup: bnd ? bnd.mtimerUpdater : null,
+                    onmousedown: bnd ? bnd.mtimerUpdater : null,
+                    onmousemove: bnd ? bnd.mousemoveHandler : null,
+                    ontouchmove: bnd ? bnd.touchmoveHandler : null,
+                }, m(Spine, {
+                    slider: sldr,
+                    binder: bnd
+                }, pages)),
             ]),
             m("div.br-guide", {
                 class: "br-guide__" + this.direction + ((vnode.state.guideHidden || !vnode.state.publication.isReady) ? " hide" : "")
@@ -351,6 +304,7 @@ export default class Reader {
             rend.push(m(Interface, {
                 reader: this,
                 model: this.ui,
+                slider: this.slider
             }));
         return rend;
     }

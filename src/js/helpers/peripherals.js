@@ -9,7 +9,6 @@ export default class Peripherals {
         this.ui = Reader.ui;
         this.reader = Reader;
 
-        this.transformProperty = Platform.webkitOrNot();
         this.PreviousWheels = [];
         this.PreviousCoord = {
             X: 0,
@@ -94,30 +93,24 @@ export default class Peripherals {
  
         this.updateMovingParameters(Reader.direction);
 
-        this.observers = ["keydown", "keyup", "keypress", "wheel", "scroll", "touchmove"];
+        this.observers = ["keydown", "keyup", "keypress", "wheel", "scroll", "touchmove", "message"];
 
         this.handlers = [
-            "touchstartHandler", "touchendHandler", "touchmoveHandler", "mousedownHandler", "mouseupHandler", "mousemoveHandler", "mousemoveUpdater", "mtimerUpdater", "onkeydown", "onkeyup", "onkeypress", "onwheel", "onscroll", "ontouchmove", "onpointermove", "onclick", "ondblclick"
+            "touchstartHandler", "touchendHandler", "touchmoveHandler", "mousedownHandler", "mouseupHandler", "mousemoveHandler", "mousemoveUpdater", "mtimerUpdater", "onkeydown", "onkeyup", "onkeypress", "onwheel", "onscroll", "ontouchmove", "onpointermove", "onclick", "ondblclick", "onmessage"
         ];
 
         // Bind all event handlers for referencability
         this.handlers.forEach(method => {
             this[method] = this[method].bind(this);
         });
-        this.observe(this.slider.selector);
+        //this.observe(this.slider.selector);
         this.observe(window);
         const tx = document.documentElement;
         tx.addEventListener("pointermove", this.onpointermove);
-        this.slider.selector.addEventListener("click", this.onclick);
-        //this.slider.selector.addEventListener("dblclick", this.ondblclick);
 
         this.attachEvents();
         // Mousemove applies to TTB view as well because it controls cursors.
         tx.addEventListener("mousemove", this.mousemoveUpdater);
-        this.slider.selector.addEventListener("touchend", this.mtimerUpdater);
-        this.slider.selector.addEventListener("mouseup", this.mtimerUpdater);
-        this.slider.selector.addEventListener("mousedown", this.mtimerUpdater);
-        this.slider.selector.addEventListener("mousemove", this.mousemoveHandler);
 
         console.log("Peripherals ready");
     }
@@ -127,18 +120,26 @@ export default class Peripherals {
      * Remove all event listeners and nullify
      */
     destroy() {
-        this.unobserve(this.slider.selector);
+        //this.unobserve(this.slider.selector);
         this.unobserve(window);
         const tx = document.documentElement;
         tx.removeEventListener("pointermove", this.onpointermove);
-        this.detachEvents();
         tx.removeEventListener("mousemove", this.mousemoveUpdater);
-        this.slider.selector.removeEventListener("touchend", this.mtimerUpdater);
+        /*this.slider.selector.removeEventListener("touchend", this.mtimerUpdater);
         this.slider.selector.removeEventListener("mouseup", this.mtimerUpdater);
         this.slider.selector.removeEventListener("mousedown", this.mtimerUpdater);
-        this.slider.selector.removeEventListener("mousemove", this.mousemoveHandler);
+        this.slider.selector.removeEventListener("mousemove", this.mousemoveHandler);*/
 
         this.coordinator = null;
+    }
+
+    onmessage(e) { // TODO more messages
+        if(e.data.indexOf("xbr:move:") !== 0)
+            return;
+        e.stopPropagation();
+        const p = e.data.split(":");
+        const v = p[p.length - 1];
+        this.moveBy(isNaN(v) ? v : parseInt(v));
     }
 
 
@@ -158,28 +159,6 @@ export default class Peripherals {
             transformX: 0,
             transformY: 0
         };
-
-        // Touch events
-        this.slider.selector.addEventListener("touchstart", this.touchstartHandler);
-        this.slider.selector.addEventListener("touchend", this.touchendHandler);
-        this.slider.selector.addEventListener("touchmove", this.touchmoveHandler);
-
-        // Mouse events, only used for zoom moving
-        this.slider.selector.addEventListener("mousedown", this.mousedownHandler);
-        this.slider.selector.addEventListener("mouseup", this.mouseupHandler);
-    }
-
-
-
-    /**
-     * Detaches listeners from required events.
-     */
-    detachEvents() {
-        this.slider.selector.removeEventListener("touchstart", this.touchstartHandler);
-        this.slider.selector.removeEventListener("touchend", this.touchendHandler);
-        this.slider.selector.removeEventListener("touchmove", this.touchmoveHandler);
-        this.slider.selector.removeEventListener("mousedown", this.mousedownHandler);
-        this.slider.selector.removeEventListener("mouseup", this.mouseupHandler);
     }
 
     /**
@@ -210,16 +189,9 @@ export default class Peripherals {
 
         e.stopPropagation();
 
-        if(e.touches.length === 3) { // Three or more fingers
-            this.ui.toggle();
-            m.redraw();
-            return;
-        }
-
         switch (e.touches.length) {
         case 3:
             this.ui.toggle();
-            m.redraw();
             return;
         case 2:
             // Pinch
@@ -228,13 +200,14 @@ export default class Peripherals {
         this.pointerDown = true;
         this.drag.startX = e.touches[0].pageX;
         this.drag.startY = e.touches[0].pageY;
-        if (this.reader.zoomer) {
-            this.drag.transformX = this.reader.zoomer.translate.X;
-            this.drag.transformY = this.reader.zoomer.translate.Y;
+        if (this.slider.zoomer) {
+            this.drag.transformX = this.slider.zoomer.translate.X;
+            this.drag.transformY = this.slider.zoomer.translate.Y;
         }
     }
 
     mtimerUpdater(e) {
+        e.redraw = false;
         setTimeout(() => {
             clearTimeout(this.mtimer);
         }, 100);
@@ -246,7 +219,8 @@ export default class Peripherals {
     touchendHandler(e) {
         e.stopPropagation();
         this.pointerDown = false;
-        this.slider.enableTransition();
+        //this.slider.updateProperties(true);
+
         if (this.drag.endX) {
             this.updateAfterDrag();
         }
@@ -271,43 +245,45 @@ export default class Peripherals {
         }
 
         if (this.isScaled && this.pointerDown) {
-            e.preventDefault();
             const BibiEvent = this.coordinator.getBibiEvent(e);
-            this.reader.zoomer.translate = {
+            this.slider.zoomer.translate = {
                 X: this.drag.transformX - (BibiEvent.Coord.X - this.drag.startX),
                 Y: this.drag.transformY - (BibiEvent.Coord.Y - this.drag.startY)
             };
 
-            if (this.reader.zoomer.translate.X < 0)
-                this.reader.zoomer.translate.X = 0;
-            if (this.reader.zoomer.translate.Y < 0)
-                this.reader.zoomer.translate.Y = 0;
+            if (this.slider.zoomer.translate.X < 0)
+                this.slider.zoomer.translate.X = 0;
+            if (this.slider.zoomer.translate.Y < 0)
+                this.slider.zoomer.translate.Y = 0;
 
-            if (this.reader.zoomer.translate.X > this.slider.selector.offsetWidth)
-                this.reader.zoomer.translate.X = this.slider.selector.offsetWidth;
-            if (this.reader.zoomer.translate.Y > this.slider.selector.offsetHeight)
-                this.reader.zoomer.translate.Y = this.slider.selector.offsetHeight;
+            if (this.slider.zoomer.translate.X > this.slider.width)
+                this.slider.zoomer.translate.X = this.slider.width;
+            if (this.slider.zoomer.translate.Y > this.slider.height)
+                this.slider.zoomer.translate.Y = this.slider.height;
 
-            m.redraw();
+            return;
+        }
+
+        if(this.slider.ttb) {
+            this.ui.mousing = false;
             return;
         }
 
         if (this.pointerDown && this.drag.letItGo) {
-            e.preventDefault();
             this.drag.endX = e.touches[0].pageX;
-            this.slider.sliderFrame.style.webkitTransition = `all 0ms ${this.slider.config.easing}`;
-            this.slider.sliderFrame.style.transition = `all 0ms ${this.slider.config.easing}`;
+            this.slider.updateProperties(false);
 
             const currentSlide = this.slider.currentSlide;
-            const currentOffset = currentSlide * (this.slider.selectorWidth / this.slider.perPage);
+            const currentOffset = currentSlide * (this.slider.width / this.slider.perPage);
             const dragOffset = (this.drag.endX - this.drag.startX);
-            const offset = this.slider.config.rtl ? currentOffset + dragOffset : currentOffset - dragOffset;
-            this.slider.sliderFrame.style[this.transformProperty] = `translate3d(${(this.slider.config.rtl ? 1 : -1) * offset}px, 0, 0)`;
+            const offset = this.slider.rtl ? currentOffset + dragOffset : currentOffset - dragOffset;
+            
+            this.slider.properties.transform = `translate3d(${(this.slider.rtl ? 1 : -1) * offset}px, 0, 0)`;
         }
     }
 
     get isScaled() {
-        return this.reader.zoomer && this.reader.zoomer.scale > 1;
+        return this.slider.zoomer && this.slider.zoomer.scale > 1;
     }
 
     addTouch(e) {
@@ -357,53 +333,58 @@ export default class Peripherals {
             this.addTouch(e);
             this.touchmoveHandler(e);
         } else {
-            clearTimeout(this.mtimer);
-            const mouseIt = setTimeout(() => {
-                this.ui.mousing = false; // Race!
-            }, 50);
-            this.mousePos = this.coordinator.getBibiEvent(e);
-            if(this.mousePosOut) {
-                clearTimeout(mouseIt); // Cancel override
-                this.ui.mousing = true;
+            if(!e.special) {
+                clearTimeout(this.mtimer);
+                const mouseIt = setTimeout(() => {
+                    this.ui.mousing = false; // Race!
+                }, 50);
+                this.mousePos = this.coordinator.getBibiEvent(e);
+                if(this.mousePosOut) {
+                    clearTimeout(mouseIt); // Cancel override
+                    this.ui.mousing = true;
+                    this.ui.toggle(true);
+                } else {
+                    this.mtimer = setTimeout(() => {
+                        if(this.mousePosOut || this.ui.mousing)
+                            return;
+                        this.ui.toggle(false);
+                        m.redraw();
+                    }, 500);
+                }
+
+                const sliderLength = this.slider.length - 1;
+                const atFirstSlide = Math.max(this.slider.currentSlide, 0) == 0;
+                const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) == sliderLength;
+                if (this.slider.ttb) { // Vertical controls
+                    switch (this.mousePos.Division.Y) {
+                    case "bottom":
+                        this.changeCursor(atLastSlide ? "not-allowed" : "s-resize");
+                        break;
+                    case "top":
+                        this.changeCursor(atFirstSlide ? "not-allowed" : "n-resize");
+                        break;
+                    case "middle":
+                        this.changeCursor("pointer");
+                        break;
+                    }
+                } else { // Horizontal controls
+                    const rtl = this.slider.rtl;
+                    switch (this.mousePos.Division.X) {
+                    case "left":
+                        this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed" : "w-resize");
+                        break;
+                    case "right":
+                        this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed" : "e-resize");
+                        break;
+                    case "center":
+                        this.changeCursor("pointer");
+                        break;
+                    }
+                }
+            } else {
+                this.changeCursor(null);
                 this.ui.toggle(true);
                 m.redraw();
-            } else {
-                this.mtimer = setTimeout(() => {
-                    if(this.mousePosOut || this.ui.mousing)
-                        return;
-                    this.ui.toggle(false);
-                    m.redraw();
-                }, 500);
-            }
-
-            const sliderLength = this.slider.length - 1;
-            const atFirstSlide = Math.max(this.slider.currentSlide, 0) == 0;
-            const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) == sliderLength;
-            if (this.slider.config.ttb) { // Vertical controls
-                switch (this.mousePos.Division.Y) {
-                case "bottom":
-                    this.changeCursor(atLastSlide ? "not-allowed" : "s-resize");
-                    break;
-                case "top":
-                    this.changeCursor(atFirstSlide ? "not-allowed" : "n-resize");
-                    break;
-                case "middle":
-                    this.changeCursor("pointer");
-                    break;
-                }
-            } else { // Horizontal controls
-                const rtl = this.slider.config.rtl;
-                switch (this.mousePos.Division.X) {
-                case "left":
-                    this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed" : "w-resize");
-                    break;
-                case "right":
-                    this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed" : "e-resize");
-                    break;
-                case "center":
-                    this.changeCursor("pointer");
-                    break;
-                }
             }
         }
     }
@@ -412,7 +393,6 @@ export default class Peripherals {
         if (newCursor == this.currentCursor)
             return;
         this.currentCursor = newCursor;
-        m.redraw();
     }
 
     get cursor() {
@@ -432,21 +412,20 @@ export default class Peripherals {
      * Recalculate drag/swipe event and reposition the frame of a slider
      */
     updateAfterDrag() {
-        const movement = (this.slider.config.rtl ? -1 : 1) * (this.drag.endX - this.drag.startX);
+        const movement = (this.slider.rtl ? -1 : 1) * (this.drag.endX - this.drag.startX);
         const movementDistance = Math.abs(movement);
-        const howManySliderToSlide = this.slider.perPage * (this.slider.config.multipleDrag ? Math.ceil(movementDistance / (this.slider.selectorWidth / this.slider.perPage)) : 1);
+        const howManySliderToSlide = this.slider.perPage;
 
         const slideToNegativeClone = movement > 0 && this.slider.currentSlide - howManySliderToSlide < 0;
-        const slideToPositiveClone = movement < 0 && this.slider.currentSlide + howManySliderToSlide > this.slider.innerElements.length - this.slider.perPage;
+        const slideToPositiveClone = movement < 0 && this.slider.currentSlide + howManySliderToSlide > this.slider.slength - this.slider.perPage;
 
-        if (movement > 0 && movementDistance > this.slider.config.threshold && this.slider.innerElements.length > this.slider.perPage) {
+        if (movement > 0 && movementDistance > this.slider.threshold && this.slider.slength > this.slider.perPage) {
             this.slider.prev(howManySliderToSlide);
-        } else if (movement < 0 && movementDistance > this.slider.config.threshold && this.slider.innerElements.length > this.slider.perPage) {
+        } else if (movement < 0 && movementDistance > this.slider.threshold && this.slider.slength > this.slider.perPage) {
             this.slider.next(howManySliderToSlide);
         }
         this.ui.toggle(false);
         this.slider.slideToCurrent(true); // slideToNegativeClone || slideToPositiveClone
-        m.redraw();
     }
 
     ////////
@@ -608,7 +587,7 @@ export default class Peripherals {
         var MovingParameter = this.MovingParameters[!Eve.shiftKey ? Eve.KeyName : Eve.KeyName.toUpperCase()];
         if (!MovingParameter) {
             //Eve.target = this.slider.selector;
-            this.slider.selector.focus();
+            // this.slider.selector.focus(); // TODO!
             if(this.ui.toggle(false)) m.redraw();
             return false;
         }
@@ -642,13 +621,13 @@ export default class Peripherals {
 
             // Zoom
             if (MovingParameter === "zoom-in") {
-                if (this.reader.zoomer.scale < 6)
-                    this.reader.zoomer.scale += 0.5; // Gets slower as you zoom in more due to decreasing ratio impact
+                if (this.slider.zoomer.scale < 6)
+                    this.slider.zoomer.scale += 0.5; // Gets slower as you zoom in more due to decreasing ratio impact
             } else if (MovingParameter === "zoom-out") {
-                if (this.reader.zoomer.scale > 1)
-                    this.reader.zoomer.scale -= 0.5;
+                if (this.slider.zoomer.scale > 1)
+                    this.slider.zoomer.scale -= 0.5;
             } else if (MovingParameter === "zoom-reset") {
-                this.reader.zoomer.scale = 1;
+                this.slider.zoomer.scale = 1;
             }
         }
         if (MovingParameter === "menu")
@@ -664,7 +643,7 @@ export default class Peripherals {
         if (!active)
             return;
         const ev = this.coordinator.getBibiEvent(event);
-        if (this.slider.config.ttb) { // Vertical controls
+        if (this.slider.ttb) { // Vertical controls
             switch (ev.Division.Y) {
             case "bottom":
                 this.moveBy(1);
@@ -678,8 +657,8 @@ export default class Peripherals {
                 break;
             }
         } else { // Horizontal controls
-            const next = this.slider.config.rtl ? "left" : "right";
-            const prev = this.slider.config.rtl ? "right" : "left";
+            const next = this.slider.rtl ? "left" : "right";
+            const prev = this.slider.rtl ? "right" : "left";
             switch (ev.Division.X) {
             case next:
                 this.delayedMoveBy(1);
@@ -722,18 +701,18 @@ export default class Peripherals {
         this.pdblclick = true;
 
         this.ui.toggle(false);
-        if (!this.reader.zoomer || this.disableDblClick)
+        if (!this.slider.zoomer || this.disableDblClick)
             return;
 
         const BibiEvent = this.coordinator.getBibiEvent(Eve);
-        this.reader.zoomer.scale = this.isScaled ? 1 : 2;
+        this.slider.zoomer.scale = this.isScaled ? 1 : 2;
         if (this.isScaled)
-            this.reader.zoomer.translate = {
+            this.slider.zoomer.translate = {
                 X: BibiEvent.Coord.X,
                 Y: BibiEvent.Coord.Y
             };
         /*else
-            this.reader.zoomer.translate = {
+            this.slider.zoomer.translate = {
                 X: 0,
                 Y: 0
             };*/
@@ -745,28 +724,29 @@ export default class Peripherals {
         if (PC.X != CC.X || PC.Y != CC.Y) this.evalPointer(Eve, false); //E.dispatch("bibi:moved-pointer",   Eve);
         //else                             console.log("stopped moving");//E.dispatch("bibi:stopped-pointer", Eve);
         this.PreviousCoord = CC;
+        if(Eve.special)
+            this.ui.toggle(true);
     }
 
     processVScroll() {
-        if (!this.slider.config.ttb)
+        if (!this.slider.ttb)
             return false;
-        const pages = this.slider.selector.children;
+        const pages = document.getElementById("br-slider").children;
         let totalHeight = 0;
         for (let index = 0; index < pages.length; index++) {
-            if (Math.abs(document.documentElement.scrollTop + document.body.scrollTop - totalHeight) < (pages[index].clientHeight * 0.6)) {
+            const cheight = pages[index].children[0].clientHeight;
+            if (Math.abs(document.documentElement.scrollTop + document.body.scrollTop - totalHeight) < (cheight * 0.6)) {
                 if (index != this.slider.currentSlide) {
-                    if(!this.reader.binder) // before ready
-                        return;
                     this.slider.currentSlide = index;
                     if(!this.ui.mousing)
                         this.ui.toggle(false); // Hide UI when changing pages
                     this.reader.guideHidden = true;
                     m.redraw();
-                    this.slider.config.onChange.call(this);
+                    this.slider.onChange();
                 }
                 return true;
             }
-            totalHeight += pages[index].clientHeight;
+            totalHeight += cheight;
         }
     }
 
@@ -775,13 +755,13 @@ export default class Peripherals {
             PWs = this.PreviousWheels,
             PWl = PWs.length;
         if (Math.abs(Eve.deltaX) > Math.abs(Eve.deltaY)) { // Horizontal scrolling
-            CW.Distance = (Eve.deltaX < 0 ? -1 : 1) * (this.slider.config.rtl ? -1 : 1);
+            CW.Distance = (Eve.deltaX < 0 ? -1 : 1) * (this.slider.rtl ? -1 : 1);
             CW.Delta = Math.abs(Eve.deltaX);
-        } else if (!this.slider.config.ttb && !this.slider.single) { // Vertical scrolling for horizontal view, only in spread view though
+        } else if (!this.slider.ttb && !this.slider.single) { // Vertical scrolling for horizontal view, only in spread view though
             CW.Distance = (Eve.deltaY < 0 ? -1 : 1);
             CW.Delta = Math.abs(Eve.deltaY);
         } else { // Single page scroll instantly hides interface
-            if(!this.ui.isHidden && !this.slider.config.ttb) {
+            if(!this.ui.isHidden && !this.slider.ttb) {
                 this.ui.toggle(false);
                 m.redraw();
             }

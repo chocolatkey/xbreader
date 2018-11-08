@@ -18,7 +18,7 @@ export default class Interface {
         const attrs = {
             type: "range",
             min: 0,
-            max: slider.length - (slider.config.shift ? 1 : 2),//(slider.length % 2 ?  : slider.length),
+            max: slider.length - (slider.shift ? 1 : 2),//(slider.length % 2 ?  : slider.length),
             value: slider.currentSlide,
             step: slider.perPage,
             title: __("Select Page"),
@@ -103,36 +103,36 @@ export default class Interface {
         const ui = vnode.attrs.model;
         const brand = vnode.attrs.reader.config.brand;
         const tabConfig = vnode.attrs.reader.config.tabs;
-        const slider = vnode.attrs.reader.slider;
+        const slider = vnode.attrs.slider;
         const publication = vnode.attrs.reader.publication;
         slider.resolveSlidesNumber();
         const isPortrait = window.innerHeight > window.innerWidth ? true : false;
 
         let tweakButton = [];
-        if (slider.config.ttb) // Vertical tweaking
+        if (slider.ttb) // Vertical tweaking
             tweakButton = m("button#br-view__tweak", {
                 onclick: () => {
-                    slider.config.fit = !slider.config.fit;
+                    slider.fit = !slider.fit;
                 },
-                title: slider.config.fit ? __("Fit to width") : __("Fit to height"),
+                title: slider.fit ? __("Fit to width") : __("Fit to height"),
             }, [
                 m("i", {
-                    class: slider.config.fit ? "br-i-wide" : "br-i-thin"
+                    class: slider.fit ? "br-i-wide" : "br-i-thin"
                 })
             ]);
         else // Horizontal tweaking
             tweakButton = m("button#br-view__tweak", {
                 onclick: () => {
-                    if (slider.config.perPage == 1) {
-                        slider.config.perPage = 2;
+                    if (slider.single) {
+                        slider.spread = true;
                         slider.currentSlide++;
                         if (slider.currentSlide % 2) // Prevent getting out of track
                             slider.prev();
                     } else {
-                        slider.config.perPage = 1;
+                        slider.spread = false;
                         if(slider.currentSlide > 1) slider.currentSlide--;
                     }
-                    slider.resizeHandler();
+                    slider.resizeHandler(true);
                 },
                 title: slider.single ? __("Spread view") : __("Single page view"),
             }, [
@@ -210,13 +210,13 @@ export default class Interface {
                         title: "",
                         onclick: () => {
                             const reader = vnode.attrs.reader;
-                            reader.zoomer.scale = 1;
+                            slider.zoomer.scale = 1;
                             reader.switchDirection();
                         }
                     }, [
                         m("i#br-view__toggle", {
                             title: __("Toggle reading direction"),
-                            class: slider.config.ttb ? "br-i-horizontal" : "br-i-vertical"
+                            class: slider.ttb ? "br-i-horizontal" : "br-i-vertical"
                         })
                     ])
                 ])

@@ -63,6 +63,8 @@ if(workerSupported) {
                 // xhr.setRequestHeader("Content-Type", "image/*"); would preflight request
                 if(e.data.modernImage)
                     xhr.setRequestHeader("Accept", "image/webp,image/*,*/*;q=0.8"); // Support WebP where available
+                else
+                    xhr.setRequestHeader("Accept", e.data.type + ",image/*,*/*;q=0.8");
                 xhr.responseType = "blob";
                 xhr.onloadend = () => {
                     if(!isQueued(src)) // Stop because canceled
@@ -77,8 +79,7 @@ if(workerSupported) {
                             self.postMessage({ src, url });
                         } 
                     } else {
-                        // todo new Error();
-                        const error = `Failed to load image ${src}, status ${xhr.status}`;
+                        const error = `Failed to load item ${src}, status ${xhr.status}`;
                         self.postMessage({ src, error });
                     }
                     deqeue(src);
@@ -115,19 +116,19 @@ const WebPChecker = () => {
 const canWebP = WebPChecker();
 
 export default class LazyLoader {
-    constructor(imageData, imageIndex, drmCallback) {
-        this.original = cdn.image(imageData, imageIndex);
-        this.data = imageData;
+    constructor(itemData, imageIndex, drmCallback) {
+        this.original = cdn.image(itemData, imageIndex);
+        this.data = itemData;
         this.index = imageIndex;
         this.loaded = false;
         this.blob = null;
 
-        if(imageData.properties && imageData.properties.encrypted) {
+        if(itemData.properties && itemData.properties.encrypted) {
             this.drm = drmCallback;
-        } else if(imageData.height && imageData.width) {
+        } else if(itemData.height && itemData.width) {
             this.canvas = document.createElement("canvas");
-            this.canvas.height = imageData.height;
-            this.canvas.width = imageData.width;
+            this.canvas.height = itemData.height;
+            this.canvas.width = itemData.width;
         }        
     }
 
@@ -244,7 +245,10 @@ export default class LazyLoader {
                 }
             }
             worker.addEventListener("message", handler);
-            worker.postMessage({src, mode: "FETCH", modernImage: canWebP, bitmap: this.drm ? true : false});
+            if(this.data.xbr.isImage)
+                worker.postMessage({src, mode: "FETCH", modernImage: canWebP, bitmap: this.drm ? true : false});
+            else
+                worker.postMessage({src, mode: "FETCH", type: this.data.type});
         });
     }
 
