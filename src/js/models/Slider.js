@@ -213,7 +213,7 @@ export default class Slider {
             requestAnimationFrame(() => { // TODO nicer animation. Right now you still see a flash of the top
                 requestAnimationFrame(() => {
                     if(this && children)
-                        children[this.currentSlide].children[0].scrollIntoView({behavior: "instant", inline: "center"});
+                        children[this.currentSlide].children[0].scrollIntoView(true);
                     m.redraw();
                 });
             });
