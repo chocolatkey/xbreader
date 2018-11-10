@@ -9,6 +9,7 @@ import Page from "./Page";
 import Interface from "./Interface";
 import Platform from "../helpers/platform";
 import Series from "../models/Series";
+import xbError from "../models/xbError";
 
 export default class Reader {
     constructor(vnode) {
@@ -141,10 +142,13 @@ export default class Reader {
             // maybe settimeout?
             this.binder.updateMovingParameters(this.direction);
             return true;
-        default:
-            this.hint = __("Unknown flow!");
-            console.errror("Invalid flow direction: " + direction);
+        default: {
+            console.error("Invalid flow direction: " + direction);
+            const err = new xbError(9400, __("Invalid flow!"));
+            this.hint = err.message;
+            err.go();
             return false;
+        }
         }
         // Horizontal (RTL or LTR)
         this.slider.ttb = false;
@@ -246,15 +250,6 @@ export default class Reader {
         }
 
         const pages = vnode.state.publication.spine.map((page, index) => {
-            //const items = [];
-            /*if (!index) // First push a blank
-                items.push(m(Page, {
-                    data: page,
-                    key: page.href,
-                    blank: true,
-                    float: "left",
-                    slider: this.slider,
-                }));*/
             return m(Page, {
                 data: page,
                 key: page.href,

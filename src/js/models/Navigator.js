@@ -37,18 +37,24 @@ export default class Navigator {
 
     testShift(publication) {
         let wasLastSingle = false;
-        this.spreads.forEach((item) => {
+        this.spreads.forEach((item, index) => {
             if(item.length > 1)
                 return; // Only left with single-page "spreads"
             const single = item[0];
 
             // If last was a true single, and this spread is a center page (that's not special), something's wrong
-            if(wasLastSingle && single.properties.page === "center" && !single.xbr.special)
-                this.shift = false;
+            if(wasLastSingle && single.properties.page === "center")
+                if(single.xbr.final) {
+                    this.spreads[index - 1][0].xbr.addBlank = true;
+                    this.nLandscape++;
+                } else
+                    this.shift = false;
             
             // If this single page spread is an orphaned component of a double page spread (and it's not the first page)
             if(single.properties.orientation === "portrait" && single.properties.page !== "center" && single.xbr.number > 1)
                 wasLastSingle = true;
+            else
+                wasLastSingle = false;
         });
         if(!this.shift)
             this.index(publication, true); // Re-index spreads

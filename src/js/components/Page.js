@@ -21,6 +21,8 @@ export default class Page {
     }
 
     get float() {
+        if(this.blank) return "right"; // If blank position on left (for now)
+
         // Get reverse of page alignment
         if(this.data.properties.page === "left")
             return "right";
@@ -36,7 +38,9 @@ export default class Page {
     oninit(vnode) {
         this.data = vnode.attrs.data;
         this.drmed = this.data.properties && this.data.properties.encrypted;
-        if (!vnode.attrs.blank)
+        if (vnode.attrs.blank)
+            this.blank = true;
+        else
             this.loader = new SmartLoader(this.data, vnode.attrs.index, vnode.attrs.drmCallback);
     }
 
@@ -91,8 +95,14 @@ export default class Page {
             if(slider.ttb)
                 this.marginTop = vnode.attrs.index > 0 ? 10 : 0;
             itemAttrs.style = `height: ${this.parseDimension(this.itemHeight)}; width: ${this.parseDimension(this.itemWidth)}; margin: ${this.marginTop}px auto 0 auto;`;
-        } else // Horizontal (LTR & RTL)
+        } else { // Horizontal (LTR & RTL)
+            if(this.data.xbr.addBlank) // If item is single with full width, position properly
+                if(slider.rtl)
+                    this.marginLeft += docWidth / 2;
+                else
+                    this.marginRight += docWidth / 2;
             itemAttrs.style = this.styles;
+        }
         let innerItemIs = null;
         if (vnode.attrs.blank)
             innerItemIs = m("canvas.page-blank", {

@@ -35,8 +35,8 @@ export default class Slider {
     resizeHandler(slide = true, fast = true) {
         // relcalculate currentSlide
         // prevent hiding items when browser width increases
-        if (this.currentSlide + this.perPage > this.slength) {
-            this.currentSlide = this.slength <= this.perPage ? 0 : this.slength - this.perPage;
+        if (this.currentSlide + this.perPage > this.length) {
+            this.currentSlide = this.length <= this.perPage ? 0 : this.length - 1;
         }
 
         //this.selectorWidth = this.selector.offsetWidth;

@@ -27,7 +27,7 @@ export default class Spine {
                 } : {
                     cssFloat: slider.rtl ? "right" : "left",
                     float: slider.rtl ? "right" : "left",
-                    width: `${100 / slider.length * (page.attrs.data.properties.orientation === "landscape" ? slider.perPage : 1)}%`
+                    width: `${100 / slider.length * (page.attrs.data.properties.orientation === "landscape" || page.attrs.data.xbr.addBlank ? slider.perPage : 1)}%`
                 },
                 key: "container@" + page.attrs.key
             }, page);
