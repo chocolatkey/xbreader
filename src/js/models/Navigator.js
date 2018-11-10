@@ -42,8 +42,8 @@ export default class Navigator {
                 return; // Only left with single-page "spreads"
             const single = item[0];
 
-            // If last was a true single, and this spread is a center page, something's wrong
-            if(wasLastSingle && single.properties.page === "center")
+            // If last was a true single, and this spread is a center page (that's not special), something's wrong
+            if(wasLastSingle && single.properties.page === "center" && !single.xbr.special)
                 this.shift = false;
             
             // If this single page spread is an orphaned component of a double page spread (and it's not the first page)
