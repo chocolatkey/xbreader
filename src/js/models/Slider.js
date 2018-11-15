@@ -212,7 +212,7 @@ export default class Slider {
             const children = document.getElementById("br-slider").children;
             requestAnimationFrame(() => { // TODO nicer animation. Right now you still see a flash of the top
                 requestAnimationFrame(() => {
-                    if(this && children)
+                    if(this && children && children[this.currentSlide])
                         children[this.currentSlide].children[0].scrollIntoView(true);
                     m.redraw();
                 });
