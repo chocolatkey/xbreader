@@ -23,7 +23,7 @@ html {
 	&[data-bibi-cursor="menu"] { cursor: cell; }
 	&[data-bibi-cursor="no"] { cursor: not-allowed; }
 	user-select: none;
-	touch-action: none;
+	touch-action: pan-y;
 }
 
 body {
