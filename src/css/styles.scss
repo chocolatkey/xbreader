@@ -22,11 +22,8 @@ html {
 	&[data-bibi-cursor="bottom"] { cursor: s-resize; }
 	&[data-bibi-cursor="menu"] { cursor: cell; }
 	&[data-bibi-cursor="no"] { cursor: not-allowed; }
-	/*&[data-bibi-cursor="left"],
-	&[data-bibi-cursor="right"],
-	&[data-bibi-cursor="top"],
-	&[data-bibi-cursor="bottom"] { cursor: pointer; }*/
 	user-select: none;
+	touch-action: none;
 }
 
 body {
