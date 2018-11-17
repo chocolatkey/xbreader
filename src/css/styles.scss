@@ -16,12 +16,6 @@ html {
 	-webkit-font-smoothing: subpixel-antialiased;
 	-webkit-text-size-adjust: 100%;
 	background: $tertiaryBackground;
-	&[data-bibi-cursor="left"]   { cursor: w-resize; }
-	&[data-bibi-cursor="right"]  { cursor: e-resize; }
-	&[data-bibi-cursor="top"]    { cursor: n-resize; }
-	&[data-bibi-cursor="bottom"] { cursor: s-resize; }
-	&[data-bibi-cursor="menu"] { cursor: cell; }
-	&[data-bibi-cursor="no"] { cursor: not-allowed; }
 	user-select: none;
 	touch-action: pan-y;
 }

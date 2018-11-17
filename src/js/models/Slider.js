@@ -117,6 +117,19 @@ export default class Slider {
         return this.publication.spine.length;
     }
 
+    toggleSpread() {
+        if (this.single) {
+            this.spread = true;
+            this.currentSlide++;
+            if (this.currentSlide % 2) // Prevent getting out of track
+                this.prev();
+        } else {
+            this.spread = false;
+            if(this.currentSlide > 1) this.currentSlide--;
+        }
+        this.resizeHandler(true);
+    }
+
     onChange() {
         if(this.binder)
             this.guideHidden = true;

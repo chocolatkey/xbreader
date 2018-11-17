@@ -123,16 +123,7 @@ export default class Interface {
         else // Horizontal tweaking
             tweakButton = m("button#br-view__tweak", {
                 onclick: () => {
-                    if (slider.single) {
-                        slider.spread = true;
-                        slider.currentSlide++;
-                        if (slider.currentSlide % 2) // Prevent getting out of track
-                            slider.prev();
-                    } else {
-                        slider.spread = false;
-                        if(slider.currentSlide > 1) slider.currentSlide--;
-                    }
-                    slider.resizeHandler(true);
+                    slider.toggleSpread();
                 },
                 title: slider.single ? __("Spread view") : __("Single page view"),
             }, [

@@ -86,11 +86,6 @@ export default {
     // Photon CDN
     photon: function(item, index) {
         const ele = parse(item.href);
-        let hash = index;
-        for (var i = 0; i < ele.host.length; i++) {
-            hash = ((hash << 5) - hash) + ele.host.charCodeAt(i);
-            hash = hash & hash; // Convert to 32bit integer
-        }
         const spec = this.buildAwareSpec(item);
         this.makeNewDimensions(item, spec.height);
         return `https://i${this.hash(ele.host, index, 0, 2)}.wp.com/${ele.authority + ele.path}?strip=all&quality=${spec.quality}${item.height ? "&h=" + item.height : ""}`;
