@@ -1,6 +1,6 @@
 {
   "name": "xbreader",
-  "version": "0.21.3",
+  "version": "0.23.0",
   "description": "Fixed-layout publication reader for the web",
   "author": "chocolatkey",
   "license": "MIT",
@@ -9,7 +9,7 @@
     "babel-loader": "^7.1.4",
     "babel-preset-es2015": "^6.24.1",
     "css-loader": "^0.28.11",
-    "file-loader": "^1.1.11",
+    "file-loader": "^2.0.0",
     "mithril": "^2.0.0-rc.0",
     "mopt": "^5.1.1",
     "node-sass": "^4.8.3",

@@ -98,8 +98,8 @@ export default class Navigator {
             });
             return spreadString;
         } else {
-            const spread = this.spreads[Math.floor((slider.currentSlide + 1) / slider.perPage / 2)];
-            if(spread && spread.length && spread[0].xbr.final)
+            const spread = this.spreads[this.spreads.length - 1];
+            if(slider.currentSlide + 1 === slider.length && spread && spread.length && spread[0].xbr.final)
                 return __("END");
             return slider.currentSlide + 1;
         }

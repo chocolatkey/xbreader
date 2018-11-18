@@ -45,7 +45,8 @@ export default class Reader {
         const settings = {
             brand: {
                 name: null,
-                logo: null
+                logo: null,
+                embedded: false, // Whether to show interface meant for embedding in apps
             },
             tabs: [], // Tabs on right side of top bar
             guideHidden: false, // Skip showing the reading direction guide

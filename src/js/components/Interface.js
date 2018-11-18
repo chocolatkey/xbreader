@@ -39,7 +39,7 @@ export default class Interface {
         return m("input.br-slider", attrs);
     }
 
-    sliderSystem(slider, publication) {        
+    sliderSystem(slider, publication, embedded) {        
         let items = [
             this.slider(slider, publication)
         ];
@@ -66,7 +66,7 @@ export default class Interface {
         }
 
         const sseries = publication.pmetadata.xbr.series;
-        if(sseries && sseries.next) { // Has a next chapter
+        if(sseries && sseries.next && !embedded) { // Has a next chapter
             const nextLink = [
                 m(`span.br-slider__${publication.rtl ? "lgo" : "rgo"}`, { // Leftmost slider control
                     title: __("Go to the next chapter")
@@ -81,7 +81,7 @@ export default class Interface {
             else
                 items.push(nextLink);
         }
-        if(sseries && sseries.prev) {
+        if(sseries && sseries.prev && !embedded) {
             const prevLink = [ // Has a previous chapter
                 m(`span.br-slider__${publication.rtl ? "rgo" : "lgo"}`, {
                     title: __("Go to the previous chapter")
@@ -163,26 +163,28 @@ export default class Interface {
                 class: ui.isHidden ? "hidden" : "shown"
             }, [
                 m("div.br-topbar__row", [
-                    m("section.br-toolbar__section.br-toolbar__section--align-start", [
-                        m("a.logo[href=/]", [
-                            m(Logo, brand)
-                        ])
+                    m("section.br-toolbar__section.br-toolbar__section--align-start", {
+                        class: brand.embedded ? "embedded" : ""
+                    }, [
+                        m(Logo, brand)
                     ]),
                     m("section.br-toolbar__tsection", [
-                        m("a", {
+                        brand.embedded ? m("span.br-toolbar__ellipsis", publication.series.name) : m("a.br-toolbar__ellipsis", {
                             href: publication.series.identifier,
                             title: __("Series")
                         }, publication.series.name),
-                        m("span.spacer", "›"),
-                        vnode.attrs.reader.series.selector
+                        brand.embedded ? null : m("span.spacer", "›"),
+                        brand.embedded ? m("span#br-chapter", publication.pmetadata.title) : vnode.attrs.reader.series.selector
                     ]),
-                    m("section.br-toolbar__section.br-toolbar__section--align-end.dhide", [
+                    m("section.br-toolbar__section.br-toolbar__section--align-end.dhide", {
+                        class: brand.embedded ? "gone" : ""
+                    }, [
                         m("div", [
                             m("nav.br-tab-bar", tabToggle)
                         ])
                     ]),
                     m("section.br-toolbar__section.br-toolbar__section--align-end.br-cmenu", {
-                        class: ui.menuShown ? "shown" : "gone"
+                        class: brand.embedded ? "gone" : (ui.menuShown ? "shown" : "sgone")
                     }, [
                         m("div", tabBar)
                     ])
@@ -191,7 +193,7 @@ export default class Interface {
             m("div#br-botbar.noselect", {
                 class: ui.isHidden ? "hidden" : "shown"
             }, [
-                this.sliderSystem(slider, publication),
+                this.sliderSystem(slider, publication, brand.embedded),
                 m("div.br-botbar-controls", {
                     class: isPortrait ? "portrait" : "landscape",
                     style: publication.isTtb ? "display: none;" : null,

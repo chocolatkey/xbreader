@@ -88,7 +88,10 @@ export default class Series {
      */
     get selector() {
         if(!this.exists)
-            return this.publication.pmetadata ? this.publication.pmetadata.title : null;
+            if(this.publication.pmetadata.title)
+                return m("span#br-chapter", this.publication.pmetadata.title);
+            else
+                return null;
 
         return m("select#br-chapter", {
             title: __("Chapter selection"),

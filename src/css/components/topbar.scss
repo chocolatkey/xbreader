@@ -40,6 +40,27 @@ div#br-topbar {
         padding-left: 2px;
     }
 
+    & #br-embedded {
+        &__back {
+            height: 38px;
+            width: 38px;
+            background: transparent;
+
+            & i {
+                height: 36px;
+                font-size: 34px;
+            }
+
+            &:hover {
+                border: solid 1px $hoverColor;
+            }
+        
+            &:active {
+                border: solid 1px $activeColor;
+            }
+        }
+    }
+
     & #br-chapter {
         //padding: 20px 26px 4px 0;
         -moz-osx-font-smoothing: grayscale;
@@ -58,10 +79,10 @@ div#br-topbar {
         cursor: pointer;
 
         //padding-top: 10px;
-        border-bottom: none!important;
+        border-bottom: none !important;
         text-overflow: ellipsis;
         //width: auto;
-        //max-width: 90%;
+        max-width: 600px;
         //-webkit-appearance: none;
         //-moz-appearance: none;
         //appearance: none;
@@ -86,6 +107,15 @@ div#br-topbar {
             text-overflow: ellipsis;
         }
     }
+
+    & span#br-chapter {
+        cursor: default;
+        line-height: inherit;
+
+        &:hover {
+            text-decoration: none;
+        }
+    }
 }
 
 .br-topbar__row {
@@ -108,11 +138,18 @@ div#br-topbar {
     height: 100%;
     padding: 8px;
     z-index: 1;
+
+    &.gone {
+        display: none;
+    }
 }
 
 .br-toolbar__tsection {
     flex: 7;
     margin: 0 5px;
+
+    display: flex;
+    flex-flow: row wrap;
 
     & > * {
         display: inline-block;
@@ -122,9 +159,23 @@ div#br-topbar {
         padding: 0 2px;
     }
 
+    & .br-toolbar__ellipsis {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        max-width: 600px;
+    }
+
     @media (max-width: 699px) {
+        margin: 0;
+        max-width: 70%;
+
         & > a {
             font-size: 0.9rem;
+        }
+
+        & .spacer {
+            display: none;
         }
     }
 
@@ -139,6 +190,11 @@ div#br-topbar {
     justify-content: flex-start;
     order: -1;
     flex-basis: 36px;
+
+    &.embedded {
+        flex-basis: 0;
+        max-width: 60px;
+    }
 }
 
 .br-toolbar__section--align-end {
@@ -167,7 +223,7 @@ div#br-topbar, .br-topbar__section {
         margin: 0;
         height: auto;
         background: $primaryBackground;
-        &.gone {
+        &.sgone {
             display: none;
         }
     }

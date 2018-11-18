@@ -1,19 +1,19 @@
 @import "variables";
 
 @font-face {
-  font-family: 'breader';
-  src:  url('#{$icomoon-font-path}/breader.eot?ttqjfp');
-  src:  url('#{$icomoon-font-path}/breader.eot?ttqjfp#iefix') format('embedded-opentype'),
-    url('#{$icomoon-font-path}/breader.ttf?ttqjfp') format('truetype'),
-    url('#{$icomoon-font-path}/breader.woff?ttqjfp') format('woff'),
-    url('#{$icomoon-font-path}/breader.svg?ttqjfp#breader') format('svg');
+  font-family: '#{$icomoon-font-family}';
+  src:  url('#{$icomoon-font-path}/#{$icomoon-font-family}.eot?l05ndx');
+  src:  url('#{$icomoon-font-path}/#{$icomoon-font-family}.eot?l05ndx#iefix') format('embedded-opentype'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.ttf?l05ndx') format('truetype'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.woff?l05ndx') format('woff'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.svg?l05ndx##{$icomoon-font-family}') format('svg');
   font-weight: normal;
   font-style: normal;
 }
 
 [class^="br-i-"], [class*=" br-i-"] {
   /* use !important to prevent issues with browser extensions that change fonts */
-  font-family: 'breader' !important;
+  font-family: '#{$icomoon-font-family}' !important;
   speak: none;
   font-style: normal;
   font-weight: normal;
@@ -29,6 +29,26 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.br-i-arrow_back {
+  &:before {
+    content: $br-i-arrow_back; 
+  }
+}
+.br-i-arrow_downward {
+  &:before {
+    content: $br-i-arrow_downward; 
+  }
+}
+.br-i-arrow_forward {
+  &:before {
+    content: $br-i-arrow_forward; 
+  }
+}
+.br-i-arrow_upward {
+  &:before {
+    content: $br-i-arrow_upward; 
+  }
+}
 .br-i-latest {
   &:before {
     content: $br-i-latest; 
