@@ -173,7 +173,7 @@ export default class Interface {
                             href: publication.series.identifier,
                             title: __("Series")
                         }, publication.series.name),
-                        brand.embedded ? null : m("span.spacer", "›"),
+                        m("span.spacer", "›"),
                         brand.embedded ? m("span#br-chapter", publication.pmetadata.title) : vnode.attrs.reader.series.selector
                     ]),
                     m("section.br-toolbar__section.br-toolbar__section--align-end.dhide", {
