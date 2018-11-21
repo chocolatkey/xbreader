@@ -189,22 +189,27 @@ export default class LazyLoader {
             if (!cd)
                 return;
             const ctx = cd.getContext("2d");
-            ctx.clearRect(0, 0, cd.width, cd.height);
-            if (element instanceof HTMLImageElement) {
-                ctx.drawImage(element, 0, 0, cd.width, cd.height);
+
+            if(ctx) {
+                ctx.clearRect(0, 0, cd.width, cd.height);
+                if (element instanceof HTMLImageElement) {
+                    ctx.drawImage(element, 0, 0, cd.width, cd.height);
+                } else {
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillStyle = "grey";
+    
+                    ctx.font = "normal bold 150px sans-serif";
+                    ctx.fillText(element, cd.width / 2, cd.height / 2);
+    
+                    ctx.font = "normal 20px sans-serif";
+                    const fn = this.original.split("/");
+                    const fnnq = fn[fn.length - 1].split("?")[0];
+                    const infoString = `${__NAME__} ${__VERSION__} → ${fnnq}`;
+                    ctx.fillText(infoString, cd.width / 2, cd.height - 20);
+                }
             } else {
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillStyle = "grey";
-
-                ctx.font = "normal bold 150px sans-serif";
-                ctx.fillText(element, cd.width / 2, cd.height / 2);
-
-                ctx.font = "normal 20px sans-serif";
-                const fn = this.original.split("/");
-                const fnnq = fn[fn.length - 1].split("?")[0];
-                const infoString = `${__NAME__} ${__VERSION__} → ${fnnq}`;
-                ctx.fillText(infoString, cd.width / 2, cd.height - 20);
+                console.warn("No canvas context!");
             }
             this.drawAsSoon();
         });
