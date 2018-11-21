@@ -600,8 +600,9 @@ export default class Peripherals {
         // Move
         if (typeof MovingParameter == "number") {
             if (MovingParameter === 1) {
-                if(this.slider.single && this.coordinator.HTML.scrollTop <= 0) {
-                    this.coordinator.HTML.scrollTo({ // Scroll to bottom
+                const bbEle = document.getElementById("br-book");
+                if(this.slider.single && bbEle && (this.coordinator.HTML.scrollTop + window.innerHeight + 5) <= bbEle.clientHeight) {
+                    this.coordinator.HTML.scrollTo({ // Scroll to bottom first
                         top: 9999,
                         left: 0,
                         behavior: "smooth"
@@ -611,8 +612,8 @@ export default class Peripherals {
                 this.slider.next(this.slider.perPage);
                 
             } else if (MovingParameter === -1) {
-                if(this.slider.single && this.coordinator.HTML.scrollTop > 0) {
-                    this.coordinator.HTML.scrollTo({ // Scroll to top
+                if(this.slider.single && this.coordinator.HTML.scrollTop > 5) {
+                    this.coordinator.HTML.scrollTo({ // Scroll to top first
                         top: 0,
                         left: 0,
                         behavior: "smooth"
