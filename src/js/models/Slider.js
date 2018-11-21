@@ -1,4 +1,5 @@
 import m from "mithril";
+import sML from "../helpers/sMLstub";
 
 export default class Slider {
     constructor(series, publication, binder, config) {
@@ -42,7 +43,7 @@ export default class Slider {
         //this.selectorWidth = this.selector.offsetWidth;
         this.resolveSlidesNumber();
         this.updateProperties(true);
-        if(slide)
+        if(slide && !sML.Mobile)
             this.slideToCurrent(!fast, fast);
         m.redraw();
     }

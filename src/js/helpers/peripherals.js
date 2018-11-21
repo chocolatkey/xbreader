@@ -83,12 +83,10 @@ export default class Peripherals {
             109: "Minus",
             45: "Zero",
             12: "Return",
-            // What MD does maybe implement
-            /*
-            F for fit toggle
-            G for spread toggle
-            H for direction toggle
-            */
+
+            70: "F", // Fit toggle
+            71: "G", // Spread toggle
+            72: "H" // Direction toggle
         });
  
         this.updateMovingParameters(Reader.direction);
@@ -431,7 +429,7 @@ export default class Peripherals {
     ////////
 
     updateSpecialParamters() { // TODO better naming
-        if(this.slider.single)
+        if(this.slider.single || this.slider.ttb)
             sML.edit(this.MovingParameters, {
                 "Page Up": 0,
                 "Page Down": 0,
