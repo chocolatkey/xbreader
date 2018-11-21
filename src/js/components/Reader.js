@@ -195,6 +195,7 @@ export default class Reader {
             this.series.setRelations();
             this.slider = new Slider(this.series, this.publication, this.binder, this.config);
             this.binder = new Peripherals(this);
+            this.slider.binder = this.binder; // TODO improve
             this.switchDirection(this.publication.direction);
             this.config.onBeforeReady(this);
             m.redraw();

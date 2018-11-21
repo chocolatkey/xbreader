@@ -600,8 +600,26 @@ export default class Peripherals {
         // Move
         if (typeof MovingParameter == "number") {
             if (MovingParameter === 1) {
+                if(this.slider.single && this.coordinator.HTML.scrollTop <= 0) {
+                    this.coordinator.HTML.scrollTo({ // Scroll to bottom
+                        top: 9999,
+                        left: 0,
+                        behavior: "smooth"
+                    });
+                    return;
+                }
                 this.slider.next(this.slider.perPage);
+                
             } else if (MovingParameter === -1) {
+                if(this.slider.single && this.coordinator.HTML.scrollTop > 0) {
+                    this.coordinator.HTML.scrollTo({ // Scroll to top
+                        top: 0,
+                        left: 0,
+                        behavior: "smooth"
+                    });
+                    return;
+                }
+
                 this.slider.prev(this.slider.perPage);
             }
             // When rapidly navigating, ignore double clicks until cooldown
