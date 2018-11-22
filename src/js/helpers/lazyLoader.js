@@ -1,4 +1,5 @@
 import cdn from "../helpers/cdn";
+import sML from "../helpers/sMLstub";
 import { Promise } from "core-js";
 
 const HIGH_THRESHOLD = 5;
@@ -121,6 +122,7 @@ export default class LazyLoader {
         this.data = itemData;
         this.index = imageIndex;
         this.loaded = false;
+        this.reloader = false;
         this.blob = null;
 
         if(itemData.properties && itemData.properties.encrypted) {
@@ -148,6 +150,16 @@ export default class LazyLoader {
             this.highTime = setTimeout(() => {
                 this.prepare();
             }, 1000);
+
+        // If image is loaded on canvas, on mobile, and > HIGH_THRESHOLD away from the image
+        // Especially needed on iOS where canvas memory is constrained
+        } else if(this.drm && this.loaded && this.canvas && sML.Mobile) {
+            const ctx = this.canvas.getContext("2d");
+            if(!ctx) return;
+            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.canvas.height = this.canvas.width = 0;
+            this.loaded = false;
+            this.reloader = true;
 
         // If still loading image but moved away from it in the meantime
         } else if (this.preloader && !this.loaded) {
@@ -258,8 +270,13 @@ export default class LazyLoader {
     }
 
     prepare() {
-        if (this.preloader)
+        if(this.reloader) {
+            this.canvas.height = this.data.height;
+            this.canvas.width = this.data.width;
+            this.reloader = false;
+        } else if(this.preloader)
             return;
+
         if (!this.loaded) {
             this.draw(__("Loading..."));
         }

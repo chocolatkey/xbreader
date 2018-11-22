@@ -99,7 +99,7 @@ export default {
         // Help backend by only requesting fixed resolutions, since this function is replicated in NG's backend anyway
         if (givenDimension <= ((RESOLUTION_LOW + RESOLUTION_MEDIUM) / 2)) {
             givenDimension = RESOLUTION_LOW;
-        } else if (givenDimension <= ((RESOLUTION_MEDIUM + RESOLUTION_HIGH) / 2) || sML.OS.iOS) {
+        } else if (givenDimension <= ((RESOLUTION_MEDIUM + RESOLUTION_HIGH) / 2)) {
             givenDimension = RESOLUTION_MEDIUM;
         } else {
             givenDimension = RESOLUTION_HIGH;

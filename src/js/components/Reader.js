@@ -140,6 +140,8 @@ export default class Reader {
             this.slider.ttb = true;
             this.slider.rtl = false;
             this.slider.resizeHandler(true);
+            if(sML.Mobile)
+                this.slider.slideToCurrent(false, true);
             // maybe settimeout?
             this.binder.updateMovingParameters(this.direction);
             return true;
