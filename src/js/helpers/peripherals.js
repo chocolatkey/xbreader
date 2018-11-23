@@ -132,6 +132,8 @@ export default class Peripherals {
     }
 
     onmessage(e) { // TODO more messages
+        if(!e.data)
+            return;
         if(e.data.indexOf("xbr:move:") !== 0)
             return;
         e.stopPropagation();
@@ -602,7 +604,7 @@ export default class Peripherals {
             if (MovingParameter === 1) {
                 const bbEle = document.getElementById("br-book");
                 if(this.slider.single && bbEle && (this.coordinator.HTML.scrollTop + window.innerHeight + 5) <= bbEle.clientHeight) {
-                    this.coordinator.HTML.scrollTo({ // Scroll to bottom first
+                    this.coordinator && this.coordinator.HTML && this.coordinator.HTML.scrollTo({ // Scroll to bottom first
                         top: 9999,
                         left: 0,
                         behavior: "smooth"
@@ -613,7 +615,7 @@ export default class Peripherals {
                 
             } else if (MovingParameter === -1) {
                 if(this.slider.single && this.coordinator.HTML.scrollTop > 5) {
-                    this.coordinator.HTML.scrollTo({ // Scroll to top first
+                    this.coordinator && this.coordinator.HTML && this.coordinator.HTML.scrollTo({ // Scroll to top first
                         top: 0,
                         left: 0,
                         behavior: "smooth"
