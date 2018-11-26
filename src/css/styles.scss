@@ -176,8 +176,11 @@ div#br-book {
     transition: 0.3s ease-in-out;
 	transition-property: transform;
 	outline: none;
-//		transform: translateY( 0  );
-//		html.panel-opened & { transform: translateY(36px); /* transform-origin: 50% 100%; transform: rotateX(-45deg); */ }
+	//		transform: translateY( 0  );
+	//		html.panel-opened & { transform: translateY(36px); /* transform-origin: 50% 100%; transform: rotateX(-45deg); */ }
+	&.pinching {
+		transition: none;
+	}
 }
 
 div#br-topbar, div#br-botbar {

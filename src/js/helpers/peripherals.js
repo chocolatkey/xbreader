@@ -1,7 +1,8 @@
 import m from "mithril";
 import sML from "./sMLstub";
 import Coordinator from "./coordinator";
-import Platform from "./platform";
+
+const MAX_SCALE = 6;
 
 export default class Peripherals {
     constructor(Reader) {
@@ -15,6 +16,7 @@ export default class Peripherals {
             Y: 0
         };
         this.isDragging = false;
+        this.isPinching = false;
         this.coordinator = new Coordinator(this);
         this.ActiveKeys = {};
         this.KeyCodes = {
@@ -159,6 +161,12 @@ export default class Peripherals {
             transformX: 0,
             transformY: 0
         };
+
+        this.pinch = {
+            startDistance: 0,
+            startOffset: null,
+            touchN: 0
+        };
     }
 
     /**
@@ -175,6 +183,13 @@ export default class Peripherals {
             transformY: 0
         };
         this.isDragging = false;
+        this.isPinching = false;
+
+        this.pinch = {
+            startDistance: 0,
+            startOffset: null,
+            touchN: 0
+        };
     }
 
 
@@ -193,8 +208,22 @@ export default class Peripherals {
         case 3:
             this.ui.toggle();
             return;
-        case 2:
+        case 2: {
             // Pinch
+            e.preventDefault();
+            this.clearDrag();
+            if(this.pointerDown)
+                this.pinch.startOffset = {
+                    X: this.slider.zoomer.translate.X && this.slider.zoomer.scale > 1 ? this.slider.zoomer.translate.X : e.touches[0].pageX,
+                    Y: this.slider.zoomer.translate.Y && this.slider.zoomer.scale > 1 ? this.slider.zoomer.translate.Y : e.touches[0].pageY
+                };
+            else
+                this.pinch.startOffset = this.coordinator.getTouchCenter(e);
+            this.pinch.startDistance = this.coordinator.getTouchDistance(e);
+            this.isPinching = true;
+            this.pointerDown = true;
+            return;
+        }
         }
 
         this.pointerDown = true;
@@ -236,8 +265,30 @@ export default class Peripherals {
     touchmoveHandler(e) {
         e.stopPropagation();
 
-        if ((Math.abs(this.drag.startY - e.touches[0].pageY) + Math.abs(this.drag.startX - e.touches[0].pageX)) > 5 && this.pointerDown) {
+        if ((Math.abs(this.drag.startY - e.touches[0].pageY) + Math.abs(this.drag.startX - e.touches[0].pageX)) > 5 && this.pointerDown)
             this.isDragging = true;
+
+        const currentDistance = this.coordinator.getTouchDistance(e);
+        if(this.isPinching && currentDistance) {          
+            this.pinch.touchN++;  
+            if(this.pinch.touchN < 4) return;
+            let newScale = currentDistance / this.pinch.startDistance * this.slider.zoomer.scale;
+            if(newScale >= MAX_SCALE)
+                newScale = MAX_SCALE;
+            if(newScale <= 1.1)
+                newScale = 1;
+            const center = this.coordinator.getTouchCenter(e);
+            this.slider.zoomer = {
+                scale: newScale,
+                translate: {
+                    /*X: center.X,
+                    Y: center.Y,*/
+                    X: this.pinch.startOffset.X,
+                    Y: this.pinch.startOffset.Y,
+                },
+            };
+            this.pinch.startDistance = currentDistance;
+            return;
         }
 
         if (this.drag.letItGo === null) {
@@ -640,7 +691,7 @@ export default class Peripherals {
 
             // Zoom
             if (MovingParameter === "zoom-in") {
-                if (this.slider.zoomer.scale < 6)
+                if (this.slider.zoomer.scale < MAX_SCALE)
                     this.slider.zoomer.scale += 0.5; // Gets slower as you zoom in more due to decreasing ratio impact
             } else if (MovingParameter === "zoom-out") {
                 if (this.slider.zoomer.scale > 1)

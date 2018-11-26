@@ -36,6 +36,24 @@ export default class Coordinator {
         }
         return Coord;
     }
+
+    getTouchDistance(Eve) {
+        if (Eve.touches.length !== 2) return 0;
+        const x1 = Eve.touches[0].pageX;
+        const y1 = Eve.touches[0].pageY;
+        const x2 = Eve.touches[1].pageX;
+        const y2 = Eve.touches[1].pageY;
+        return Math.sqrt((Math.pow((x2 - x1), 2)) + (Math.pow((y2 - y1), 2)));
+    }
+
+    getTouchCenter(Eve) {
+        if (Eve.touches.length !== 2) return 0;
+        const x1 = Eve.touches[0].pageX;
+        const y1 = Eve.touches[0].pageY;
+        const x2 = Eve.touches[1].pageX;
+        const y2 = Eve.touches[1].pageY;
+        return { X: (x1 + x2) / 2, Y: (y1 + y2) / 2 };
+    }
     
     getBibiEvent(Eve) {
         if(!Eve) return {};

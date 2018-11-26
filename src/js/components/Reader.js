@@ -273,6 +273,7 @@ export default class Reader {
             }, [
                 m("div#br-book", {
                     style: bookStyle,
+                    class: bnd ? (bnd.isPinching ? "pinching" : "normal") : "",
                     tabindex: -1, // Needed to be able to focus on this element (from peripherals)
                     oncontextmenu: (e) => {
                         this.ui.toggle();
