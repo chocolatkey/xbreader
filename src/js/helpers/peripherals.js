@@ -647,7 +647,18 @@ export default class Peripherals {
         this.moveBy(MovingParameter);
     }
 
-    // Master
+    attemptScrollTo(offset) {
+        if(this.coordinator && this.coordinator.HTML && this.coordinator.HTML.scrollTo)
+            this.coordinator.HTML.scrollTo({ // Scroll to bottom first
+                top: offset,
+                left: 0,
+                behavior: "smooth"
+            });
+        else if(window.scrollTo)
+            window.scrollTo(0, offset);
+        else
+            console.error("scrollTo not supported!");
+    }
 
     moveBy(MovingParameter) {
         // Move
@@ -655,22 +666,14 @@ export default class Peripherals {
             if (MovingParameter === 1) {
                 const bbEle = document.getElementById("br-book");
                 if(this.slider.single && !this.slider.ttb && bbEle && (this.coordinator.HTML.scrollTop + window.innerHeight + 5) <= bbEle.clientHeight) {
-                    this.coordinator && this.coordinator.HTML && this.coordinator.HTML.scrollTo({ // Scroll to bottom first
-                        top: 9999,
-                        left: 0,
-                        behavior: "smooth"
-                    });
+                    this.attemptScrollTo(9999);
                     return;
                 }
                 this.slider.next(this.slider.perPage);
                 
             } else if (MovingParameter === -1) {
                 if(this.slider.single && !this.slider.ttb && this.coordinator.HTML.scrollTop > 5) {
-                    this.coordinator && this.coordinator.HTML && this.coordinator.HTML.scrollTo({ // Scroll to top first
-                        top: 0,
-                        left: 0,
-                        behavior: "smooth"
-                    });
+                    this.attemptScrollTo(0);
                     return;
                 }
 
