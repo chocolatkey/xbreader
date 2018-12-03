@@ -1,4 +1,5 @@
 import m from "mithril";
+import Logo from "../partials/Logo";
 
 const errorMappings = {
     400: __("You issued a bad request."),
@@ -10,6 +11,10 @@ const errorMappings = {
 };
 
 export default class ErrorView {
+    constructor(config) {
+        this.config = config;
+    }
+
     oninit(vnode) {
         this.errorCode = 666;
         if(vnode.attrs.message) {
@@ -39,6 +44,7 @@ export default class ErrorView {
     view(vnode) {
         return [
             m("div.br-error__container", [
+                (this.config.brand && this.config.brand.embedded) ? m("div.br__notifier", m(Logo, this.config.brand)) : null,
                 m("h1", `Error ${new String(this.errorCode).padStart(4, "0")}`),
                 m("p", this.errorMessage),
                 m("span", `${__NAME__} ${__VERSION__}`)

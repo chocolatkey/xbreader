@@ -14,8 +14,8 @@ window.xbreader = (config) => {
     if(config.prefix)
         m.route.prefix(config.prefix);
     m.route(mountingPoint, "/error/404", {
-        "/error/:code": new errorView(),
-        "/error/:code/:message": new errorView(),
+        "/error/:code": new errorView(config),
+        "/error/:code/:message": new errorView(config),
         "/:id": {
             onmatch: () => {
                 config.preview = false;

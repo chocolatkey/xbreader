@@ -17,7 +17,7 @@ export default {
         if(!brand.name || !brand.logo)
             return null;
         return m("a.logo[href=/]", [
-            m(`img[src=${vnode.attrs.logo}]`, {"title": vnode.attrs.name})
+            m(`img[src=${brand.logo}]`, {"title": brand.name})
         ]);
     }
 };

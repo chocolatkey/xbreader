@@ -1,19 +1,37 @@
 .br-error__container {
     position: relative;
     width: 100%;
-    max-width: 960px;
+    // max-width: 960px;
     margin: 0 auto;
-    padding: 20px;
+    // padding: 20px;
     box-sizing: border-box;
     text-align: center;
     color: $tertiaryForeground;
     user-select: text;
+
+    & .br__notifier {
+        width: auto;
+        padding: 15px;
+
+        & #br-embedded__back {
+            height: 38px;
+            width: 38px;
+            background: transparent;
+            display: block;
+
+            & i {
+                height: 36px;
+                font-size: 34px;   
+            }
+        }
+    }
 
     & h1 {
         font-size: 5em;
     }
 
     & p {
+        padding: 5px 0;
         font-size: 2em;
     }
 
