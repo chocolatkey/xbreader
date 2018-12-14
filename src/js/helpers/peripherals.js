@@ -814,7 +814,6 @@ export default class Peripherals {
                     if(!this.ui.mousing)
                         this.ui.toggle(false); // Hide UI when changing pages
                     this.reader.guideHidden = true;
-                    m.redraw();
                     this.slider.onChange();
                 }
                 return true;

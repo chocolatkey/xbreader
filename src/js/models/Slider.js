@@ -118,6 +118,10 @@ export default class Slider {
         return this.publication.spine.length;
     }
 
+    get direction() {
+        return this.ttb ? "ttb" : (this.rtl ? "rtl" : "ltr");
+    }
+
     toggleSpread() {
         if (this.single) {
             this.spread = true;
