@@ -81,9 +81,10 @@ export default {
         /* if (spec.height >= item.height)
             spec.height = 0; */
         this.makeNewDimensions(item, spec.height);
-        return `https://images${this.hash(ele.host, index, 0, 2)}-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&gadget=a&no_expand=1${item.height ? "&resize_h=" + item.height : ""}&rewriteMime=image/*&url=${item.href}`;
+        return `https://images${this.hash(ele.host, index, 0, 2)}-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&gadget=a&no_expand=1${item.height ? "&resize_h=" + item.height : ""}&rewriteMime=image/*&url=${encodeURIComponent(item.href)}`;
     },
     // Photon CDN
+    // Be aware that URLs with query parameters will not work here
     photon: function(item, index) {
         const ele = parse(item.href);
         const spec = this.buildAwareSpec(item);

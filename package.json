@@ -1,6 +1,6 @@
 {
   "name": "xbreader",
-  "version": "0.26.1",
+  "version": "0.27.0",
   "description": "Fixed-layout publication reader for the web",
   "author": "chocolatkey",
   "license": "MIT",
@@ -18,7 +18,7 @@
     "webpack-cli": "^3.1.1"
   },
   "scripts": {
-    "start": "webpack -d --config webpack.dev.js --watch",
+    "start": "webpack-dev-server -d --config webpack.dev.js --watch",
     "build": "webpack -p --config webpack.prod.js",
     "push": "rm -rf dist/index.html && mv dist/index-en.html dist/index.html && surge dist/ xb.yrkz.me"
   },
@@ -28,6 +28,7 @@
     "i18n-webpack-plugin": "^1.0.0",
     "mini-css-extract-plugin": "^0.4.0",
     "uglifyjs-webpack-plugin": "^1.2.5",
+    "webpack-dev-server": "^3.1.10",
     "webpack-fix-style-only-entries": "^0.0.4"
   }
 }

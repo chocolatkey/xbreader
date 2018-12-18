@@ -9,6 +9,11 @@ const webpack = require("webpack");
 const consts = require("./consts");
 
 module.exports = {
+    devServer: {
+        contentBase: path.join(__dirname, "bin"),
+        compress: true,
+        port: 8080
+    },
     entry: {
         xbstyles: [
             "./src/css/styles.scss"
@@ -60,14 +65,14 @@ module.exports = {
         }]
     },
     plugins: [
-        new CleanWebpackPlugin(['bin/*.js', 'bin/*.css'], {
+        new CleanWebpackPlugin(["bin/*.js", "bin/*.css"], {
             verbose: false
         }),
         new HtmlWebpackPlugin({
             title: "XBReader",
             template: "src/index.html",
             favicon: "src/favicon.ico",
-            excludeChunks: ['xbreader']
+            excludeChunks: ["xbreader"]
         }),
         new I18nPlugin(null),
         new FixStyleOnlyEntriesPlugin(),

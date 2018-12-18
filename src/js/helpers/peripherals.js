@@ -134,7 +134,7 @@ export default class Peripherals {
     }
 
     onmessage(e) { // TODO more messages
-        if(!e.data)
+        if(!e.data || typeof(e.data) !== "string")
             return;
         if(e.data.indexOf("xbr:move:") !== 0)
             return;

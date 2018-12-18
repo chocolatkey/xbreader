@@ -173,7 +173,7 @@ export default class Slider {
 
         if(this.currentSlide === beforeChange && this.currentSlide + 1 === this.length) {
             // At end and trying to go further, means trigger "last page" callback
-            this.onLastPage(this.series);
+            this.onLastPage();
         }
 
         if (beforeChange !== this.currentSlide) {

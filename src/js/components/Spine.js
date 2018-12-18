@@ -2,7 +2,6 @@
     Inspired by Siema (https://github.com/pawelgrzybek/siema)
  */
 import m from "mithril";
-import Platform from "../helpers/platform";
 
 export default class Spine {
     constructor(vnode) {

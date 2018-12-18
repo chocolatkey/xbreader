@@ -195,8 +195,8 @@ export default class LazyLoader {
     }
 
     draw(element) {
-        clearTimeout(this.drawT);
-        this.drawT = setTimeout(() => {
+        cancelAnimationFrame(this.drawT);
+        this.drawT = requestAnimationFrame(() => {
             const cd = this.canvas;
             if (!cd)
                 return;
@@ -242,7 +242,7 @@ export default class LazyLoader {
                 this.toBlob();
             }
         }
-        window.requestAnimationFrame(this.drawAsSoon.bind(this));
+        requestAnimationFrame(this.drawAsSoon.bind(this));
     }
 
     lazyWorker(src) {
@@ -289,7 +289,7 @@ export default class LazyLoader {
                     this.drm(this, this.preloader.src);
                 else {
                     this.loaded = true;
-                    this.drawAsSoon();
+                    requestAnimationFrame(() => this.drawAsSoon());
                 }
             };
             this.preloader.onerror = () => {

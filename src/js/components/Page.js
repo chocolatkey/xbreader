@@ -155,7 +155,7 @@ export default class Page {
                 };
                 innerItemIs = m("iframe.page-frame.noselect", innerItemAttrs); // + (vnode.attrs.data.xbr.final ? "" : ".noget")
             }
-            setTimeout(() => {
+            requestAnimationFrame(() => {
                 this.loader.provoke(innerItemIs, slider.currentSlide);
             });
         }
