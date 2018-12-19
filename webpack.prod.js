@@ -16,6 +16,11 @@ const languages = {
     fr: require("./i18n/fr.json")
 };
 
+const stringifiedConstants = Object.assign({}, consts);
+Object.keys(stringifiedConstants).forEach((c) => {
+    stringifiedConstants[c] = JSON.stringify(stringifiedConstants[c]);
+});
+
 module.exports = Object.keys(languages).map((language) => {
     return {
         entry: {
@@ -32,7 +37,7 @@ module.exports = Object.keys(languages).map((language) => {
         name: language,
         output: {
             path: path.resolve(__dirname, "./dist"),
-            filename: `[name]-${language}-${JSON.parse(consts.__VERSION__)}.js`,
+            filename: `[name]-${language}-${consts.__VERSION__}.js`,
         },
         module: {
             rules: [{
@@ -79,12 +84,17 @@ module.exports = Object.keys(languages).map((language) => {
                 minify: true,
                 filename: `index-${language}.html`,
                 favicon: "src/favicon.ico",
-                excludeChunks: ["xbreader"]
+                excludeChunks: ["xbreader"],
+                extra: {
+                    v: consts.__VERSION__,
+                    dsn: consts.__DSN__,
+                    ua: consts.__GA_UA__
+                }
             }),
             new I18nPlugin(languages[language]),
             new FixStyleOnlyEntriesPlugin(),
             new MiniCssExtractPlugin({
-                filename: `[name]-${JSON.parse(consts.__VERSION__)}.css`,
+                filename: `[name]-${consts.__VERSION__}.css`,
             }),
             new UglifyJsPlugin({
                 parallel: true,
@@ -95,7 +105,7 @@ module.exports = Object.keys(languages).map((language) => {
                     }
                 }
             }),
-            new webpack.DefinePlugin(consts)
+            new webpack.DefinePlugin(stringifiedConstants)
         ]
     };
 });

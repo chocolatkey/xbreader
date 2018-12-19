@@ -8,6 +8,11 @@ const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries"); // 
 const webpack = require("webpack");
 const consts = require("./consts");
 
+const stringifiedConstants = Object.assign({}, consts);
+Object.keys(stringifiedConstants).forEach((c) => {
+    stringifiedConstants[c] = JSON.stringify(stringifiedConstants[c]);
+});
+
 module.exports = {
     devServer: {
         contentBase: path.join(__dirname, "bin"),
@@ -27,7 +32,7 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, "./bin"),
-        filename: `[name]-en-${JSON.parse(consts.__VERSION__)}.js`,
+        filename: `[name]-en-${consts.__VERSION__}.js`,
     },
     module: {
         rules: [{
@@ -72,13 +77,18 @@ module.exports = {
             title: "XBReader",
             template: "src/index.html",
             favicon: "src/favicon.ico",
-            excludeChunks: ["xbreader"]
+            excludeChunks: ["xbreader"],
+            extra: {
+                v: consts.__VERSION__,
+                dsn: false,
+                ua: false
+            }
         }),
         new I18nPlugin(null),
         new FixStyleOnlyEntriesPlugin(),
         new MiniCssExtractPlugin({
-            filename: `[name]-${JSON.parse(consts.__VERSION__)}.css`,
+            filename: `[name]-${consts.__VERSION__}.css`,
         }),
-        new webpack.DefinePlugin(consts)
+        new webpack.DefinePlugin(stringifiedConstants)
     ]
 };

@@ -1,6 +1,6 @@
 {
   "name": "xbreader",
-  "version": "0.27.0",
+  "version": "0.27.1",
   "description": "Fixed-layout publication reader for the web",
   "author": "chocolatkey",
   "license": "MIT",
@@ -17,6 +17,7 @@
     "webpack": "^4.8.3",
     "webpack-cli": "^3.1.1"
   },
+  "repository": "chocolatkey/xbreader",
   "scripts": {
     "start": "webpack-dev-server -d --config webpack.dev.js --watch",
     "build": "webpack -p --config webpack.prod.js",

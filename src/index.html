@@ -2,21 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1" />
     <title><%= htmlWebpackPlugin.options.title %></title>
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <meta name="theme-color" content="#212121">
     <meta name="format-detection" content="telephone=no, email=no" />
-    <meta name="google" content="notranslate">
+    <meta name="google" content="notranslate" />
+    <% if(htmlWebpackPlugin.options.extra.dsn) { %>
+    <!--Sentry-->
     <script src="https://cdn.ravenjs.com/3.27.0/raven.min.js" crossorigin="anonymous"></script>
     <script>
-        Raven.config('https://f1e301b1464c459f8536743c6bf7ecec@sentry.chocolatkey.com/5').install()
+        Raven.config("<%= htmlWebpackPlugin.options.extra.dsn %>", {
+            release: "<%= htmlWebpackPlugin.options.extra.v %>"
+        }).install()
     </script>
-
-    <!-- SEO here -->
-    
+    <% } %>
+    <% if(htmlWebpackPlugin.options.extra.ua) { %>
+    <!--Google Analytics-->
+    <script>
+        !function(s,u,g,o,i){s.GoogleAnalyticsObject=g;s[g]||(s[g]=function(){
+        (s[g].q=s[g].q||[]).push(arguments)});s[g].l=+new Date;o=u.createElement('script');
+        i=u.scripts[0];o.src='//www.google-analytics.com/analytics.js';
+        i.parentNode.insertBefore(o,i)}(window,document,'ga');
+        ga('create', '<%= htmlWebpackPlugin.options.extra.ua %>', 'auto');
+        ga('send', 'pageview');
+    </script>
+    <% } %>
+     <!--App--> 
+     <meta name="apple-mobile-web-app-capable" content="yes" />
+     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+     <meta name="theme-color" content="#212121" /> 
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" crossorigin="anonymous">
 </head>
