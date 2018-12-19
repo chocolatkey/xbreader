@@ -37,7 +37,7 @@ module.exports = Object.keys(languages).map((language) => {
         name: language,
         output: {
             path: path.resolve(__dirname, "./dist"),
-            filename: `[name]-${language}-${consts.__VERSION__}.js`,
+            filename: `[name]-${language}.js`,
         },
         module: {
             rules: [{

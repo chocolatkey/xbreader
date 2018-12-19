@@ -1,6 +1,6 @@
 {
   "name": "xbreader",
-  "version": "0.27.2",
+  "version": "0.27.3",
   "description": "Fixed-layout publication reader for the web",
   "author": "chocolatkey",
   "license": "MIT",
@@ -21,7 +21,7 @@
   "scripts": {
     "start": "webpack-dev-server -d --config webpack.dev.js --watch",
     "build": "webpack -p --config webpack.prod.js",
-    "push": "rm -rf dist/index.html && mv dist/index-en.html dist/index.html && surge dist/ xb.yrkz.me"
+    "push": "rm -rf dist/index.html && mv dist/index-en.html dist/index.html && surge dist/ xb.yrkz.me && mv dist/index.html dist/index-en.html"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^0.1.19",

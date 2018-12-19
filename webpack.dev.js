@@ -32,7 +32,7 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, "./bin"),
-        filename: `[name]-en-${consts.__VERSION__}.js`,
+        filename: "[name]-en.js",
     },
     module: {
         rules: [{
