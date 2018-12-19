@@ -87,7 +87,7 @@ module.exports = {
         new I18nPlugin(null),
         new FixStyleOnlyEntriesPlugin(),
         new MiniCssExtractPlugin({
-            filename: `[name]-${consts.__VERSION__}.css`,
+            filename: "[name].css",
         }),
         new webpack.DefinePlugin(stringifiedConstants)
     ]

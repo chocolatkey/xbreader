@@ -94,7 +94,7 @@ module.exports = Object.keys(languages).map((language) => {
             new I18nPlugin(languages[language]),
             new FixStyleOnlyEntriesPlugin(),
             new MiniCssExtractPlugin({
-                filename: `[name]-${consts.__VERSION__}.css`,
+                filename: "[name].css",
             }),
             new UglifyJsPlugin({
                 parallel: true,
