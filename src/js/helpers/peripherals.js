@@ -807,7 +807,9 @@ export default class Peripherals {
         const pages = document.getElementById("br-slider").children;
         let totalHeight = 0;
         for (let index = 0; index < pages.length; index++) {
-            const cheight = pages[index].children[0].clientHeight;
+            const cpage = pages[index];
+            if(!cpage) return false;
+            const cheight = cpage.children[0].clientHeight;
             if (Math.abs(document.documentElement.scrollTop + document.body.scrollTop - totalHeight) < (cheight * 0.6)) {
                 if (index != this.slider.currentSlide) {
                     this.slider.currentSlide = index;
