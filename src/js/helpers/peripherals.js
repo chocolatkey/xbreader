@@ -804,7 +804,9 @@ export default class Peripherals {
     processVScroll() {
         if (!this.slider.ttb)
             return false;
-        const pages = document.getElementById("br-slider").children;
+        const br_slider = document.getElementById("br-slider");
+        if(!br_slider) return false;
+        const pages = br_slider.children;
         let totalHeight = 0;
         for (let index = 0; index < pages.length; index++) {
             const cpage = pages[index];
