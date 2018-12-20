@@ -69,6 +69,7 @@ export default class Series {
      * Get the UUID of the next chapter in the series relative to the current item
      */
     get next() {
+        if(!this.chapters) return null;
         for (let i = 0; i < this.chapters.length; i++)
             if(this.isSelected(this.chapters[i]))
                 return this.chapters[i + 1] ? this.chapters[i + 1] : null;
@@ -78,6 +79,7 @@ export default class Series {
      * Get the UUID of the previous chapter in the series relative to the current item
      */
     get prev() {
+        if(!this.chapters) return null;
         for (let i = 0; i < this.chapters.length; i++)
             if(this.isSelected(this.chapters[i]))
                 return this.chapters[i - 1] ? this.chapters[i - 1] : null;
