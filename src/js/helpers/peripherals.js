@@ -103,7 +103,6 @@ export default class Peripherals {
         this.handlers.forEach(method => {
             this[method] = this[method].bind(this);
         });
-        //this.observe(this.slider.selector);
         this.observe(window);
         const tx = document.documentElement;
         tx.addEventListener("pointermove", this.onpointermove);
@@ -120,15 +119,10 @@ export default class Peripherals {
      * Remove all event listeners and nullify
      */
     destroy() {
-        //this.unobserve(this.slider.selector);
         this.unobserve(window);
         const tx = document.documentElement;
         tx.removeEventListener("pointermove", this.onpointermove);
         tx.removeEventListener("mousemove", this.mousemoveUpdater);
-        /*this.slider.selector.removeEventListener("touchend", this.mtimerUpdater);
-        this.slider.selector.removeEventListener("mouseup", this.mtimerUpdater);
-        this.slider.selector.removeEventListener("mousedown", this.mtimerUpdater);
-        this.slider.selector.removeEventListener("mousemove", this.mousemoveHandler);*/
 
         this.coordinator = null;
     }
@@ -637,8 +631,6 @@ export default class Peripherals {
         if (!Eve.KeyName) return false;
         var MovingParameter = this.MovingParameters[!Eve.shiftKey ? Eve.KeyName : Eve.KeyName.toUpperCase()];
         if (!MovingParameter) {
-            //Eve.target = this.slider.selector;
-            // this.slider.selector.focus(); // TODO!
             if(this.ui.toggle(false)) m.redraw();
             return false;
         }

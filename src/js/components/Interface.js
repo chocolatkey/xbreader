@@ -8,9 +8,10 @@ export default class Interface {
 
     sliderMove(e, slider, publication) {
         e.redraw = false;
-        if(publication.isTtb)
+        if(publication.isTtb) {
+            if(!slider.selector) return;
             window.scrollTo(0, slider.selector.scrollHeight * e.target.value / 100);
-        else
+        } else
             slider.goTo(parseInt(e.target.value));
     }
 

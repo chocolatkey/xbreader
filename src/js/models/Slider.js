@@ -40,7 +40,6 @@ export default class Slider {
             this.currentSlide = this.length <= this.perPage ? 0 : this.length - 1;
         }
 
-        //this.selectorWidth = this.selector.offsetWidth;
         this.resolveSlidesNumber();
         this.updateProperties(true);
         if(slide && !sML.Mobile)
@@ -222,12 +221,18 @@ export default class Slider {
         }
     }
 
+    get selector() {
+        const br_slider = document.getElementById("br-slider");
+        if(!br_slider) return null;
+        return br_slider;
+    }
+
     /**
      * Moves sliders frame to position of currently active slide
      */
     slideToCurrent(enableTransition, fast = true) {
         if (this.ttb) {
-            const br_slider = document.getElementById("br-slider");
+            const br_slider = this.selector;
             if(!br_slider) return;
             const children = br_slider.children;
             requestAnimationFrame(() => { // TODO nicer animation. Right now you still see a flash of the top
