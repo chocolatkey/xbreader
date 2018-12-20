@@ -19,7 +19,7 @@ div#br-topbar {
     & .br-topbar__icon {
         display: flex;
         position: relative;
-        align-items: start;
+        align-items: flex-start;
         justify-content: center;
         box-sizing: border-box;
         width: 48px;
@@ -131,7 +131,7 @@ div#br-topbar {
 .br-toolbar__section {
     display: inline-flex;
     flex: 1;
-    align-items: start;
+    align-items: flex-start;
     justify-content: center;
     box-sizing: border-box;
     min-width: 0;
