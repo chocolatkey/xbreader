@@ -227,7 +227,9 @@ export default class Slider {
      */
     slideToCurrent(enableTransition, fast = true) {
         if (this.ttb) {
-            const children = document.getElementById("br-slider").children;
+            const br_slider = document.getElementById("br-slider");
+            if(!br_slider) return;
+            const children = br_slider.children;
             requestAnimationFrame(() => { // TODO nicer animation. Right now you still see a flash of the top
                 requestAnimationFrame(() => {
                     if(this && children && children[this.currentSlide])
