@@ -110,7 +110,8 @@ export default class Slider {
     get length() {
         if(this.single)
             return this.slength;
-        return this.slength + this.nLandscape;
+        const total = this.slength + this.nLandscape;
+        return (this.shift && (total % 2 == 0)) ? total + 1 : total;
     }
 
     get slength() {
