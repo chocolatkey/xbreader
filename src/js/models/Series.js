@@ -5,6 +5,7 @@ export default class Series {
         this.publication = publication;
         this.volumes = series ? series : (publication.pmetadata.xbr.volumes ? publication.pmetadata.xbr.volumes : []);
         this.autoSelect = null;
+        this.metadata = (publication.pmetadata.belongsTo && publication.pmetadata.belongsTo.series) ? publication.pmetadata.belongsTo.series : {};
 
         this.chapters = this.buildChapterList();
 
