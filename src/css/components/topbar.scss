@@ -66,7 +66,6 @@ div#br-topbar {
         -moz-osx-font-smoothing: grayscale;
         -webkit-font-smoothing: antialiased;
         font-size: 1rem;
-        line-height: 1.75rem;
         font-weight: 400;
         letter-spacing: .00937em;
         text-decoration: inherit;
@@ -147,6 +146,7 @@ div#br-topbar {
 .br-toolbar__tsection {
     flex: 7;
     margin: 0 5px;
+    line-height: 1.75em;
 
     display: flex;
     flex-flow: row wrap;
