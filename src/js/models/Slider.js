@@ -247,7 +247,7 @@ export default class Slider {
         }
         if(this.single && !this.ttb) // Scroll back to top for next page
             setTimeout(() => {
-                this && this.binder && this.binder.coordinator.HTML.scrollTo(0, 0);
+                this && this.binder && this.binder.coordinator && this.binder.coordinator.HTML && this.binder.coordinator.HTML.scrollTo(0, 0);
             }, 100);
 
         const offset = (this.rtl ? 1 : -1) * this.currentSlide * (this.width / this.perPage);
