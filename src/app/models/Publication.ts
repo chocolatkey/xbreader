@@ -279,7 +279,7 @@ export default class Publication { // extends ReadiumPublication
 
     smartLoad(item: any) {
         if(typeof item === "function" || item instanceof Function) // Is a function
-            return this.loadFromData(item());
+            return this.loadFromData(this.parseManifest(item()));
         if(!!item && (typeof item === "object" || typeof item === "function") && typeof item.then === "function") { // Is a successful Promise
             return item.then((data: Publication) => this.loadFromData(data)).catch((error: Error) => { throw error; });
         } if (typeof item === "string" /* || item instanceof String*/) // Is a string (URL we hope)
@@ -296,6 +296,25 @@ export default class Publication { // extends ReadiumPublication
             }
     }
 
+    parseManifest(rawManifest: any) {
+        if(!rawManifest)
+            throw new xbError(9400, __("Manifest data empty"));
+        if(rawManifest instanceof Publication)
+            return rawManifest;
+        let md;
+        if(typeof rawManifest === "string")
+            md = JSON.parse(rawManifest);
+        else
+            md = rawManifest;
+
+        if(!this.isValidManifest(md))
+            throw new xbError(9400, __("Invalid WebPub manifest"));
+        for (const attrname in md.metadata.xbr) {
+            this.setSpecial(attrname, md.metadata.xbr[attrname]);
+        }
+        return TAJSON.deserialize<Publication>(md, Publication);
+    }
+
     loadFromPath(manifestPath: string) {
         return m.request<Publication>({
             method: "GET",
@@ -306,15 +325,7 @@ export default class Publication { // extends ReadiumPublication
                 if(!success)
                     throw new xbError(xhr.status);
                 const rawManifest = xhr.responseText;
-                if(!rawManifest)
-                    throw new xbError(9400, __("Manifest data empty"));
-                const md = JSON.parse(rawManifest);
-                if(!this.isValidManifest(md))
-                    throw new xbError(9400, __("Invalid WebPub manifest"));
-                for (const attrname in md.metadata.xbr) {
-                    this.setSpecial(attrname, md.metadata.xbr[attrname]);
-                }
-                return TAJSON.deserialize<Publication>(md, Publication);
+                return this.parseManifest(rawManifest);
             }
         }).then((manifest) => {
             this.url = manifestPath;
