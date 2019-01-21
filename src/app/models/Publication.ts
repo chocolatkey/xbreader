@@ -342,8 +342,10 @@ export default class Publication { // extends ReadiumPublication
             this.Metadata = manifestData.Metadata;
             this.Spine = manifestData.Spine;
             this.Links = manifestData.Links;
-            if(!/^(?:[a-z]+:)?\/\//i.test(this.url) && this.links.length)
-                this.url = this.searchLinkByRel("self").Href;
+            if(!/^(?:[a-z]+:)?\/\//i.test(this.url) && this.links.length) {
+                const slink = this.searchLinkByRel("self");
+                if(slink) this.url = slink.Href;
+            }
             console.log("Publication loaded: " + this.Metadata.Title);
             this.navi = new Navigator(this);
             this.ready = true;
