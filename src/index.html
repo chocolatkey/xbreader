@@ -11,9 +11,7 @@
     <!--Sentry-->
     <script src="https://cdn.ravenjs.com/3.27.0/raven.min.js" crossorigin="anonymous"></script>
     <script>
-        Raven.config("<%= htmlWebpackPlugin.options.extra.dsn %>", {
-            release: "<%= htmlWebpackPlugin.options.extra.v %>"
-        }).install()
+        Raven.config("<%= htmlWebpackPlugin.options.extra.dsn %>", { release: "<%= htmlWebpackPlugin.options.extra.v %>" }).install()
     </script>
     <% } %>
     <% if(htmlWebpackPlugin.options.extra.ua) { %>

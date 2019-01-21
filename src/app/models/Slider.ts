@@ -1,8 +1,42 @@
+/**
+    Inspired by Siema (https://github.com/pawelgrzybek/siema)
+ */
+
 import m from "mithril";
 import sML from "../helpers/sMLstub";
+import Publication from "./Publication";
+import Navigator from "./Navigator";
+import Series from "./Series";
+import Peripherals from "xbreader/helpers/peripherals";
+
+export interface Zoomer {
+    scale: number;
+    translate: {
+        X: number;
+        Y: number;
+    }
+}
 
 export default class Slider {
-    constructor(series, publication, binder, config) {
+    navigator: Navigator;
+    publication: Publication;
+    series: Series;
+    config: XBConfig;
+    transform: string;
+    currentSlide: number;
+    rtl: boolean;
+    ttb: boolean;
+    spread: boolean;
+    fit: boolean;
+    guideHidden: boolean;
+    binder: Peripherals;
+    width: number;
+    height: number;
+    zoomer: Zoomer; // TODO specific
+    properties: Object; // TODO CSS styles
+    resizeBoundHandler: EventListenerOrEventListenerObject;
+
+    constructor(series: Series, publication: Publication, binder: Peripherals, config: XBConfig) {
         this.navigator = publication.navi;
         this.publication = publication;
         this.series = series;
@@ -23,11 +57,14 @@ export default class Slider {
         this.currentSlide = 0;
         this.fit = false;
         this.transform = null;
-        this.children = [];
         this.resolveSlidesNumber();
         this.updateProperties(true);
-        this.resizeHandler = this.resizeHandler.bind(this);
-        window.addEventListener("resize", this.resizeHandler);
+        this.resizeBoundHandler = this.resizeHandler.bind(this);
+        window.addEventListener("resize", this.resizeBoundHandler);
+    }
+
+    resizeListener() {
+        this.resizeHandler();
     }
 
     /**
@@ -48,11 +85,11 @@ export default class Slider {
     }
 
     destroy() {
-        window.removeEventListener("resize", this.resizeHandler);
+        window.removeEventListener("resize", this.resizeBoundHandler);
     }
 
-    updateProperties(animate, fast = true) {
-        let margin = 0;
+    updateProperties(animate: boolean, fast = true) {
+        let margin = "0";
         this.width = document.documentElement.clientWidth;
         this.height = document.documentElement.clientHeight;
         if(this.perPage > 1 && this.shift)
@@ -64,8 +101,8 @@ export default class Slider {
         } else {
             this.properties = {
                 transition: animate ? `all ${fast ? 150 : 500}ms ease-out` : "all 0ms ease-out", // TODO vary
-                marginRight: this.rtl ? margin : 0,
-                marginLeft: this.rtl ? 0 : margin,
+                marginRight: this.rtl ? margin : "0",
+                marginLeft: this.rtl ? "0" : margin,
                 width: `${(this.width / this.perPage) * this.length}px`,
                 transform: this.transform
             };
@@ -73,7 +110,7 @@ export default class Slider {
     }
 
     get threshold() {
-        return 20; // todo
+        return 50;
     }
 
     get easing() {
@@ -118,7 +155,7 @@ export default class Slider {
         return this.publication.spine.length;
     }
 
-    get direction() {
+    get direction() { // TODO use enum
         return this.ttb ? "ttb" : (this.rtl ? "rtl" : "ltr");
     }
 
@@ -209,7 +246,7 @@ export default class Slider {
      * Go to slide with particular index
      * @param {number} index - Item index to slide to.
      */
-    goTo(index) {
+    goTo(index: number) {
         if (this.slength <= this.perPage)
             return;
         if (index % 2 && !this.single) // Prevent getting out of track
@@ -231,7 +268,7 @@ export default class Slider {
     /**
      * Moves sliders frame to position of currently active slide
      */
-    slideToCurrent(enableTransition, fast = true) {
+    slideToCurrent(enableTransition?: boolean, fast = true) {
         if (this.ttb) {
             const br_slider = this.selector;
             if(!br_slider) return;

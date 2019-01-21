@@ -1,4 +1,4 @@
-import m from "mithril";
+import m, {ClassComponent, Vnode} from "mithril";
 import Publication from "../models/Publication";
 import Ui from "../models/Ui";
 import Slider from "../models/Slider";
@@ -10,9 +10,45 @@ import Interface from "./Interface";
 import Platform from "../helpers/platform";
 import Series from "../models/Series";
 import xbError from "../models/xbError";
+import { parseDirection, directionToString } from "xbreader/helpers/utils";
 
-export default class Reader {
-    constructor(vnode) {
+export interface ReaderAttrs {
+    cid: string;
+    config: XBConfig;
+}
+
+export const enum XBReadingDirection {
+    LTR,
+    RTL,
+    TTB
+}
+
+interface BookStyle {
+    overflow: string;
+    direction: string;
+    cursor: string;
+    transform: string;
+    transformOrigin: string;
+}
+
+export default class Reader implements ClassComponent<ReaderAttrs> {
+    config: XBConfig;
+    publication: Publication;
+    guideHidden: boolean;
+    guideHider: number;
+    resizer: number;
+    series: Series;
+    mobile: boolean;
+    r: number;
+    ui: Ui;
+    slider: Slider;
+    hint: string;
+    loadingStatus: string;
+    loadingFailed: boolean;
+    direction: XBReadingDirection;
+    binder: Peripherals;
+
+    constructor(vnode: Vnode<ReaderAttrs>) {
         this.config = window.xbconfig = Reader.mergeSettings(vnode.attrs.config);
         this.guideHidden = this.config.guideHidden;
         this.r = Math.random();
@@ -28,10 +64,8 @@ export default class Reader {
                 // No flex compatibility TODO
             } else if(sML.UA.InternetExplorer < 10) {
                 // Not supported TODO
-            }
-                
+            } 
         }
-        this.direction = "auto"; // page-progression-direction
         this.hint = "";
 
         this.loadingStatus = __("Initializing...");
@@ -41,8 +75,11 @@ export default class Reader {
         Platform.checkRequestAnimationFrame();
     }
 
-    static mergeSettings(config) {
-        const settings = {
+    static mergeSettings(config: XBConfig) {
+        const settings: XBConfig = {
+            prefix: null,
+            mount: document.body,
+            preview: false,
             brand: {
                 name: null,
                 logo: null,
@@ -55,14 +92,14 @@ export default class Reader {
             series: null, // Volume/Chapter data
 
             // Callback/Hooks
-            loader: () => {}, // Custom loader for the webpub. Can return a URL, WebPub Object or Promise
-            onPublicationLoad: () => {}, // Right after the publication is fully loaded
-            onBeforeReady: () => {}, // Right before final preparations are carried out
-            onReady: () => {}, // When redrawing has finished
-            onPageChange: () => {}, // When page is changed
-            onLastPage: () => true, // When trying to go further after the last page. If returns true, auto-advance
+            loader: (identifier: string) => { return null }, // Custom loader for the webpub. Can return a URL, WebPub Object or Promise
+            onPublicationLoad: (reader: any) => {}, // Right after the publication is fully loaded
+            onBeforeReady: (reader: any) => {}, // Right before final preparations are carried out
+            onReady: (reader: any) => {}, // When redrawing has finished
+            onPageChange: (pnum: number, direction: string, isSpread: boolean) => {}, // When page is changed
+            onLastPage: (series: any) => true, // When trying to go further after the last page. If returns true, auto-advance
             onToggleInterface: () => {}, // When interface is shown/hidden
-            onDRM: () => {}, // When images are protected, this function provides DRM capabilities
+            onDRM: (loader: any, mixedSrc: any) => {}, // When images are protected, this function provides DRM capabilities
         };
 
         for (const attrname in config) {
@@ -76,7 +113,7 @@ export default class Reader {
      * To update the message shown during loading
      * @param {string} message 
      */
-    updateStatus(message) {
+    updateStatus(message: string) {
         this.loadingStatus = message;
         m.redraw();
     }
@@ -85,32 +122,33 @@ export default class Reader {
         clearTimeout(this.resizer);
         this.resizer = setTimeout(() => {
             m.redraw();
-            if(this.direction == "ttb" && this.slider)
+            if(this.direction == XBReadingDirection.TTB && this.slider)
                 this.slider.slideToCurrent();
         }, 50);
     }
 
-    switchDirection(direction) {
+    switchDirection(direction?: XBReadingDirection | string) {
+        direction = parseDirection(direction);
         const pdir = this.publication.direction;
         if(direction == null) {
             if(!this.direction) {
                 console.error("Can't switch directions if one isn't already set!");
                 return false;
             }
-            if(pdir == "ttb") { // Should not be encountered
+            if(pdir == XBReadingDirection.TTB) { // Should not be encountered
                 console.error("Vertical publications cannot be switched to a horizontal layout!");
                 return false;
             }
-            if(this.direction == "ttb") {
+            if(this.direction == XBReadingDirection.TTB) {
                 this.switchDirection(pdir);
             } else {
-                this.switchDirection("ttb");
+                this.switchDirection(XBReadingDirection.TTB);
             }
             return true;
         }
         if(this.direction == direction) // Already that direction
             return true;
-        console.log("Setting direction: " + direction);
+        console.log("Setting direction: " + directionToString(direction));
         if(this.slider.zoomer) this.slider.zoomer.scale = 1;
         this.guideHidden = this.config.guideHidden;
         clearTimeout(this.guideHider);
@@ -121,16 +159,16 @@ export default class Reader {
         }, 2000);
         this.hint = this.mobile ? __("Swipe or tap ") : __("Navigate ");
         switch (direction) {
-        case "ltr":
-            this.direction = "ltr"; // Left to right
+        case XBReadingDirection.LTR:
+            this.direction = direction; // Left to right
             this.hint = this.hint + __("left-to-right");
             break;
-        case "rtl":
-            this.direction = "rtl"; // Right to left
+        case XBReadingDirection.RTL:
+            this.direction = direction; // Right to left
             this.hint = this.hint + __("right-to-left");
             break;
-        case "ttb":
-            this.direction = "ttb"; // Top to bottom
+        case XBReadingDirection.TTB:
+            this.direction = direction; // Top to bottom
             this.hint = __("Scroll down");
             if(!this.slider) {
                 // TTB-only publication!
@@ -178,7 +216,7 @@ export default class Reader {
         this.binder = this.slider = this.publication = this.series = this.ui = this.config = null;
     }
 
-    oncreate(vnode) {
+    oncreate(vnode: Vnode<ReaderAttrs, this>) {
         let manifestPointer = this.config.loader(vnode.attrs.cid);
         if(!manifestPointer)
             if(this.config.link)
@@ -186,7 +224,7 @@ export default class Reader {
             else
                 manifestPointer = vnode.attrs.cid + ".json";
         else if (!manifestPointer) {
-            console.warning("No item specified");
+            console.warn("No item specified");
             m.route.set("/error/:code/:message", { code: 9400, message: __("No item specified") }, { replace: true });
             return;
         }
@@ -207,19 +245,20 @@ export default class Reader {
                 m.redraw();
             }, 1500);
             this.config.onReady(this);
-        }).catch(error => {
-            if(typeof error.export === "function") {
-                error.go();
+            console.log("Reader component created");
+        }).catch((error: xbError | Error) => {
+            console.error(error);
+            if(typeof (error as xbError).export === "function") {
+                (error as xbError).go();
             } else {
-                const encodedMessage = encodeURIComponent(window.btoa(error.message ? error.message : new String(error)));
-                m.route.set("/error/:code/:message", { code: error.code ? error.code : 9500, message: encodedMessage }, { replace: true });
+                const encodedMessage = encodeURIComponent(window.btoa(error.message ? error.message : error.toString()));
+                m.route.set("/error/:code/:message", { code: (error as xbError).code ? (error as xbError).code : 9500, message: encodedMessage }, { replace: true });
             }
             return;
         });
-        console.log("Reader component created");
     }
 
-    view(vnode) {
+    view(vnode: Vnode<ReaderAttrs, this>) {
         const sldr = vnode.state.slider;
         if(!(vnode.state.publication && vnode.state.publication.ready))
             return m("div.br-loader__container", [
@@ -227,10 +266,13 @@ export default class Reader {
                 m("span#br-loader__message", vnode.state.loadingStatus)
             ]);
         // Additional
-        let bookStyle = {
+        let bookStyle: BookStyle = {
             overflow: "hidden",//vnode.state.slider ? (vnode.state.slider.ttb ? "auto" : "hidden") : "hidden",
             direction: sldr ? (vnode.state.slider.rtl ? "rtl" : "ltr") : "ltr",
             //"overflow-y": vnode.state.slider ? (vnode.state.slider.perPage == 1 ? "scroll" : "auto") : "auto", // TODO SMALLS SCREEN!
+            cursor: null,
+            transform: null,
+            transformOrigin: null
         };
 
         document.documentElement.style.overflow = sldr ? ((sldr.ttb || !sldr.spread) ? "auto" : "hidden") : "hidden";
@@ -253,15 +295,16 @@ export default class Reader {
             }
         }
 
-        const pages = vnode.state.publication.spine.map((page, index) => {
+        const pages = vnode.state.publication.Spine.map((page, index) => {
             return m(Page, {
                 data: page,
-                key: page.href,
-                isImage: page.xbr.isImage,
+                key: page.Href,
+                isImage: page.findFlag("isImage"),
                 index: index,
                 slider: sldr,
                 drmCallback: this.config.onDRM,
-                binder: bnd
+                binder: bnd,
+                blank: false
             });
             //return items;
         });
@@ -275,11 +318,11 @@ export default class Reader {
                     style: bookStyle,
                     class: bnd ? (bnd.isPinching ? "pinching" : "normal") : "",
                     tabindex: -1, // Needed to be able to focus on this element (from peripherals)
-                    oncontextmenu: (e) => {
+                    oncontextmenu: (e: MouseEvent) => {
                         this.ui.toggle();
                         e.preventDefault();
                     },
-                    ondblclick: (e) => {
+                    ondblclick: (e: MouseEvent) => {
                         if(vnode.state.slider.ttb || !bnd)
                             return;
                         bnd.ondblclick(e);
@@ -297,7 +340,7 @@ export default class Reader {
                 }, pages)),
             ]),
             m("div.br-guide", {
-                class: "br-guide__" + this.direction + ((vnode.state.guideHidden || !vnode.state.publication.isReady) ? " hide" : "")
+                class: "br-guide__" + directionToString(this.direction) + ((vnode.state.guideHidden || !vnode.state.publication.isReady) ? " hide" : "")
             }, this.hint)
         ];
         if (this.publication.isReady && this.slider)

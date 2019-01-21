@@ -1,0 +1,39 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "noImplicitAny": true,
+        "sourceMap": true,
+        "allowJs": true,
+        "experimentalDecorators": true,
+        "module": "es6",
+        "target": "es5",
+        "lib": [
+            "es2017",
+            "dom",
+            "scripthost"
+        ],
+        "esModuleInterop": true,
+        "baseUrl": ".",
+        "paths": {
+            "xbreader/*": ["src/app/*"],
+            "@r2-opds-js/*": [
+                "node_modules/r2-opds-js/dist/es5/src/*"
+            ],
+            "@r2-utils-js/*": [
+                "node_modules/r2-utils-js/dist/es5/src/*"
+            ],
+            "@r2-shared-js/*": [
+                "node_modules/r2-shared-js/dist/es5/src/*"
+            ],
+            "@r2-lcp-js/*": [
+                "node_modules/r2-lcp-js/dist/es5/src/*"
+            ]
+        },
+    },
+    "include": [
+        "./src/app/**/*"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

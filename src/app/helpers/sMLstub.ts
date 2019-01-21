@@ -1,8 +1,36 @@
+declare interface OSFlags {
+    iOS: number;
+    macOS: number;
+    WindowsPhone: number;
+    Windows: number;
+    Android: number;
+    Chrome: boolean;
+    Linux: boolean;
+    Firefox: boolean;
+}
+
+declare interface UAFlags {
+    Gecko: number;
+    Firefox: number;
+    Opera: number;
+    Silk: number;
+    Chrome: number | boolean;
+    Safari: number;
+    Edge: number;
+    Blink: number | boolean;
+    WebKit: number;
+    Trident: number;
+    InternetExplorer: number;
+    Flash: number;
+}
+
 class sML {
+    [key:string]: any;
+
     constructor() {
-        var nUA = navigator.userAgent;
-        var getVersion = function(Prefix, Reference) {
-            var N = parseFloat(nUA.replace(new RegExp("^.*" + Prefix + "[ :\\/]?(\\d+([\\._]\\d+)?).*$"), Reference ? Reference : "$1").replace(/_/g, "."));
+        const nUA = navigator.userAgent;
+        let getVersion = function(Prefix: string, Reference?: string): number {
+            let N = parseFloat(nUA.replace(new RegExp("^.*" + Prefix + "[ :\\/]?(\\d+([\\._]\\d+)?).*$"), Reference ? Reference : "$1").replace(/_/g, "."));
             return (!isNaN(N) ? N : undefined);
         };
 
@@ -11,7 +39,7 @@ class sML {
             return (navigator.language.split("-")[0] == "ja") ? "ja" : "en";
         })();
 
-        this.OperatingSystem = this.OS = ((OS) => {
+        this.OperatingSystem = this.OS = ((OS: OSFlags) => {
             if(/iP(hone|ad|od( touch)?);/.test(nUA)) OS.iOS          = getVersion("CPU (iP(hone|ad|od( touch)?) )?OS", "$4");
             else if(          /OS X 10[\._]\d/.test(nUA)) OS.macOS        = getVersion("OS X ");
             else if(  /Windows Phone( OS)? \d/.test(nUA)) OS.WindowsPhone = getVersion("Windows Phone OS") || getVersion("Windows Phone");
@@ -21,11 +49,11 @@ class sML {
             else if(                    /X11;/.test(nUA)) OS.Linux        = true;
             else if(                 /Firefox/.test(nUA)) OS.Firefox      = true;
             return OS;
-        })({});
+        })({} as OSFlags);
 
-        this.Mobile = this.OS.iOS || this.OS.Android || this.OS.WindowsPhone;
+        this.Mobile = (this.OS.iOS || this.OS.Android || this.OS.WindowsPhone) ? true : false;
 
-        this.UserAgent = this.UA = ((UA) => {
+        this.UserAgent = this.UA = ((UA: UAFlags) => {
             if(/Gecko\/\d/.test(nUA)) {
                 UA.Gecko = getVersion("rv");
                 if(/Firefox\/\d/.test(nUA)) UA.Firefox = getVersion("Firefox");
@@ -45,21 +73,21 @@ class sML {
                 UA.Trident          = getVersion("Trident"); 
                 UA.InternetExplorer = getVersion("rv") || getVersion("MSIE");
             }
-            try { UA.Flash = parseFloat(navigator.mimeTypes["application/x-shockwave-flash"].enabledPlugin.description.replace(/^.+?([\d\.]+).*$/, "$1")); } catch(e) {}
+            try { UA.Flash = parseFloat((navigator.mimeTypes["application/x-shockwave-flash" as any] as any).enabledPlugin.description.replace(/^.+?([\d\.]+).*$/, "$1")); } catch(e) {}
             return UA;
-        })({});
+        })({} as UAFlags);
 
-        this.Environments = this.Env = ((Env) => {
-            ["OS", "UA"].forEach((OS_UA) => { for(var Param in this[OS_UA]) if(Param != "Flash" && this[OS_UA][Param]) Env.push(Param); });
+        this.Environments = this.Env = ((Env: number[]) => {
+            ["OS", "UA"].forEach((OS_UA) => { for(let Param in this[OS_UA]) if(Param != "Flash" && this[OS_UA][Param]) Env.push(parseInt(Param)); });
             return Env;
         })([]);
     }
 
-    edit(Obj, Pros, Sty) {
-        for(var Pro in Pros) {
+    edit(Obj: any, Pros: any, Sty?: CSSStyleDeclaration) {
+        for(let Pro in Pros) {
             if(Pro == "on" || Pro == "extraHTML") continue;
             if(/^data-/.test(Pro)) Obj.setAttribute(Pro, Pros[Pro]);
-            else                   Obj[Pro] = Pros[Pro];
+            else                   (Obj as any)[Pro] = Pros[Pro];
         }
         if(Pros) {
             if(Pros.extraHTML) Obj.innerHTML = Obj.innerHTML + Pros.extraHTML;

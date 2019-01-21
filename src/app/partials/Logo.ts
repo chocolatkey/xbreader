@@ -1,8 +1,14 @@
-import m from "mithril";
+import m, { CVnode } from "mithril";
+
+export interface LogoAttrs {
+    embedded: boolean;
+    name: string;
+    logo: string;
+}
+
 export default {
-    view: (vnode) => {
-        const brand = vnode.attrs;
-        if(brand.embedded) {
+    view: ({attrs}: CVnode<LogoAttrs>) => {
+        if(attrs.embedded) {
             return m("button#br-embedded__back", {
                 onclick: () => {
                     window.parent.postMessage("xbr:back", "*");
@@ -14,10 +20,10 @@ export default {
                 })
             ]);
         }
-        if(!brand.name || !brand.logo)
+        if(!attrs.name || !attrs.logo)
             return null;
         return m("a.logo[href=/]", [
-            m(`img[src=${brand.logo}]`, {"title": brand.name})
+            m(`img[src=${attrs.logo}]`, {"title": attrs.name})
         ]);
     }
 };

@@ -1,7 +1,10 @@
 import m from "mithril";
 
 export default class xbError {
-    constructor(code, message) {
+    errCode: number;
+    errMessage: string;
+
+    constructor(code: number, message?: string) {
         this.errCode = code;
         this.errMessage = message;
     }

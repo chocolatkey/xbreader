@@ -1,46 +1,56 @@
-import m from "mithril";
+import m, {ClassComponent, Vnode, Child} from "mithril";
 import Logo from "../partials/Logo";
+import Ui from "xbreader/models/Ui";
+import Slider from "xbreader/models/Slider";
+import Reader from "./Reader";
+import Publication from "xbreader/models/Publication";
 
-export default class Interface {
+export interface InterfaceAttrs {
+    model: Ui;
+    slider: Slider;
+    reader: Reader;
+}
+
+export default class Interface implements ClassComponent<InterfaceAttrs> {
     oninit() {
         console.log("Interface initialized");
     }
 
-    sliderMove(e, slider, publication) {
+    sliderMove(e: MithrilEvent, slider: Slider, publication: Publication) {
         e.redraw = false;
         if(publication.isTtb) {
             if(!slider.selector) return;
-            window.scrollTo(0, slider.selector.scrollHeight * e.target.value / 100);
+            window.scrollTo(0, slider.selector.scrollHeight * parseInt((e.target as HTMLInputElement).value) / 100);
         } else
-            slider.goTo(parseInt(e.target.value));
+            slider.goTo(parseInt((e.target as HTMLInputElement).value));
     }
 
-    slider(slider, publication) {
+    slider(slider: Slider, publication: Publication) {
         const attrs = {
             type: "range",
-            min: 0,
-            max: slider.length - (slider.shift ? 1 : 2),//(slider.length % 2 ?  : slider.length),
-            value: slider.currentSlide,
-            step: slider.perPage,
+            min: "0",
+            max: `${slider.length - (slider.shift ? 1 : 2)}`,//(slider.length % 2 ?  : slider.length),
+            value: `${slider.currentSlide}`,
+            step: `${slider.perPage}`,
             title: __("Select Page"),
-            onchange: (e) => { // Activates when slider is released (mouse let go). Needed for IE compatibility
+            onchange: (e: MithrilEvent) => { // Activates when slider is released (mouse let go). Needed for IE compatibility
                 this.sliderMove(e, slider, publication);
-                e.target.blur();
+                (e.target as HTMLInputElement).blur();
             },
-            oninput: (e) => { // Triggered on slider value changed (while dragging it!), works in evergreen browsers
+            oninput: (e: MithrilEvent) => { // Triggered on slider value changed (while dragging it!), works in evergreen browsers
                 this.sliderMove(e, slider, publication);
             },
             dir: publication.rtl ? "rtl" : "ltr"
         };
         if(publication.isTtb) {
-            attrs.max = 100;
-            attrs.value = (document.documentElement.scrollTop + document.body.scrollTop) / document.documentElement.scrollHeight * 100;
+            attrs.max = `${100}`;
+            attrs.value = `${(document.documentElement.scrollTop + document.body.scrollTop) / document.documentElement.scrollHeight * 100}`;
             attrs.step = "any";
         }
         return m("input.br-slider", attrs);
     }
 
-    sliderSystem(slider, publication, embedded) {        
+    sliderSystem(slider: Slider, publication: Publication, embedded: boolean) {        
         let items = [
             this.slider(slider, publication)
         ];
@@ -48,14 +58,14 @@ export default class Interface {
         const currentPageIndicator = m("span.br-slider__pagenum", {
             title: __("Current Page"),
             onclick: () => {
-                const newPage = parseInt(prompt(`${__("Input a page number")} (${1}-${publication.pmetadata.numberOfPages})`, slider.currentSlide + 1)) - 1;
-                if(newPage !== (slider.currentSlide + 1) && newPage >= 0 && newPage < publication.pmetadata.numberOfPages)
+                const newPage = parseInt(prompt(`${__("Input a page number")} (${1}-${publication.pmetadata.NumberOfPages})`, (slider.currentSlide + 1).toString())) - 1;
+                if(newPage !== (slider.currentSlide + 1) && newPage >= 0 && newPage < publication.pmetadata.NumberOfPages)
                     slider.goTo(newPage);
             }
         }, publication.navi.getPageString(slider));
         const pageAmountIndicator = m("span.br-slider__pagenum-last", {
             title: __("# of Pages")
-        }, publication.pmetadata.numberOfPages);
+        }, publication.pmetadata.NumberOfPages);
 
         if(publication.rtl) {
             items.unshift(pageAmountIndicator);
@@ -66,32 +76,30 @@ export default class Interface {
                 items.push(pageAmountIndicator);
         }
 
-        const sseries = publication.pmetadata.xbr.series;
+        const sseries = publication.findSpecial("series") && publication.findSpecial("series").Value;
         if(sseries && sseries.next && !embedded) { // Has a next chapter
-            const nextLink = [
+            const nextLink =
                 m(`span.br-slider__${publication.rtl ? "lgo" : "rgo"}`, { // Leftmost slider control
                     title: __("Go to the next chapter")
                 }, m("a", {
                     href: "/" + sseries.next.uuid,
-                    oncreate: m.route.link({ replace: false }),
-                    onupdate: m.route.link({ replace: false })
-                }, __("Next")))
-            ];
+                    oncreate: m.route.link({ replace: false } as any),
+                    onupdate: m.route.link({ replace: false } as any)
+                } as any as m.Attributes, __("Next") as Child));
             if(publication.rtl)
                 items.unshift(nextLink);
             else
                 items.push(nextLink);
         }
         if(sseries && sseries.prev && !embedded) {
-            const prevLink = [ // Has a previous chapter
+            const prevLink = // Has a previous chapter
                 m(`span.br-slider__${publication.rtl ? "rgo" : "lgo"}`, {
                     title: __("Go to the previous chapter")
                 }, m("a", {
                     href: "/" + sseries.prev.uuid,
-                    oncreate: m.route.link({ replace: false }),
-                    onupdate: m.route.link({ replace: false })
-                }, __("Prev")))
-            ];
+                    oncreate: m.route.link({ replace: false } as any),
+                    onupdate: m.route.link({ replace: false } as any)
+                } as any as m.Attributes, __("Prev") as Child));
             if(publication.rtl)
                 items.push(prevLink);
             else
@@ -100,7 +108,7 @@ export default class Interface {
         return m("div.br-botbar-container", items);
     }
 
-    view(vnode) {
+    view(vnode: Vnode<InterfaceAttrs, this>) {
         const ui = vnode.attrs.model;
         const brand = vnode.attrs.reader.config.brand;
         const tabConfig = vnode.attrs.reader.config.tabs;
@@ -109,7 +117,7 @@ export default class Interface {
         slider.resolveSlidesNumber();
         const isPortrait = window.innerHeight > window.innerWidth ? true : false;
 
-        let tweakButton = [];
+        let tweakButton: Vnode;
         if (slider.ttb) // Vertical tweaking
             tweakButton = m("button#br-view__tweak", {
                 onclick: () => {
@@ -133,7 +141,7 @@ export default class Interface {
                 })
             ]);
 
-        const tabs = [];
+        const tabs: Vnode[] = [];
         const tabBar = [];
         const tabToggle = [];
         tabConfig.forEach(tab => {
@@ -170,12 +178,12 @@ export default class Interface {
                         m(Logo, brand)
                     ]),
                     m("section.br-toolbar__tsection", [
-                        brand.embedded ? m("span.br-toolbar__ellipsis", publication.series.name) : m("a.br-toolbar__ellipsis", {
-                            href: publication.series.identifier,
+                        brand.embedded ? m("span.br-toolbar__ellipsis", publication.series.Name as Child) : m("a.br-toolbar__ellipsis", {
+                            href: publication.series.Identifier,
                             title: __("Series")
-                        }, publication.series.name),
+                        }, publication.series.Name as Child),
                         m("span.spacer", "›"),
-                        brand.embedded ? m("span#br-chapter", publication.pmetadata.title) : vnode.attrs.reader.series.selector
+                        brand.embedded ? m("span#br-chapter", publication.pmetadata.Title as Child) : vnode.attrs.reader.series.selector
                     ]),
                     m("section.br-toolbar__section.br-toolbar__section--align-end.dhide", {
                         class: brand.embedded ? "gone" : ""

@@ -1,46 +1,112 @@
 import m from "mithril";
 import sML from "./sMLstub";
-import Coordinator from "./coordinator";
+import Coordinator, { Point, BibiEvent, VerticalThird, HorizontalThird } from "./coordinator";
+import Reader, { XBReadingDirection } from "xbreader/components/Reader";
+import Slider from "xbreader/models/Slider";
+import Ui from "xbreader/models/Ui";
 
-const MAX_SCALE = 6;
+const MAX_SCALE = 6; // 6x zoom
+
+export enum WheelState {
+    None,
+    Start,
+    Reverse,
+    Serial
+}
+
+export interface Wheel {
+    Distance: number;
+    Delta: number;
+    Accel: number;
+    Wheeled: WheelState;
+}
+
+export interface DragTracker {
+    startX: number;
+    endX: number;
+    startY: number;
+    letItGo: boolean;
+    preventClick: boolean;
+    transformX: number;
+    transformY: number;
+}
+
+export interface PinchTracker {
+    startDistance: number;
+    startOffset: Point;
+    touchN: number;
+}
+
+export interface BibiKeyboardEvent extends KeyboardEvent {
+    KeyName: string;
+    BibiModifierKeys: string[];
+}
+
+export interface BibiWheelEvent extends WheelEvent {
+    BibiSwiperWheel: Wheel;
+}
+
+export interface BibiMouseEvent extends MouseEvent {
+    special: boolean;
+}
 
 export default class Peripherals {
-    constructor(Reader) {
+    [propName: string]: any; // :\
+
+    slider: Slider;
+    ui: Ui;
+    reader: Reader;
+    PreviousWheels: Wheel[] = [];
+    PreviousCoord: Point = {X: 0, Y: 0};
+    isDragging = false;
+    isPinching = false;
+    pointerDown = false;
+    coordinator: Coordinator;
+    mtimer: number;
+    pdblclick: boolean;
+    Scrolling: boolean;
+    Timer_onscrolled: number;
+    Timer_cooldown: number;
+    onwheelTimer_stop: number;
+    onwheeled_hot: boolean;
+    drag: DragTracker;
+    pinch: PinchTracker;
+    mousePos: BibiEvent;
+    currentCursor: string;
+
+    MovingParameters: { [keyName:string] : string | number } = {
+        "Space": 1,
+        "Backspace": -1,
+        "Page Up": -1,
+        "Page Down": 1,
+        "End": "foot",
+        "Home": "head",
+        "SPACE": -1,
+        "PAGE UP": "head",
+        "PAGE DOWN": "foot",
+        "END": "foot",
+        "HOME": "head",
+        "Plus": "zoom-in",
+        "Minus": "zoom-out",
+        "Zero": "zoom-reset",
+        "Return": "menu"
+    };
+    ActiveKeys: { [keyName:string] : number } = {};
+    KeyCodes: { [type:string] : Object } = {
+        keydown: {},
+        keyup: {},
+        keypress: {}
+    };
+    observers = ["keydown", "keyup", "keypress", "wheel", "scroll", "touchmove", "message"];
+    handlers = [
+        "touchstartHandler", "touchendHandler", "touchmoveHandler", "mousedownHandler", "mouseupHandler", "mousemoveHandler", "mousemoveUpdater", "mtimerUpdater", "onkeydown", "onkeyup", "onkeypress", "onwheel", "onscroll", "ontouchmove", "onpointermove", "onclick", "ondblclick", "onmessage"
+    ];
+
+    constructor(Reader: Reader) {
         this.slider = Reader.slider;
         this.ui = Reader.ui;
         this.reader = Reader;
-
-        this.PreviousWheels = [];
-        this.PreviousCoord = {
-            X: 0,
-            Y: 0
-        };
-        this.isDragging = false;
-        this.isPinching = false;
         this.coordinator = new Coordinator(this);
-        this.ActiveKeys = {};
-        this.KeyCodes = {
-            "keydown": {},
-            "keyup": {},
-            "keypress": {}
-        };
-        this.MovingParameters = {
-            "Space": 1,
-            "Backspace": -1,
-            "Page Up": -1,
-            "Page Down": 1,
-            "End": "foot",
-            "Home": "head",
-            "SPACE": -1,
-            "PAGE UP": "head",
-            "PAGE DOWN": "foot",
-            "END": "foot",
-            "HOME": "head",
-            "Plus": "zoom-in",
-            "Minus": "zoom-out",
-            "Zero": "zoom-reset",
-            "Return": "menu"
-        };
 
         this.updateKeyCodes(["keydown", "keyup", "keypress"], {
             32: "Space"
@@ -93,12 +159,6 @@ export default class Peripherals {
  
         this.updateMovingParameters(Reader.direction);
 
-        this.observers = ["keydown", "keyup", "keypress", "wheel", "scroll", "touchmove", "message"];
-
-        this.handlers = [
-            "touchstartHandler", "touchendHandler", "touchmoveHandler", "mousedownHandler", "mouseupHandler", "mousemoveHandler", "mousemoveUpdater", "mtimerUpdater", "onkeydown", "onkeyup", "onkeypress", "onwheel", "onscroll", "ontouchmove", "onpointermove", "onclick", "ondblclick", "onmessage"
-        ];
-
         // Bind all event handlers for referencability
         this.handlers.forEach(method => {
             this[method] = this[method].bind(this);
@@ -127,18 +187,29 @@ export default class Peripherals {
         this.coordinator = null;
     }
 
-    onmessage(e) { // TODO more messages
+    onmessage(e: MessageEvent) { // TODO more messages
         if(!e.data || typeof(e.data) !== "string")
             return;
-        if(e.data.indexOf("xbr:move:") !== 0)
+        if(e.data.indexOf("xbr:") !== 0)
             return;
         e.stopPropagation();
-        const p = e.data.split(":");
-        const v = p[p.length - 1];
-        this.moveBy(isNaN(v) ? v : parseInt(v));
+        const p = e.data.split(":"); // xbr:<action>:<data>
+        const v = p[2]; // Data
+        switch (p[1]) { // Action
+        case "move": {
+            this.moveBy(isNaN(v as any) ? v : parseInt(v));
+            break;
+        }
+        case "goto": {
+            this.slider.goTo(parseInt(v) - 1);
+            break;
+        }
+        // TODO more
+        default:
+            break;
+        }
+        
     }
-
-
 
     /**
      * Attaches listeners to required events.
@@ -150,7 +221,7 @@ export default class Peripherals {
             startX: 0,
             endX: 0,
             startY: 0,
-            letItGo: null,
+            letItGo: false,
             preventClick: false,
             transformX: 0,
             transformY: 0
@@ -171,7 +242,7 @@ export default class Peripherals {
             startX: 0,
             endX: 0,
             startY: 0,
-            letItGo: null,
+            letItGo: false,
             preventClick: this.drag.preventClick,
             transformX: 0,
             transformY: 0
@@ -190,9 +261,9 @@ export default class Peripherals {
     /**
      * touchstart event handler
      */
-    touchstartHandler(e) {
+    touchstartHandler(e: TouchEvent) {
         // Prevent dragging / swiping on inputs, selects and textareas
-        const ignoreSlider = ["TEXTAREA", "OPTION", "INPUT", "SELECT"].indexOf(e.target.nodeName) !== -1;
+        const ignoreSlider = ["TEXTAREA", "OPTION", "INPUT", "SELECT"].indexOf((e.target as Element).nodeName) !== -1;
         if (ignoreSlider)
             return;
 
@@ -229,7 +300,7 @@ export default class Peripherals {
         }
     }
 
-    mtimerUpdater(e) {
+    mtimerUpdater(e: MithrilEvent) { // TODO mithril event type
         e.redraw = false;
         setTimeout(() => {
             clearTimeout(this.mtimer);
@@ -239,7 +310,7 @@ export default class Peripherals {
     /**
      * touchend event handler
      */
-    touchendHandler(e) {
+    touchendHandler(e: TouchEvent) {
         e.stopPropagation();
         this.pointerDown = false;
         //this.slider.updateProperties(true);
@@ -256,7 +327,7 @@ export default class Peripherals {
     /**
      * touchmove event handler
      */
-    touchmoveHandler(e) {
+    touchmoveHandler(e: TouchEvent) {
         e.stopPropagation();
 
         if ((Math.abs(this.drag.startY - e.touches[0].pageY) + Math.abs(this.drag.startX - e.touches[0].pageX)) > 5 && this.pointerDown)
@@ -285,7 +356,7 @@ export default class Peripherals {
             return;
         }
 
-        if (this.drag.letItGo === null) {
+        if (this.drag.letItGo === false) {
             this.drag.letItGo = Math.abs(this.drag.startY - e.touches[0].pageY) < Math.abs(this.drag.startX - e.touches[0].pageX);
         }
 
@@ -302,7 +373,7 @@ export default class Peripherals {
                 this.slider.zoomer.translate.Y = 0;
 
             if (this.slider.zoomer.translate.X > this.slider.width)
-                this.slider.zoomer.translate.X = this.slider.width;
+                this.slider.zoomer.translate.X = this.slider.width; 
             if (this.slider.zoomer.translate.Y > this.slider.height)
                 this.slider.zoomer.translate.Y = this.slider.height;
 
@@ -323,7 +394,7 @@ export default class Peripherals {
             const dragOffset = (this.drag.endX - this.drag.startX);
             const offset = this.slider.rtl ? currentOffset + dragOffset : currentOffset - dragOffset;
             
-            this.slider.properties.transform = `translate3d(${(this.slider.rtl ? 1 : -1) * offset}px, 0, 0)`;
+            (this.slider.properties as any).transform = `translate3d(${(this.slider.rtl ? 1 : -1) * offset}px, 0, 0)`;
         }
     }
 
@@ -331,7 +402,7 @@ export default class Peripherals {
         return this.slider.zoomer && this.slider.zoomer.scale > 1;
     }
 
-    addTouch(e) {
+    addTouch(e: any) {
         e.touches = [{
             pageX: e.pageX,
             pageY: e.pageY
@@ -341,10 +412,10 @@ export default class Peripherals {
     /**
      * mousedown event handler
      */
-    mousedownHandler(e) {
+    mousedownHandler(e: MouseEvent) {
         if (this.isScaled) {
-            this.addTouch(e);
-            this.touchstartHandler(e);
+            this.addTouch(e as any);
+            this.touchstartHandler(e as any);
         }
     }
 
@@ -352,10 +423,10 @@ export default class Peripherals {
     /**
      * mouseup event handler
      */
-    mouseupHandler(e) {
+    mouseupHandler(e: MouseEvent) {
         if (this.isScaled) {
             this.addTouch(e);
-            this.touchendHandler(e);
+            this.touchendHandler(e as any);
         }
     }
 
@@ -365,7 +436,7 @@ export default class Peripherals {
         return false;
     }
 
-    mousemoveUpdater(e) {
+    mousemoveUpdater(e: MouseEvent) {
         this.mousePos = this.coordinator.getBibiEvent(e);
         this.ui.mousing = true;
     }
@@ -373,10 +444,10 @@ export default class Peripherals {
     /**
      * mousemove event handler
      */
-    mousemoveHandler(e) {
+    mousemoveHandler(e: BibiMouseEvent) {
         if (this.isScaled) {
-            this.addTouch(e);
-            this.touchmoveHandler(e);
+            this.addTouch(e as any);
+            this.touchmoveHandler(e as any);
         } else {
             if(!e.special) {
                 clearTimeout(this.mtimer);
@@ -402,26 +473,26 @@ export default class Peripherals {
                 const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) == sliderLength;
                 if (this.slider.ttb) { // Vertical controls
                     switch (this.mousePos.Division.Y) {
-                    case "bottom":
+                    case VerticalThird.Bottom:
                         this.changeCursor(atLastSlide ? "not-allowed" : "s-resize");
                         break;
-                    case "top":
+                    case VerticalThird.Top:
                         this.changeCursor(atFirstSlide ? "not-allowed" : "n-resize");
                         break;
-                    case "middle":
+                    case VerticalThird.Middle:
                         this.changeCursor("pointer");
                         break;
                     }
                 } else { // Horizontal controls
                     const rtl = this.slider.rtl;
                     switch (this.mousePos.Division.X) {
-                    case "left":
+                    case HorizontalThird.Left:
                         this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed" : "w-resize");
                         break;
-                    case "right":
+                    case HorizontalThird.Right:
                         this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed" : "e-resize");
                         break;
-                    case "center":
+                    case HorizontalThird.Center:
                         this.changeCursor("pointer");
                         break;
                     }
@@ -434,7 +505,7 @@ export default class Peripherals {
         }
     }
 
-    changeCursor(newCursor) {
+    changeCursor(newCursor: string) {
         if (newCursor == this.currentCursor)
             return;
         this.currentCursor = newCursor;
@@ -444,14 +515,13 @@ export default class Peripherals {
         return this.currentCursor ? this.currentCursor : "pointer";
     }
 
-    updateKeyCodes(EventTypes, KeyCodesToUpdate) {
-        if (typeof EventTypes.join != "function") EventTypes = [EventTypes];
+    updateKeyCodes(EventTypes: string[] | string, KeyCodesToUpdate: Object) {
+        if (typeof (<string[]>EventTypes).join != "function") EventTypes = [EventTypes as string];
         if (typeof KeyCodesToUpdate == "function") KeyCodesToUpdate = KeyCodesToUpdate();
-        EventTypes.forEach((EventType) => {
+        (<string[]>EventTypes).forEach((EventType) => {
             this.KeyCodes[EventType] = sML.edit(this.KeyCodes[EventType], KeyCodesToUpdate);
         });
     }
-
 
     /**
      * Recalculate drag/swipe event and reposition the frame of a slider
@@ -492,9 +562,9 @@ export default class Peripherals {
             });
     }
 
-    updateMovingParameters(ARD) {
+    updateMovingParameters(ARD: XBReadingDirection) {
         switch (ARD) {
-        case "ttb":
+        case XBReadingDirection.TTB:
             return sML.edit(this.MovingParameters, {
                 "Up Arrow": 0, // -1
                 "Right Arrow": 0,
@@ -512,7 +582,7 @@ export default class Peripherals {
                 "Minus": 0,
                 "Zero": 0,
             });
-        case "ltr":
+        case XBReadingDirection.LTR:
             return sML.edit(this.MovingParameters, {
                 "Up Arrow": 0,
                 "Right Arrow": 1,
@@ -530,7 +600,7 @@ export default class Peripherals {
                 "Minus": "zoom-out",
                 "Zero": "zoom-reset",
             });
-        case "rtl":
+        case XBReadingDirection.RTL:
             return sML.edit(this.MovingParameters, {
                 "Up Arrow": 0,
                 "Right Arrow": -1,
@@ -569,12 +639,12 @@ export default class Peripherals {
         }
     }
 
-    getKeyName(Eve) {
-        var KeyName = this.KeyCodes[Eve.type][Eve.keyCode];
+    getKeyName(Eve: KeyboardEvent) {
+        const KeyName = (this.KeyCodes[Eve.type] as any)[Eve.keyCode];
         return KeyName ? KeyName : "";
     }
 
-    onEvent(Eve) {
+    onEvent(Eve: BibiKeyboardEvent) {
         Eve.KeyName = this.getKeyName(Eve);
         Eve.BibiModifierKeys = [];
         if (Eve.shiftKey) Eve.BibiModifierKeys.push("Shift");
@@ -586,7 +656,7 @@ export default class Peripherals {
         return true;
     }
 
-    onkeydown(Eve) {
+    onkeydown(Eve: BibiKeyboardEvent) {
         if (!this.onEvent(Eve)) return false;
         if (Eve.KeyName) {
             if (!this.ActiveKeys[Eve.KeyName]) {
@@ -597,7 +667,7 @@ export default class Peripherals {
         }
     }
 
-    onkeyup(Eve) {
+    onkeyup(Eve: BibiKeyboardEvent) {
         clearTimeout(this.mtimer);
         if (!this.onEvent(Eve)) return false;
         if (this.ActiveKeys[Eve.KeyName] && Date.now() - this.ActiveKeys[Eve.KeyName] < 300) {
@@ -611,23 +681,23 @@ export default class Peripherals {
         }
     }
 
-    onkeypress(Eve) {
-        if (!this.onEvent(Eve)) return false;
+    onkeypress(Eve: KeyboardEvent) {
+        if (!this.onEvent(Eve as BibiKeyboardEvent)) return false;
     }
 
-    unobserve(item) {
+    unobserve(item: EventTarget) {
         this.observers.forEach((EventName) => {
             item.removeEventListener(EventName, this["on" + EventName], false);
         });
     }
 
-    observe(item) {
+    observe(item: EventTarget) {
         this.observers.forEach((EventName) => {
             item.addEventListener(EventName, this["on" + EventName], false);
         });
     }
 
-    tryMoving(Eve) {
+    tryMoving(Eve: BibiKeyboardEvent) {
         if (!Eve.KeyName) return false;
         var MovingParameter = this.MovingParameters[!Eve.shiftKey ? Eve.KeyName : Eve.KeyName.toUpperCase()];
         if (!MovingParameter) {
@@ -639,7 +709,7 @@ export default class Peripherals {
         this.moveBy(MovingParameter);
     }
 
-    attemptScrollTo(offset) {
+    attemptScrollTo(offset: number) {
         if(this.coordinator && this.coordinator.HTML && this.coordinator.HTML.scrollTo)
             this.coordinator.HTML.scrollTo({ // Scroll to bottom first
                 top: offset,
@@ -652,15 +722,17 @@ export default class Peripherals {
             console.error("scrollTo not supported!");
     }
 
-    moveBy(MovingParameter) {
+    moveBy(MovingParameter: any) {
         // Move
         if (typeof MovingParameter == "number") {
             if (MovingParameter === 1) {
+                /* I don't think people like this behavior very much
                 const bbEle = document.getElementById("br-book");
                 if(this.slider.single && !this.slider.ttb && bbEle && (this.coordinator.HTML.scrollTop + window.innerHeight + 5) <= bbEle.clientHeight) {
                     this.attemptScrollTo(9999);
                     return;
                 }
+                */
                 this.slider.next(this.slider.perPage);
                 
             } else if (MovingParameter === -1) {
@@ -704,26 +776,26 @@ export default class Peripherals {
 
     // Pointer
 
-    evalPointer(event, active) {
+    evalPointer(event: MouseEvent, active: boolean) {
         if (!active)
             return;
         const ev = this.coordinator.getBibiEvent(event);
         if (this.slider.ttb) { // Vertical controls
             switch (ev.Division.Y) {
-            case "bottom":
+            case VerticalThird.Bottom:
                 this.moveBy(1);
                 break;
-            case "top":
+            case VerticalThird.Top:
                 this.moveBy(-1);
                 break;
-            case "middle":
+            case VerticalThird.Middle:
                 this.ui.toggle();
                 m.redraw();
                 break;
             }
         } else { // Horizontal controls
-            const next = this.slider.rtl ? "left" : "right";
-            const prev = this.slider.rtl ? "right" : "left";
+            const next = this.slider.rtl ? HorizontalThird.Left : HorizontalThird.Right;
+            const prev = this.slider.rtl ? HorizontalThird.Right : HorizontalThird.Left;
             switch (ev.Division.X) {
             case next:
                 this.delayedMoveBy(1);
@@ -731,7 +803,7 @@ export default class Peripherals {
             case prev:
                 this.delayedMoveBy(-1);
                 break;
-            case "center":
+            case HorizontalThird.Center:
                 this.delayedToggle();
                 break;
             }
@@ -746,7 +818,7 @@ export default class Peripherals {
         this.pdblclick = false;
     }
 
-    delayedMoveBy(MovingParameter) {
+    delayedMoveBy(MovingParameter: any) {
         this.dtimer = setTimeout(() => {
             if (!this.pdblclick) {
                 this.moveBy(MovingParameter);
@@ -755,13 +827,13 @@ export default class Peripherals {
         }, 200); // Unfortunately adds lag to interface elements :(
     }
 
-    ontap(Eve) {}
+    ontap(Eve: TouchEvent) {}
 
-    onclick(Eve) {
+    onclick(Eve: MouseEvent) {
         this.evalPointer(Eve, !this.isDragging);
     }
 
-    ondblclick(Eve) {
+    ondblclick(Eve: MouseEvent) {
         clearTimeout(this.dtimer);
         this.pdblclick = true;
 
@@ -783,11 +855,11 @@ export default class Peripherals {
             };*/
     }
 
-    onpointermove(Eve) {
-        var CC = this.coordinator.getBibiEventCoord(Eve),
+    onpointermove(Eve: BibiMouseEvent) {
+        let CC = this.coordinator.getBibiEventCoord(Eve),
             PC = this.PreviousCoord;
         if (PC.X != CC.X || PC.Y != CC.Y) this.evalPointer(Eve, false); //E.dispatch("bibi:moved-pointer",   Eve);
-        //else                             console.log("stopped moving");//E.dispatch("bibi:stopped-pointer", Eve);
+        //else console.log("stopped moving");//E.dispatch("bibi:stopped-pointer", Eve);
         this.PreviousCoord = CC;
         if(Eve.special)
             this.ui.toggle(true);
@@ -818,8 +890,8 @@ export default class Peripherals {
         }
     }
 
-    onwheel(Eve) {
-        let CW = {},
+    onwheel(Eve: BibiWheelEvent) {
+        let CW: Wheel = {} as Wheel,
             PWs = this.PreviousWheels,
             PWl = PWs.length;
         if (Math.abs(Eve.deltaX) > Math.abs(Eve.deltaY)) { // Horizontal scrolling
@@ -836,19 +908,19 @@ export default class Peripherals {
             return;
         }
         if (!PWs[PWl - 1]) {
-            CW.Accel = 1, CW.Wheeled = "start";
+            CW.Accel = 1, CW.Wheeled = WheelState.Start;
         } else if (CW.Distance != PWs[PWl - 1].Distance) {
             CW.Accel = 1;
-            if (PWl >= 3 && PWs[PWl - 2].Distance != CW.Distance && PWs[PWl - 3].Distance != CW.Distance) CW.Wheeled = "reverse";
+            if (PWl >= 3 && PWs[PWl - 2].Distance != CW.Distance && PWs[PWl - 3].Distance != CW.Distance) CW.Wheeled = WheelState.Reverse;
         } else if (CW.Delta > PWs[PWl - 1].Delta) {
             CW.Accel = 1;
-            if (PWl >= 3 && PWs[PWl - 1].Accel == -1 && PWs[PWl - 2].Accel == -1 && PWs[PWl - 3].Accel == -1) CW.Wheeled = "serial";
+            if (PWl >= 3 && PWs[PWl - 1].Accel == -1 && PWs[PWl - 2].Accel == -1 && PWs[PWl - 3].Accel == -1) CW.Wheeled = WheelState.Serial;
         } else if (CW.Delta < PWs[PWl - 1].Delta) {
             CW.Accel = -1;
         } else {
             CW.Accel = PWs[PWl - 1].Accel;
         }
-        if (CW.Wheeled) {
+        if (CW.Wheeled !== WheelState.None) {
             Eve.BibiSwiperWheel = CW;
             clearTimeout(this.Timer_cooldown);
             this.Timer_cooldown = setTimeout(() => this.onwheeled_hot = false, 300);
@@ -866,11 +938,10 @@ export default class Peripherals {
         }, 192);
     }
 
-    onscroll(Eve) {
+    onscroll(Eve: Event) {
         this.processVScroll();
         if (!this.Scrolling) {
             this.Scrolling = true;
-            Eve.BibiScrollingBegun = true;
         }
         //E.dispatch("bibi:scrolls", Eve);
         clearTimeout(this.Timer_onscrolled);
@@ -879,7 +950,7 @@ export default class Peripherals {
         }, 123);
     }
 
-    ontouchmove(Eve) {
+    ontouchmove(Eve: TouchEvent) {
         this.onscroll(Eve);
     }
 }

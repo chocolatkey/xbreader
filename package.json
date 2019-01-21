@@ -1,19 +1,25 @@
 {
   "name": "xbreader",
-  "version": "0.27.12",
+  "version": "0.28.0",
   "description": "Fixed-layout publication reader for the web",
   "author": "chocolatkey",
   "license": "MIT",
   "dependencies": {
-    "babel-core": "^6.26.3",
-    "babel-loader": "^7.1.4",
-    "babel-preset-es2015": "^6.24.1",
+    "@babel/core": "^7.0.0",
+    "@babel/polyfill": "^7.2.5",
+    "@babel/preset-env": "^7.0.0",
+    "babel-loader": "^8.0.0",
     "css-loader": "^0.28.11",
     "file-loader": "^2.0.0",
     "mithril": "^2.0.0-rc.0",
     "mopt": "^5.1.1",
     "node-sass": "^4.8.3",
+    "r2-shared-js": "^1.0.6",
     "sass-loader": "^7.0.1",
+    "source-map-loader": "^0.2.4",
+    "ta-json-x": "^2.5.0",
+    "ts-loader": "^5.3.2",
+    "typescript": "^3.2.2",
     "webpack": "^4.8.3",
     "webpack-cli": "^3.1.1"
   },
@@ -24,12 +30,11 @@
     "push": "rm -rf dist/index.html && mv dist/index-en.html dist/index.html && surge dist/ xb.yrkz.me && mv dist/index.html dist/index-en.html"
   },
   "devDependencies": {
-    "clean-webpack-plugin": "^0.1.19",
+    "@types/mithril": "^1.1.13",
     "html-webpack-plugin": "^3.2.0",
     "i18n-webpack-plugin": "^1.0.0",
     "mini-css-extract-plugin": "^0.4.0",
-    "uglifyjs-webpack-plugin": "^1.2.5",
     "webpack-dev-server": "^3.1.10",
-    "webpack-fix-style-only-entries": "^0.0.4"
+    "webpack-fix-style-only-entries": "^0.1.0"
   }
 }

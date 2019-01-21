@@ -2,10 +2,8 @@
 
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const I18nPlugin = require("i18n-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const CleanWebpackPlugin = require("clean-webpack-plugin");
 const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries"); // Will be unecessary in Webpack 5, apparently
 const webpack = require("webpack");
 const consts = require("./consts");
@@ -28,19 +26,24 @@ module.exports = Object.keys(languages).map((language) => {
                 "./src/css/styles.scss"
             ],
             xbreader: [
-                "./src/js/index.js",
+                "./src/app/index.ts",
             ],
             loader: [
-                "./src/js/loader.js"
+                "./src/app/loader.js"
             ],
         },
         name: language,
+        devtool: "source-map",
         output: {
             path: path.resolve(__dirname, "./dist"),
             filename: `[name]-${language}.js`,
         },
         module: {
             rules: [{
+                test: /\.tsx?$/,
+                exclude: /node_modules/,
+                loader: ["babel-loader", {loader: "ts-loader", options: {transpileOnly: true}}]
+            }, {
                 test: /\.js$/,
                 exclude: /node_modules/,
                 loader: "babel-loader"
@@ -67,21 +70,39 @@ module.exports = Object.keys(languages).map((language) => {
                 ]
             },
             {
-                test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+                test: /\.(jpg|webp|ico|tiff|bmp|png|woff|woff2|eot|ttf|svg)$/,
                 loader: "file-loader",
                 options: {
                     name: "[name]-[hash].[ext]"
                 }
             }]
         },
+        resolve: {
+            extensions: [ ".tsx", ".ts", ".js", ".jsx" ],
+            alias: {
+                "@r2-utils-js": "r2-utils-js/dist/es5/src",
+                "@r2-lcp-js": "r2-lcp-js/dist/es5/src",
+                "@r2-opds-js": "r2-opds-js/dist/es5/src",
+                "@r2-shared-js": "r2-shared-js/dist/es5/src",
+                "@r2-streamer-js": "r2-streamer-js/dist/es5/src",
+                "@r2-navigator-js": "r2-navigator-js/dist/es5/src",
+                "xbreader": path.resolve(__dirname, "src/app/")
+            }
+        },
+        node: {
+            Buffer: false, // Fixes inclusion of useless Buffer polyfill needed by ta-json-x. The buffer loader is NEVER used
+            process: false,
+            setImmediate: false,
+            global: false
+        },
         plugins: [
-            new CleanWebpackPlugin(["dist/*.js", "dist/*.css"], {
-                verbose: false
-            }),
             new HtmlWebpackPlugin({
                 title: "XBReader",
                 template: "src/index.html",
-                minify: true,
+                minify: {
+                    collapseWhitespace: true,
+  
+                },
                 filename: `index-${language}.html`,
                 favicon: "src/favicon.ico",
                 excludeChunks: ["xbreader"],
@@ -92,19 +113,10 @@ module.exports = Object.keys(languages).map((language) => {
                 }
             }),
             new I18nPlugin(languages[language]),
-            new FixStyleOnlyEntriesPlugin(),
             new MiniCssExtractPlugin({
                 filename: "[name].css",
             }),
-            new UglifyJsPlugin({
-                parallel: true,
-                uglifyOptions: {
-                    toplevel: true,
-                    mangle: {
-                        toplevel: true,
-                    }
-                }
-            }),
+            new FixStyleOnlyEntriesPlugin(),
             new webpack.DefinePlugin(stringifiedConstants)
         ]
     };

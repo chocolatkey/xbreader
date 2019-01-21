@@ -1,12 +1,17 @@
 export default class Ui {
-    constructor(toggleCallback) {
+    toggleCallback: Function;
+    isHidden: boolean;
+    menuShown: boolean;
+    mousing: boolean;
+
+    constructor(toggleCallback: Function) {
         this.toggleCallback = toggleCallback;
         this.isHidden = false;
         this.menuShown = false;
         this.mousing = false;
     }
 
-    toggleMenu(newState) {
+    toggleMenu(newState?: boolean) {
         if (newState == null)
             this.menuShown = !this.menuShown;
         else if (this.menuShown != newState)
@@ -15,7 +20,7 @@ export default class Ui {
             return;
     }
 
-    toggle(newState) {
+    toggle(newState?: boolean) {
         if (newState == null)
             this.isHidden = !this.isHidden;
         else if (!!this.isHidden == newState) {

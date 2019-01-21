@@ -1,6 +1,12 @@
 {
-    "presets": ["es2015"],
+    "presets": [["@babel/env", {
+        "targets": {
+            "chrome": "44",
+            "ie": "11"
+        },
+        "useBuiltIns": "entry"
+    }]],
     "plugins": [
-        ["mopt"]
+        ["module:mopt"]
     ]
 }

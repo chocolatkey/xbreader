@@ -1,7 +1,8 @@
-import m from "mithril";
+import m, { ClassComponent, CVnode } from "mithril";
+import { isNumeric, intVal } from "../helpers/utils";
 import Logo from "../partials/Logo";
 
-const errorMappings = {
+const errorMappings: { [code: number] : string } = {
     400: __("You issued a bad request."),
     403: __("You are not allowed to view this content."),
     404: __("The content you requested does not exist."),
@@ -10,27 +11,37 @@ const errorMappings = {
     503: __("Content is temporarily unavailable."),
 };
 
-export default class ErrorView {
-    constructor(config) {
+export interface ErrorAttrs {
+    message: string;
+    code: string;
+}
+
+export default class ErrorView implements ClassComponent<ErrorAttrs> {
+    config: XBConfig;
+    errorCode: number;
+    errorMessage: string;
+
+    constructor(config: XBConfig) {
         this.config = config;
     }
 
-    oninit(vnode) {
+    oninit({attrs}: CVnode<ErrorAttrs>) {
         this.errorCode = 666;
-        if(vnode.attrs.message) {
+        const civ = intVal(attrs.code);
+        if(attrs.message) {
             try {
-                this.errorMessage = window.atob(decodeURIComponent(vnode.attrs.message));
+                this.errorMessage = window.atob(decodeURIComponent(attrs.message));
             } catch(e) {
                 console.error("Failed decoding error message", e);
                 this.errorMessage = __("Invalid error");
             }
-            this.errorCode = vnode.attrs.code;
+            this.errorCode = civ;
         }
-        else if(errorMappings[vnode.attrs.code]) {
-            this.errorMessage = errorMappings[vnode.attrs.code];
-            this.errorCode = vnode.attrs.code;
-        } else if(isNaN(vnode.attrs.code)) {
-            const errObj = JSON.parse(vnode.attrs.code);
+        else if(isNumeric(attrs.code) && errorMappings[intVal(attrs.code)]) {
+            this.errorMessage = errorMappings[civ];
+            this.errorCode = civ;
+        } else if(!isNumeric(attrs.code)) {
+            const errObj = JSON.parse(attrs.code);
             if(errObj.code && errObj.message) { // Is xbError
                 this.errorCode = errObj.code;
                 this.errorMessage = errObj.message;
@@ -41,7 +52,7 @@ export default class ErrorView {
             this.errorMessage = __("Unknown error");
     }
 
-    view(vnode) {
+    view({attrs}: CVnode<ErrorAttrs>) {
         return [
             m("div.br-error__container", [
                 (this.config.brand && this.config.brand.embedded) ? m("div.br__notifier", m(Logo, this.config.brand)) : null,

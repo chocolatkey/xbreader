@@ -10,7 +10,7 @@ export default class Platform {
         }
 
         if (!window.requestAnimationFrame) {
-            window.requestAnimationFrame = function(callback, element) {
+            window.requestAnimationFrame = function(callback: Function) {
                 var currTime = new Date().getTime();
                 var timeToCall = Math.max(0, 16 - (currTime - lastTime));
                 var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
@@ -35,6 +35,7 @@ export default class Platform {
      * 2 = slow (2G)
      */
     static networkType() {
+        // @ts-ignore: Network Information API is experimental
         const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
         if(!connection || !connection.effectiveType) // Not supported
             return 0;
@@ -42,7 +43,7 @@ export default class Platform {
             return 2;
         if(connection.effectiveType.indexOf("3g") >= 0)
             return 1;
-        
+
         return 0; // Unknown or other
     }
 

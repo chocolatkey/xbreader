@@ -1,9 +1,9 @@
 /* global require __dirname module */
+
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const I18nPlugin = require("i18n-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const CleanWebpackPlugin = require("clean-webpack-plugin");
 const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries"); // Will be unecessary in Webpack 5, apparently
 const webpack = require("webpack");
 const consts = require("./consts");
@@ -24,10 +24,10 @@ module.exports = {
             "./src/css/styles.scss"
         ],
         xbreader: [
-            "./src/js/index.js",
+            "./src/app/index.ts",
         ],
         loader: [
-            "./src/js/loader.js"
+            "./src/app/loader.js"
         ]
     },
     output: {
@@ -36,6 +36,10 @@ module.exports = {
     },
     module: {
         rules: [{
+            test: /\.tsx?$/,
+            exclude: /node_modules/,
+            loader: "ts-loader"
+        }, {
             test: /\.js$/,
             exclude: /node_modules/,
             loader: "babel-loader"
@@ -62,17 +66,26 @@ module.exports = {
             ]
         },
         {
-            test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+            test: /\.(jpg|webp|ico|tiff|bmp|png|woff|woff2|eot|ttf|svg)$/,
             loader: "file-loader",
             options: {
                 name: "[name]-[hash].[ext]"
             }
-        }]
+        }],
+    },
+    resolve: {
+        extensions: [ ".tsx", ".ts", ".js", ".jsx" ],
+        alias: {
+            "@r2-utils-js": "r2-utils-js/dist/es5/src",
+            "@r2-lcp-js": "r2-lcp-js/dist/es5/src",
+            "@r2-opds-js": "r2-opds-js/dist/es5/src",
+            "@r2-shared-js": "r2-shared-js/dist/es5/src",
+            "@r2-streamer-js": "r2-streamer-js/dist/es5/src",
+            "@r2-navigator-js": "r2-navigator-js/dist/es5/src",
+            "xbreader": path.resolve(__dirname, "src/app/")
+        }
     },
     plugins: [
-        new CleanWebpackPlugin(["bin/*.js", "bin/*.css"], {
-            verbose: false
-        }),
         new HtmlWebpackPlugin({
             title: "XBReader",
             template: "src/index.html",

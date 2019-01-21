@@ -1,20 +1,58 @@
+import Peripherals from "./peripherals";
+
+export interface Point {
+    X: number;
+    Y: number;
+}
+
+export enum HorizontalThird {
+    Left,
+    Center,
+    Right
+}
+
+export enum VerticalThird {
+    Top,
+    Middle,
+    Bottom
+}
+
+export interface NinthPoint {
+    X: HorizontalThird;
+    Y: VerticalThird;
+}
+
+export interface BibiEvent {
+    Target: EventTarget;
+    Coord: Point;
+    Ratio: Point;
+    Division: NinthPoint;
+}
+
 export default class Coordinator {
-    constructor(peripherals) {
+    p: Peripherals;
+    HTML: HTMLElement;
+    Head: HTMLHeadElement;
+    Body: HTMLElement;
+
+    constructor(peripherals: Peripherals) {
         this.p = peripherals;
 
-        this.HTML  = document.documentElement;// O.HTML.className = sML.Environments.join(" ") + " bibi welcome";
+        this.HTML  = document.documentElement;
         this.Head  = document.head;
         this.Body  = document.body;
     }
 
-    getElementCoord(El) {
+    /*
+    getElementCoord(El: any) {
         var Coord = { X: El["offsetLeft"], Y: El["offsetTop"] };
         while(El.offsetParent) El = El.offsetParent, Coord.X += El["offsetLeft"], Coord.Y += El["offsetTop"];
         return Coord;
     }
+    */
     
-    getBibiEventCoord(Eve) {
-        var Coord = { X:0, Y:0 };
+    getBibiEventCoord(Eve: any): Point {
+        const Coord: Point = { X:0, Y:0 };
         if(/^touch/.test(Eve.type)) {
             Coord.X = Eve.changedTouches[0].pageX;
             Coord.Y = Eve.changedTouches[0].pageY;
@@ -22,7 +60,7 @@ export default class Coordinator {
             Coord.X = Eve.pageX;
             Coord.Y = Eve.pageY;
         }
-        if(Eve.target.ownerDocument.documentElement == this.HTML) {
+        if((<HTMLElement>Eve.target).ownerDocument.documentElement == this.HTML) {
             Coord.X -= (this.HTML.scrollLeft + this.Body.scrollLeft);
             Coord.Y -= (this.HTML.scrollTop + this.Body.scrollTop);
         } else {
@@ -37,7 +75,7 @@ export default class Coordinator {
         return Coord;
     }
 
-    getTouchDistance(Eve) {
+    getTouchDistance(Eve: TouchEvent) {
         if (Eve.touches.length !== 2) return 0;
         const x1 = Eve.touches[0].pageX;
         const y1 = Eve.touches[0].pageY;
@@ -46,8 +84,8 @@ export default class Coordinator {
         return Math.sqrt((Math.pow((x2 - x1), 2)) + (Math.pow((y2 - y1), 2)));
     }
 
-    getTouchCenter(Eve) {
-        if (Eve.touches.length !== 2) return 0;
+    getTouchCenter(Eve: TouchEvent): Point | null {
+        if (Eve.touches.length !== 2) return null;
         const x1 = Eve.touches[0].pageX;
         const y1 = Eve.touches[0].pageY;
         const x2 = Eve.touches[1].pageX;
@@ -55,8 +93,13 @@ export default class Coordinator {
         return { X: (x1 + x2) / 2, Y: (y1 + y2) / 2 };
     }
     
-    getBibiEvent(Eve) {
-        if(!Eve) return {};
+    getBibiEvent(Eve: Event): BibiEvent {
+        if(!Eve) return {
+            Coord: null,
+            Division: null,
+            Ratio: null,
+            Target: null
+        };
         var Coord = this.getBibiEventCoord(Eve);
         var FlipperWidth = 0.3; // TODO flipper-width
         var Ratio = {
@@ -72,16 +115,16 @@ export default class Coordinator {
             var BorderR = 1 - BorderL;
             var BorderB = 1 - BorderT;
         }
-        var Division = {
-            X: "",
-            Y: ""
-        };
-        if(Ratio.X < BorderL) Division.X = "left";
-        else if(BorderR < Ratio.X) Division.X = "right";
-        else                       Division.X = "center";
-        if(Ratio.Y < BorderT) Division.Y = "top";
-        else if(BorderB < Ratio.Y) Division.Y = "bottom";
-        else                       Division.Y = "middle";
+        const Division: NinthPoint = {
+            X: null,
+            Y: null
+        }
+        if(Ratio.X < BorderL) Division.X = HorizontalThird.Left;
+        else if(BorderR < Ratio.X) Division.X = HorizontalThird.Right;
+        else                       Division.X = HorizontalThird.Center;
+        if(Ratio.Y < BorderT) Division.Y = VerticalThird.Top;
+        else if(BorderB < Ratio.Y) Division.Y = VerticalThird.Bottom;
+        else                       Division.Y = VerticalThird.Middle;
         return {
             Target: Eve.target,
             Coord: Coord,

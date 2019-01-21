@@ -1,15 +1,16 @@
+import "@babel/polyfill";
 import m from "mithril";
 
 import readView from "./views/read";
 import errorView from "./views/error";
 
 /**
- * Expose globally as a function
+ * Exposes loader globally as a function
  */
-window.xbreader = (config) => {
+window.xbreader = (config: XBConfig) => {
     console.log(`${__NAME__} ${__VERSION__}`);
     if(!config)
-        config = {};
+        config = {} as XBConfig;
     const mountingPoint = config.mount ? config.mount : document.body;
     if(config.prefix)
         m.route.prefix(config.prefix);

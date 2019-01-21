@@ -1,27 +1,34 @@
-import cdn from "../helpers/cdn";
-import sML from "../helpers/sMLstub";
-import { Promise } from "core-js";
+import cdn from "./cdn";
+import sML from "./sMLstub";
+import Link from "xbreader/models/Link";
+import { CVnodeDOM } from "mithril";
 
 const HIGH_THRESHOLD = 5;
 const LOW_THRESHOLD = 3;
-const workerSupported = typeof(Worker) === "undefined" ? false : true;
 
-let f, worker;
+interface QueueElement {
+    xhr: XMLHttpRequest;
+    src: string;
+
+}
+const workerSupported = typeof(Worker) === "undefined" ? false : true;
+let f, worker: Worker;
 if(workerSupported) {
     f = () => {
+        const ctx: Worker = self as any;
         //const useFetch = typeof(fetch) !== "undefined" ? true : false;
         //const useFetch = false;
-        let queued = [];
-        const locate = (src) => queued.map((o) => o.src).indexOf(src);
-        const isQueued = (src) => locate(src) !== -1;
-        const deqeue = (src) => {
+        let queued: QueueElement[] = [];
+        const locate = (src: string) => queued.map((o) => o.src).indexOf(src);
+        const isQueued = (src: string) => locate(src) !== -1;
+        const deqeue = (src: string) => {
             const i = locate(src);
             if (i != -1)
                 queued.splice(i, 1);
         };
         self.addEventListener("message", e => {
             const src = e.data.src;
-            let xhr;
+            let xhr: XMLHttpRequest;
             switch (e.data.mode) {
             case "FETCH":
                 if(isQueued(src)) // If already queued
@@ -61,7 +68,7 @@ if(workerSupported) {
                 xhr = new XMLHttpRequest();
                 queued.push({src, xhr});
                 xhr.open("GET", src, true);
-                // xhr.setRequestHeader("Content-Type", "image/*"); would preflight request
+                // xhr.setRequestHeader("Content-Type", "image/*"); would preflight request, which is unecessary for pub resources
                 if(e.data.modernImage)
                     xhr.setRequestHeader("Accept", "image/webp,image/*,*/*;q=0.8"); // Support WebP where available
                 else
@@ -73,15 +80,15 @@ if(workerSupported) {
                     if(xhr.status && xhr.status < 400) {
                         if(e.data.bitmap && (typeof(ImageBitmap) !== "undefined")) { // ImageBitmap supported
                             createImageBitmap(xhr.response).then((bitmap) => {
-                                self.postMessage({ src, bitmap }, [bitmap]);
+                                ctx.postMessage({ src, bitmap }, [bitmap]);
                             });
                         } else {
                             const url = URL.createObjectURL(xhr.response);
-                            self.postMessage({ src, url });
-                        } 
+                            ctx.postMessage({ src, url });
+                        }
                     } else {
                         const error = `Failed to load item ${src}, status ${xhr.status}`;
-                        self.postMessage({ src, error });
+                        ctx.postMessage({ src, error });
                     }
                     deqeue(src);
                 };
@@ -117,7 +124,20 @@ const WebPChecker = () => {
 const canWebP = WebPChecker();
 
 export default class LazyLoader {
-    constructor(itemData, imageIndex, drmCallback) {
+    original: string;
+    data: Link;
+    index: number;
+    loaded: boolean;
+    reloader: boolean;
+    blob: string;
+    drm: Function;
+    canvas: HTMLCanvasElement;
+    image: HTMLImageElement | HTMLCanvasElement;
+    highTime: number;
+    preloader: HTMLImageElement | Object;
+    drawT: number;
+
+    constructor(itemData: Link, imageIndex: number, drmCallback: Function) {
         this.original = cdn.image(itemData, imageIndex);
         this.data = itemData;
         this.index = imageIndex;
@@ -125,19 +145,19 @@ export default class LazyLoader {
         this.reloader = false;
         this.blob = null;
 
-        if(itemData.properties && itemData.properties.encrypted) {
+        if(itemData.Properties && itemData.Properties.Encrypted) {
             this.drm = drmCallback;
-        } else if(itemData.height && itemData.width) {
+        } else if(itemData.Height && itemData.Width) {
             this.canvas = document.createElement("canvas");
-            this.canvas.height = itemData.height;
-            this.canvas.width = itemData.width;
+            this.canvas.height = itemData.Height;
+            this.canvas.width = itemData.Width;
         }        
     }
 
-    provoke(imageItem, currentIndex) {
-        this.image = imageItem.dom;
+    provoke(imageItem: CVnodeDOM<HTMLImageElement | HTMLCanvasElement>, currentIndex: number) {
+        this.image = <any>imageItem.dom; // :(
         if(this.drm)
-            this.canvas = this.image; // C
+            this.canvas = <HTMLCanvasElement>this.image; // C
         const diff = Math.abs(this.index - currentIndex); // Distance of this page from current page
         clearTimeout(this.highTime);
 
@@ -166,19 +186,19 @@ export default class LazyLoader {
             if(workerSupported)
                 worker.postMessage({src: this.original, mode: "CANCEL"});
             else
-                this.preloader.src = ""; // Cancels currently loading image
+                (<HTMLImageElement>this.preloader).src = ""; // Cancels currently loading image
             this.preloader = null; // Reset the preloader
         }
     }
 
-    toBlob(callback, type, quality) {
+    toBlob(type?: string, quality?: number) {
         if(this.loaded)
             return;
         if(HTMLCanvasElement.prototype.toBlob) {
             this.canvas.toBlob((blob) => {
                 this.blob = URL.createObjectURL(blob);
                 if(!this.loaded)
-                    this.image.src = this.blob;
+                    (<HTMLImageElement>this.image).src = this.blob;
             });
         } else {
             let binStr = atob(this.canvas.toDataURL(type, quality).split(",")[1]),
@@ -194,7 +214,7 @@ export default class LazyLoader {
         }
     }
 
-    draw(element) {
+    draw(element: HTMLElement | string) {
         cancelAnimationFrame(this.drawT);
         this.drawT = requestAnimationFrame(() => {
             const cd = this.canvas;
@@ -212,7 +232,7 @@ export default class LazyLoader {
                     ctx.fillStyle = "grey";
     
                     ctx.font = "normal bold 150px sans-serif";
-                    ctx.fillText(element, cd.width / 2, cd.height / 2);
+                    ctx.fillText(<string>element, cd.width / 2, cd.height / 2);
     
                     ctx.font = "normal 20px sans-serif";
                     const fn = this.original.split("/");
@@ -231,7 +251,7 @@ export default class LazyLoader {
         if(this.image) {
             if(this.loaded) {
                 if(!workerSupported && !this.drm) // C
-                    this.image.src = this.preloader.src;
+                    (<HTMLImageElement>this.image).src = (<HTMLImageElement>this.preloader).src;
                 if(this.blob)
                     URL.revokeObjectURL(this.blob);
                 return;
@@ -245,9 +265,9 @@ export default class LazyLoader {
         requestAnimationFrame(this.drawAsSoon.bind(this));
     }
 
-    lazyWorker(src) {
-        return new Promise((resolve, reject) => {
-            function handler(e) {
+    lazyWorker(src: string) {
+        return new Promise((resolve: Function, reject: Function) => {
+            function handler(e: MessageEvent) {
                 if (e.data.src === src) {
                     worker.removeEventListener("message", handler);
                     if (e.data.error) {
@@ -262,17 +282,17 @@ export default class LazyLoader {
                 }
             }
             worker.addEventListener("message", handler);
-            if(this.data.xbr.isImage)
+            if(this.data.findFlag("isImage"))
                 worker.postMessage({src, mode: "FETCH", modernImage: canWebP, bitmap: this.drm ? true : false});
             else
-                worker.postMessage({src, mode: "FETCH", type: this.data.type});
+                worker.postMessage({src, mode: "FETCH", type: this.data.TypeLink});
         });
     }
 
     prepare() {
         if(this.reloader) {
-            this.canvas.height = this.data.height;
-            this.canvas.width = this.data.width;
+            this.canvas.height = this.data.Height;
+            this.canvas.width = this.data.Width;
             this.reloader = false;
         } else if(this.preloader)
             return;
@@ -282,17 +302,17 @@ export default class LazyLoader {
         }
         if (!workerSupported) {
             this.preloader = document.createElement("img");
-            this.preloader.onload = () => {
+            (<HTMLImageElement>this.preloader).onload = () => {
                 if (!this.preloader)
                     return;
                 if(this.drm)
-                    this.drm(this, this.preloader.src);
+                    this.drm(this, (<HTMLImageElement>this.preloader).src);
                 else {
                     this.loaded = true;
                     requestAnimationFrame(() => this.drawAsSoon());
                 }
             };
-            this.preloader.onerror = () => {
+            (<HTMLImageElement>this.preloader).onerror = () => {
                 setTimeout(() => {
                     if(!this.loaded && this.preloader) {
                         console.error("Error loading page " + this.original);
@@ -301,22 +321,22 @@ export default class LazyLoader {
                     }
                 }, 1000);
             };
-            this.preloader.src = this.original;
+            (<HTMLImageElement>this.preloader).src = this.original;
         } else {
             this.preloader = {
                 src: null
             };
-            this.lazyWorker(this.original).then(img => {
+            this.lazyWorker(this.original).then((img: any) => {
                 if (!this.preloader)
                     return;
                 if(this.drm)
                     this.drm(this, img);
                 else {
                     this.loaded = true;
-                    this.image.src = img;
+                    (<HTMLImageElement>this.image).src = img;
                 }
                 // this.blob = img;
-            }).catch(err => {
+            }).catch((err: Error) => {
                 setTimeout(() => {
                     if(!this.loaded && this.preloader) {
                         console.error(`Error fetching page ${this.original}\n${err}`);
@@ -330,9 +350,5 @@ export default class LazyLoader {
 
     get preloaded() {
         return this.loaded && this.preloader;
-    }
-
-    get placeholderReady() {
-        return this.placeholder.complete || this.placeholder.naturalWidth > 0;
     }
 }
