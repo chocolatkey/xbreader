@@ -40,14 +40,20 @@ export default {
         item.Height = newHeight;
     },
     buildAwareSpec: function(item: Link) {
+        let height = item.Height;
+        let dDimension = item.Height;
+        let tmode = false;
+        if((item.Height / item.Width) > 2) { // Very tall image, most likely toon image
+            dDimension = item.Width;
+            tmode = true;
+        }
         const ratio = window.devicePixelRatio || 1;
         let quality = 100;
-        let height = item.Height;
-        if(item.Height > window.innerHeight * ratio * 2)
-            height = window.innerHeight * ratio * 2;
+        if(dDimension > (tmode ? window.innerWidth : window.innerHeight) * ratio * 2)
+            height = (tmode ? window.innerWidth : window.innerHeight) * ratio * 2;
         if(sML.Mobile) {
             quality *= 0.9;
-            height = Math.min(item.Height, window.innerHeight * ratio);
+            height = tmode ? height : Math.min(dDimension, window.innerHeight * ratio);
         }
         if(ratio < 2) {
             if(height > RESOLUTION_MEDIUM) height = Math.floor(height * 0.9);
@@ -56,10 +62,10 @@ export default {
             quality *= 0.98;
         switch (Platform.networkType()) {
         case 1: // Medium network
-            height = Math.min(item.Height, RESOLUTION_MEDIUM, height);
+            height = Math.min(dDimension, RESOLUTION_MEDIUM, height);
             break;
         case 2: // Slow network
-            height = Math.min(item.Height, RESOLUTION_LOW, height);
+            height = Math.min(dDimension, RESOLUTION_LOW, height);
             break;
         }
         return {

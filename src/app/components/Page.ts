@@ -3,7 +3,8 @@ import SmartLoader from "../helpers/lazyLoader";
 import Link from "xbreader/models/Link";
 import Slider from "xbreader/models/Slider";
 import Peripherals, { BibiMouseEvent } from "xbreader/helpers/peripherals";
-export const MAX_FIT = 1400;
+export const MAX_FIT_WIDTH = 1400;
+export const MAX_FIT_HEIGHT = 1000;
 
 export interface PageAttrs {
     data: Link;
@@ -111,21 +112,35 @@ export default class Page implements ClassComponent<PageAttrs> {
 
         let itemAttrs: InnerItemAttrs = {style: null};
         if (slider && (slider.ttb || slider.single)) { // Vertical (TTB) or forced single page
-            if (!slider.fit && vnode.attrs.isImage && docHeight <= docWidth) { // Fit to original size
-                const mFitWidth = MAX_FIT / this.data.Height * this.data.Width;
-                if(this.data.Height > MAX_FIT && !this.landscape && mFitWidth < docWidth) { // Too large to fit, compromise with maxFit
-                    this.itemHeight = MAX_FIT;
-                    this.itemWidth = mFitWidth;
+            if(slider.publication.isTtb && (this.data.Height / this.data.Width) > 2) { // TTB publication or very tall image
+                if(this.data.Height > MAX_FIT_HEIGHT && !this.landscape && this.data.Width < docWidth) { // Too large to fit, compromise with maxFit
+                    this.itemHeight = "auto";
+                    this.itemWidth = MAX_FIT_HEIGHT;
                 } else { // Maximum image width
-                    // this.itemWidth = "auto";
-                    // this.itemHeight = "auto";
                     this.itemWidth = docWidth;
                     this.itemHeight = docWidth / this.data.Width * this.data.Height;
                 }
+                this.marginTop = 0;
+            } else {
+                if (!slider.fit && vnode.attrs.isImage && docHeight <= docWidth) { // Landscape window. Fit to original size
+                    const mFitWidth = MAX_FIT_WIDTH / this.data.Height * this.data.Width;
+                    if(this.data.Height > MAX_FIT_WIDTH && !this.landscape && mFitWidth < docWidth) { // Too large to fit, compromise with maxFit
+                        this.itemWidth = mFitWidth;
+                        this.itemHeight = MAX_FIT_WIDTH;
+                    } else { // Maximum image width
+                        this.itemWidth = docWidth;
+                        this.itemHeight = docWidth / this.data.Width * this.data.Height;
+                        if(this.itemHeight > this.data.Height) {
+                            this.itemWidth = "auto";
+                            this.itemHeight = "auto";
+                        }
+                    }
+                }
+                if(slider.ttb)
+                    this.marginTop = vnode.attrs.index > 0 ? 10 : 0;
             }
             
-            if(slider.ttb)
-                this.marginTop = vnode.attrs.index > 0 ? 10 : 0;
+            
             itemAttrs.style = `height: ${this.parseDimension(this.itemHeight)}; width: ${this.parseDimension(this.itemWidth)}; margin: ${this.marginTop}px auto 0 auto;`;
         } else { // Horizontal (LTR & RTL)
             if(this.data.findFlag("addBlank")) // If item is single with full width, position properly
