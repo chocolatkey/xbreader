@@ -281,7 +281,7 @@ export default class Publication { // extends ReadiumPublication
         if(typeof item === "function" || item instanceof Function) // Is a function
             return this.loadFromData(this.parseManifest(item()));
         if(!!item && (typeof item === "object" || typeof item === "function") && typeof item.then === "function") { // Is a successful Promise
-            return item.then((data: Publication) => this.loadFromData(data)).catch((error: Error) => { throw error; });
+            return item.then((data: any) => this.loadFromData(this.parseManifest(data))).catch((error: Error) => { throw error; });
         } if (typeof item === "string" /* || item instanceof String*/) // Is a string (URL we hope)
             return this.loadFromPath(item);
         else
