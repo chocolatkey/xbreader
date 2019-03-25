@@ -4,14 +4,21 @@
   "description": "Fixed-layout publication reader for the web",
   "author": "chocolatkey",
   "license": "MIT",
-  "dependencies": {
-    "mithril": "^2.0.0-rc.4"
+  "homepage": "https://github.com/chocolatkey/xbreader",
+  "bugs": {
+    "url": "https://github.com/chocolatkey/xbreader/issues"
   },
-  "repository": "chocolatkey/xbreader",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chocolatkey/xbreader.git"
+  },
   "scripts": {
     "start": "webpack-dev-server -d --config webpack.dev.js --watch",
     "build": "webpack -p --config webpack.prod.js",
     "push": "rm -rf dist/index.html && mv dist/index-en.html dist/index.html && surge dist/ xb.yrkz.me && mv dist/index.html dist/index-en.html"
+  },
+  "dependencies": {
+    "mithril": "^2.0.0-rc.4"
   },
   "devDependencies": {
     "@babel/core": "^7.4.0",
@@ -37,5 +44,10 @@
     "webpack-cli": "^3.3.0",
     "webpack-dev-server": "^3.2.1",
     "webpack-fix-style-only-entries": "^0.2.1"
-  }
+  },
+  "keywords": [
+    "webpub",
+    "fixed-layout reader",
+    "webpub reader",
+  ]
 }
