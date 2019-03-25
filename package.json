@@ -5,24 +5,7 @@
   "author": "chocolatkey",
   "license": "MIT",
   "dependencies": {
-    "@babel/core": "7.4.0",
-    "@babel/preset-env": "7.4.2",
-    "babel-loader": "8.0.5",
-    "core-js": "3.0.0",
-    "css-loader": "2.1.1",
-    "file-loader": "3.0.1",
-    "mithril": "2.0.0-rc.4",
-    "mopt": "5.1.1",
-    "node-sass": "4.11.0",
-    "r2-shared-js": "1.0.7",
-    "regenerator-runtime": "0.13.2",
-    "sass-loader": "7.1.0",
-    "source-map-loader": "0.2.4",
-    "ta-json-x": "2.5.0",
-    "ts-loader": "5.3.3",
-    "typescript": "3.3.4000",
-    "webpack": "4.29.6",
-    "webpack-cli": "3.3.0"
+    "mithril": "^2.0.0-rc.4"
   },
   "repository": "chocolatkey/xbreader",
   "scripts": {
@@ -31,11 +14,28 @@
     "push": "rm -rf dist/index.html && mv dist/index-en.html dist/index.html && surge dist/ xb.yrkz.me && mv dist/index.html dist/index-en.html"
   },
   "devDependencies": {
-    "@types/mithril": "1.1.16",
-    "html-webpack-plugin": "3.2.0",
-    "i18n-webpack-plugin": "1.0.0",
-    "mini-css-extract-plugin": "0.5.0",
-    "webpack-dev-server": "3.2.1",
-    "webpack-fix-style-only-entries": "0.2.1"
+    "@babel/core": "^7.4.0",
+    "@babel/preset-env": "^7.4.2",
+    "@types/mithril": "^1.1.16",
+    "babel-loader": "^8.0.5",
+    "core-js": "^3.0.0",
+    "css-loader": "^2.1.1",
+    "file-loader": "^3.0.1",
+    "html-webpack-plugin": "^3.2.0",
+    "i18n-webpack-plugin": "^1.0.0",
+    "mini-css-extract-plugin": "^0.5.0",
+    "mopt": "^5.1.1",
+    "node-sass": "^4.11.0",
+    "r2-shared-js": "^1.0.7",
+    "regenerator-runtime": "^0.13.2",
+    "sass-loader": "^7.1.0",
+    "source-map-loader": "^0.2.4",
+    "ta-json-x": "^2.5.0",
+    "ts-loader": "^5.3.3",
+    "typescript": "^3.3.4000",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "^3.2.1",
+    "webpack-fix-style-only-entries": "^0.2.1"
   }
 }
