@@ -4,7 +4,10 @@
             "chrome": "44",
             "ie": "11"
         },
-        "useBuiltIns": "entry"
+        "useBuiltIns": "entry",
+        "corejs": { 
+            "version": 3, 
+        }
     }]],
     "plugins": [
         ["module:mopt"]
