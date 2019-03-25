@@ -43,7 +43,13 @@ module.exports = {
             test: /\.js$/,
             exclude: /node_modules/,
             loader: "babel-loader"
-        }, {
+        },
+        {
+            test: /\.mjs$/,
+            include: /node_modules/,
+            type: "javascript/auto",
+        },
+        {
             test: /\.(s*)css$/,
             use: [
                 MiniCssExtractPlugin.loader,
@@ -85,6 +91,7 @@ module.exports = {
             "xbreader": path.resolve(__dirname, "src/app/")
         }
     },
+    target: "web",
     plugins: [
         new HtmlWebpackPlugin({
             title: "XBReader",

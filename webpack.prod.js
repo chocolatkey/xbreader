@@ -89,6 +89,7 @@ module.exports = Object.keys(languages).map((language) => {
                 "xbreader": path.resolve(__dirname, "src/app/")
             }
         },
+        target: "web",
         node: {
             Buffer: false, // Fixes inclusion of useless Buffer polyfill needed by ta-json-x. The buffer loader is NEVER used
             process: false,
