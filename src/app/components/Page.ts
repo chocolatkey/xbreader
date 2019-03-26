@@ -112,7 +112,7 @@ export default class Page implements ClassComponent<PageAttrs> {
 
         let itemAttrs: InnerItemAttrs = {style: null};
         if (slider && (slider.ttb || slider.single)) { // Vertical (TTB) or forced single page
-            if(slider.publication.isTtb && (this.data.Height / this.data.Width) > 2) { // TTB publication or very tall image
+            if(slider.publication.isTtb || (this.data.Height / this.data.Width) > 2) { // TTB publication or very tall image
                 if(this.data.Height > MAX_FIT_HEIGHT && !this.landscape && this.data.Width < docWidth) { // Too large to fit, compromise with maxFit
                     this.itemHeight = "auto";
                     this.itemWidth = MAX_FIT_HEIGHT;
