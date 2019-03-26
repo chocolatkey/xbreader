@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "webpack-dev-server -d --config webpack.dev.js --watch",
-    "build": "rm -rf dist && webpack -p --config webpack.prod.js && rm dist/*.map",
+    "build": "rm -rf dist && webpack -p --config webpack.prod.js",
     "push": "rm -rf dist/index.html && mv dist/index-en.html dist/index.html && surge dist/ xb.yrkz.me && mv dist/index.html dist/index-en.html"
   },
   "devDependencies": {
