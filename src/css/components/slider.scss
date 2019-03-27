@@ -42,7 +42,11 @@ $w: calc(100% - 160px);
     font-size: 1em;
     cursor: pointer;
     width: $w;
+    height: $h;
+    background: ( radial-gradient(circle at $h/2 50%, $colorTrack .3125em, $colorTrack .3125em, $colorTrack $h/2, transparent $h/2), linear-gradient(90deg, transparent 0, $colorTrack 0) repeat-x 0 50%);
     position: relative;
+    background-size: 0% 1.2em, 100% 0.5em;
+    border-radius: 1px;
     &,
     &::-webkit-slider-runnable-track,
     &::-webkit-slider-thumb {
@@ -54,11 +58,7 @@ $w: calc(100% - 160px);
         z-index: 0;
         left: .2em;
         right: .2em;
-        height: $h;
-        background: ( radial-gradient(circle at $h/2 50%, $colorTrack .3125em, $colorTrack .3125em, $colorTrack $h/2, transparent $h/2), linear-gradient(90deg, transparent 0, $colorTrack 0) repeat-x 0 50%);
         box-sizing: border-box;
-        background-size: 0% 1.2em, 100% 0.5em;
-        border-radius: 1px;
     }
     &::-ms-track {
         border: none;
