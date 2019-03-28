@@ -6,7 +6,7 @@
                 "chrome": "44",
                 "ie": "11"
             },
-            "useBuiltIns": "entry",
+            "useBuiltIns": "usage",
             "corejs": { 
                 "version": 3, 
                 "proposals": true
