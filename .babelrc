@@ -1,16 +1,22 @@
 {
-    "presets": [["@babel/preset-env", {
-        "targets": {
-            "chrome": "44",
-            "ie": "11"
-        },
-        "useBuiltIns": "entry",
-        "corejs": { 
-            "version": 3, 
-            "proposals": true
-        }
-    }]],
+    "presets": [
+        "@babel/preset-typescript",
+        ["@babel/preset-env", {
+            "targets": {
+                "chrome": "44",
+                "ie": "11"
+            },
+            "useBuiltIns": "entry",
+            "corejs": { 
+                "version": 3, 
+                "proposals": true
+            }
+        }]
+    ],
     "plugins": [
-        ["module:mopt"]
+        ["@babel/plugin-proposal-decorators", { "legacy": true }],
+        ["@babel/plugin-proposal-class-properties", { "loose": true }],
+        "@babel/plugin-proposal-object-rest-spread",
+        "module:mopt"
     ]
 }
