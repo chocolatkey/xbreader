@@ -19,6 +19,14 @@
     "push": "rm -rf dist/index.html && mv dist/index-en.html dist/index.html && surge dist/ xb.yrkz.me && mv dist/index.html dist/index-en.html",
     "lint": "eslint --ext .js,.ts --ignore-path .gitignore ."
   },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "webpub",
+    "fixed-layout reader",
+    "webpub reader"
+  ],
   "devDependencies": {
     "@babel/core": "^7.4.0",
     "@babel/plugin-proposal-class-properties": "^7.4.0",
@@ -50,10 +58,5 @@
     "webpack-cli": "^3.3.0",
     "webpack-dev-server": "^3.2.1",
     "webpack-fix-style-only-entries": "^0.2.1"
-  },
-  "keywords": [
-    "webpub",
-    "fixed-layout reader",
-    "webpub reader"
-  ]
+  }
 }
