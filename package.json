@@ -27,10 +27,14 @@
   "scripts": {
     "start": "webpack-dev-server -d --config webpack.dev.js --watch",
     "build": "webpack -p --config webpack.prod.js",
-    "push": "rm -rf dist/index.html && mv dist/index-en.html dist/index.html && surge dist/ xb.yrkz.me && mv dist/index.html dist/index-en.html"
+    "push": "rm -rf dist/index.html && mv dist/index-en.html dist/index.html && surge dist/ xb.yrkz.me && mv dist/index.html dist/index-en.html",
+    "lint": "eslint --ext .js,.ts --ignore-path .gitignore ."
   },
   "devDependencies": {
     "@types/mithril": "^1.1.13",
+    "@typescript-eslint/eslint-plugin": "^1.5.0",
+    "@typescript-eslint/parser": "^1.5.0",
+    "eslint": "^5.15.3",
     "html-webpack-plugin": "^3.2.0",
     "i18n-webpack-plugin": "^1.0.0",
     "mini-css-extract-plugin": "^0.4.0",
