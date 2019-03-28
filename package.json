@@ -12,6 +12,7 @@
     "type": "git",
     "url": "git+https://github.com/chocolatkey/xbreader.git"
   },
+  "browser": "dist/xbreader-en.js",
   "scripts": {
     "start": "webpack-dev-server -d --config webpack.dev.js --watch",
     "build": "rm -rf dist && webpack -p --config webpack.prod.js",
