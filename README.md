@@ -3,7 +3,7 @@
 [![PackagePhobia](https://badgen.net/packagephobia/install/xbreader)](https://packagephobia.now.sh/result?p=xbreader)
 [![Version](https://badgen.net/npm/v/xbreader)](https://www.npmjs.com/package/xbreader)
 [![License](https://badgen.net/npm/license/xbreader)](https://www.npmjs.com/package/xbreader)
-[![Downloads](https://badgen.net/npm/dm/xbreader)](https://www.npmjs.com/package/xbreader)
+[![Downloads](https://badgen.net/npm/dt/xbreader)](https://www.npmjs.com/package/xbreader)
 
 > A fixed-layout publication reader for the web
 
