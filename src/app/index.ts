@@ -1,5 +1,3 @@
-import "core-js/stable";
-import "regenerator-runtime/runtime";
 import m from "mithril";
 
 import readView from "./views/read";
