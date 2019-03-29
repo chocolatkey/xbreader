@@ -5,6 +5,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const I18nPlugin = require("i18n-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries"); // Will be unecessary in Webpack 5, apparently
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 const webpack = require("webpack");
 const consts = require("./consts");
 const languages = {
@@ -114,7 +115,15 @@ module.exports = Object.keys(languages).map((language) => {
                 filename: "[name].css",
             }),
             new FixStyleOnlyEntriesPlugin(),
-            new webpack.DefinePlugin(stringifiedConstants)
+            new webpack.DefinePlugin(stringifiedConstants),
+            new BundleAnalyzerPlugin({
+                analyzerMode: "static",
+                defaultSizes: "gzip",
+                generateStatsFile: true,
+                openAnalyzer: false,
+                reportFilename: path.resolve(__dirname, `stats/xbreader-${language}.html`),
+                statsFilename: path.resolve(__dirname, `stats/xbreader-${language}.json`)
+            })
         ]
     };
 });

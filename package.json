@@ -15,7 +15,7 @@
   "browser": "dist/xbreader-en.js",
   "scripts": {
     "start": "webpack-dev-server -d --config webpack.dev.js --watch",
-    "build": "rm -rf dist && webpack -p --config webpack.prod.js",
+    "build": "rm -rf dist && rm -rf stats && webpack -p --config webpack.prod.js",
     "push": "rm -rf dist/index.html && mv dist/index-en.html dist/index.html && surge dist/ xb.yrkz.me && mv dist/index.html dist/index-en.html",
     "lint": "eslint --ext .js,.ts --ignore-path .gitignore ."
   },
@@ -55,6 +55,7 @@
     "ta-json-x": "^2.5.0",
     "typescript": "^3.3.4000",
     "webpack": "^4.29.6",
+    "webpack-bundle-analyzer": "^3.1.0",
     "webpack-cli": "^3.3.0",
     "webpack-dev-server": "^3.2.1",
     "webpack-fix-style-only-entries": "^0.2.1"

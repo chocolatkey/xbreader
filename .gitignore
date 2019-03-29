@@ -81,3 +81,4 @@ dist/*
 *.old
 *.php
 stats.json
+stats/*
