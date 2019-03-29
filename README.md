@@ -11,12 +11,14 @@
 ## Setup
 
 add xbreader as a dependency
+
 ```bash
 npm install xbreader
 yarn add xbreader
 ```
 
 or use over a cdn
+
 ```bash
 https://cdn.jsdelivr.net/npm/xbreader/dist/xbreader-en.js
 ```
