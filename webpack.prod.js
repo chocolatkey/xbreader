@@ -41,7 +41,11 @@ module.exports = Object.keys(languages).map((language) => {
         },
         module: {
             rules: [{
-                test: [/\.tsx?$/, /\.js$/],
+                test: /\.tsx?$/,
+                exclude: /node_modules/,
+                loader: ["babel-loader", {loader: "ts-loader", options: {transpileOnly: true}}]
+            }, {
+                test: /\.js$/,
                 exclude: /node_modules/,
                 loader: "babel-loader"
             }, {
