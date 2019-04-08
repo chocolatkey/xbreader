@@ -17,7 +17,7 @@ export interface ReaderAttrs {
     config: XBConfig;
 }
 
-export const enum XBReadingDirection {
+export enum XBReadingDirection {
     LTR,
     RTL,
     TTB

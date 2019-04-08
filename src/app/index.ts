@@ -1,4 +1,3 @@
-import "@babel/polyfill";
 import m from "mithril";
 
 import readView from "./views/read";
