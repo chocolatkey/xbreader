@@ -20,7 +20,7 @@
     "lint": "eslint --ext .js,.ts --ignore-path .gitignore ."
   },
   "files": [
-    "dist"
+    "dist/!(*.json|logo.svg)"
   ],
   "keywords": [
     "webpub",
