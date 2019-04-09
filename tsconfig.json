@@ -5,6 +5,7 @@
         "sourceMap": true,
         "allowJs": true,
         "experimentalDecorators": true,
+        "importHelpers": true,
         "module": "es6",
         "target": "es5",
         "lib": [
