@@ -119,15 +119,18 @@ module.exports = Object.keys(languages).map((language) => {
                 filename: "[name].css",
             }),
             new FixStyleOnlyEntriesPlugin(),
-            new webpack.DefinePlugin(stringifiedConstants),
-            new BundleAnalyzerPlugin({
-                analyzerMode: "static",
-                defaultSizes: "gzip",
-                generateStatsFile: true,
-                openAnalyzer: false,
-                reportFilename: path.resolve(__dirname, `stats/xbreader-${language}.html`),
-                statsFilename: path.resolve(__dirname, `stats/xbreader-${language}.json`)
-            })
-        ]
+            new webpack.DefinePlugin(stringifiedConstants)
+        ].concat(
+            process.argv.includes("--analyze") 
+                ? [new BundleAnalyzerPlugin({
+                    analyzerMode: "static",
+                    defaultSizes: "gzip",
+                    generateStatsFile: true,
+                    openAnalyzer: false,
+                    reportFilename: path.resolve(__dirname, `stats/xbreader-${language}.html`),
+                    statsFilename: path.resolve(__dirname, `stats/xbreader-${language}.json`)
+                })]
+                : [] 
+        )
     };
 });

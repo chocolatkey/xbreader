@@ -19,6 +19,7 @@
   "scripts": {
     "start": "webpack-dev-server -d --config webpack.dev.js --watch",
     "build": "rm -rf dist && rm -rf stats && webpack -p --config webpack.prod.js",
+    "build:analyze": "rm -rf dist && rm -rf stats && webpack -p --config webpack.prod.js --analyze",
     "push": "rm -rf dist/index.html && mv dist/index-en.html dist/index.html && surge dist/ xb.yrkz.me && mv dist/index.html dist/index-en.html",
     "lint": "eslint --ext .js,.ts --ignore-path .gitignore ."
   },
