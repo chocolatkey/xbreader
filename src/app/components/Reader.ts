@@ -76,7 +76,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
     }
 
     static mergeSettings(config: XBConfig) {
-        const settings: XBConfig = {
+        return Object.assign({
             prefix: null,
             mount: document.body,
             preview: false,
@@ -100,13 +100,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
             onLastPage: (series: any) => true, // When trying to go further after the last page. If returns true, auto-advance
             onToggleInterface: () => {}, // When interface is shown/hidden
             onDRM: (loader: any, mixedSrc: any) => {}, // When images are protected, this function provides DRM capabilities
-        };
-
-        for (const attrname in config) {
-            settings[attrname] = config[attrname];
-        }
-
-        return settings;
+        }, config);
     }
 
     /**
