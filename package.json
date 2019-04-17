@@ -47,7 +47,7 @@
     "mithril": "^2.0.0-rc.4",
     "mopt": "^5.1.1",
     "node-sass": "^4.11.0",
-    "r2-shared-js": "^1.0.8",
+    "r2-shared-js": "^1.0.9",
     "sass-loader": "^7.1.0",
     "source-map-loader": "^0.2.4",
     "ta-json-x": "^2.5.0",
