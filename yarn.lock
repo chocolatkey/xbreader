@@ -1429,9 +1429,9 @@ camelcase@^5.0.0, camelcase@^5.2.0:
   integrity sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
 
 caniuse-lite@^1.0.30000960:
-  version "1.0.30000960"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000960.tgz#ec48297037e5607f582f246ae7b12bee66a78999"
-  integrity sha512-7nK5qs17icQaX6V3/RYrJkOsZyRNnroA4+ZwxaKJzIKy+crIy0Mz5CBlLySd2SNV+4nbUZeqeNfiaEieUBu3aA==
+  version "1.0.30000962"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000962.tgz#6c10c3ab304b89bea905e66adf98c0905088ee44"
+  integrity sha512-WXYsW38HK+6eaj5IZR16Rn91TGhU3OhbwjKZvJ4HN/XBIABLKfbij9Mnd3pM0VEwZSlltWjoWg3I8FQ0DGgNOA==
 
 caseless@~0.12.0:
   version "0.12.0"
@@ -3960,22 +3960,17 @@ miller-rabin@^4.0.0:
     bn.js "^4.0.0"
     brorand "^1.0.1"
 
-"mime-db@>= 1.38.0 < 2":
+"mime-db@>= 1.38.0 < 2", mime-db@~1.39.0:
   version "1.39.0"
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.39.0.tgz#f95a20275742f7d2ad0429acfe40f4233543780e"
   integrity sha512-DTsrw/iWVvwHH+9Otxccdyy0Tgiil6TWK/xhfARJZF/QFhwOgZgOIvA2/VIGpM8U7Q8z5nDmdDWC6tuVMJNibw==
 
-mime-db@~1.38.0:
-  version "1.38.0"
-  resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.38.0.tgz#1a2aab16da9eb167b49c6e4df2d9c68d63d8e2ad"
-  integrity sha512-bqVioMFFzc2awcdJZIzR3HjZFX20QhilVS7hytkKrv7xFAn8bM1gzc/FOX2awLISvWe0PV8ptFKcon+wZ5qYkg==
-
 mime-types@^2.1.12, mime-types@^2.1.22, mime-types@~2.1.17, mime-types@~2.1.18, mime-types@~2.1.19:
-  version "2.1.22"
-  resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.22.tgz#fe6b355a190926ab7698c9a0556a11199b2199bd"
-  integrity sha512-aGl6TZGnhm/li6F7yx82bJiBZwgiEa4Hf6CNr8YO+r5UHr53tSTYZb102zyU50DOWWKeOv0uQLRL0/9EiKWCog==
+  version "2.1.23"
+  resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.23.tgz#d4eacd87de99348a6858fe1e479aad877388d977"
+  integrity sha512-ROk/m+gMVSrRxTkMlaQOvFmFmYDc7sZgrjjM76abqmd2Cc5fCV7jAMA5XUccEtJ3cYiYdgixUVI+fApc2LkXlw==
   dependencies:
-    mime-db "~1.38.0"
+    mime-db "~1.39.0"
 
 mime@1.4.1:
   version "1.4.1"
@@ -4982,42 +4977,42 @@ querystringify@^2.0.0:
   resolved "https://registry.yarnpkg.com/querystringify/-/querystringify-2.1.1.tgz#60e5a5fd64a7f8bfa4d2ab2ed6fdf4c85bad154e"
   integrity sha512-w7fLxIRCRT7U8Qu53jQnJyPkYZIaR4n5151KMfcJlO/A9397Wxb1amJvROTK6TOnp7PfoAmg/qXiNHI+08jRfA==
 
-r2-lcp-js@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/r2-lcp-js/-/r2-lcp-js-1.0.7.tgz#b78904e88521f4fd8949262fdb2d05d970bd0a1f"
-  integrity sha512-qfcdZadCznPX1Drvp5tSJajMv1iYAnPn/FQxKDiPQY48PmaHuelEu6IF6EsI+hwSjdSw6VnHLw+cYsJfv5tYYw==
+r2-lcp-js@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/r2-lcp-js/-/r2-lcp-js-1.0.8.tgz#bf341fb7da3c2577688bae846a1423ef124fac86"
+  integrity sha512-AFjE0ukThbmfFPpnitap11vK0GRhsKEdyzUpEqXuxtYtuGUIrhBva/6Co0tUSs94v0suuyHs45CCUoB5QRbOAQ==
   dependencies:
     bindings "^1.5.0"
     debug "^4.1.1"
     moment "^2.24.0"
-    r2-utils-js "^1.0.7"
+    r2-utils-js "^1.0.8"
     request "^2.88.0"
     request-promise-native "^1.0.7"
     ta-json-x "^2.5.0"
     tslib "^1.9.3"
     urijs "^1.19.1"
 
-r2-shared-js@^1.0.9:
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/r2-shared-js/-/r2-shared-js-1.0.9.tgz#061c3bb9ec3b616e00ed9ea42287d7c8e2db31b9"
-  integrity sha512-gsg3iMwMKaqSAUZruwJRTD/wEctrSDuTbX73Sixua6YLRAJdreWWIzFwkStuxOm5YplkEA+M1oySQruYLPm04g==
+r2-shared-js@^1.0.10:
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/r2-shared-js/-/r2-shared-js-1.0.10.tgz#bd9dd91234fd0680ac706dfd04020bb92dfcdc65"
+  integrity sha512-L3npRPs/h9VE7/FgAvARfuSZVjVJC6H6ThRK75mHvwk5R20zP0NzGaoWCv54nZtWYAMu3jeTG/cg5VQmRsAnvg==
   dependencies:
     debug "^4.1.1"
     image-size "^0.7.3"
     mime-types "^2.1.22"
     moment "^2.24.0"
-    r2-lcp-js "^1.0.7"
-    r2-utils-js "^1.0.7"
+    r2-lcp-js "^1.0.8"
+    r2-utils-js "^1.0.8"
     slugify "^1.3.4"
     ta-json-x "^2.5.0"
     tslib "^1.9.3"
     xmldom "^0.1.27"
     xpath "^0.0.27"
 
-r2-utils-js@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/r2-utils-js/-/r2-utils-js-1.0.7.tgz#e7c44118d4318dd732fc4dc93f13f7a593cb929a"
-  integrity sha512-i6DixE6UV4dy469Hf8YMgsgOjc4edHwUjVtJx7AJ/eM+C6OOFtc3/6aeQcZBzdiLsuUlTju63PYxuR2hyvKzYg==
+r2-utils-js@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/r2-utils-js/-/r2-utils-js-1.0.8.tgz#90f0ce1f91e3e4094e16aef8360235ea34081e99"
+  integrity sha512-NdsMtEddREzVndICFzSix68m04wCr/3U6mBexJNoJuF37du7SRgWb3nJzme1Xjmxt5tmDePUa/CYl0nHuyBCFQ==
   dependencies:
     debug "^4.1.1"
     filehound "^1.17.0"
@@ -6220,10 +6215,10 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typescript@^3.4.3:
-  version "3.4.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.4.3.tgz#0eb320e4ace9b10eadf5bc6103286b0f8b7c224f"
-  integrity sha512-FFgHdPt4T/duxx6Ndf7hwgMZZjZpB+U0nMNGVCYPq0rEzWKjEDobm4J6yb3CS7naZ0yURFqdw9Gwc7UOh/P9oQ==
+typescript@^3.4.4:
+  version "3.4.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.4.4.tgz#aac4a08abecab8091a75f10842ffa0631818f785"
+  integrity sha512-xt5RsIRCEaf6+j9AyOBgvVuAec0i92rgCaS3S+UVf5Z/vF2Hvtsw08wtUTJqp4djwznoAgjSxeCcU4r+CcDBJA==
 
 uglify-js@3.4.x:
   version "3.4.10"
