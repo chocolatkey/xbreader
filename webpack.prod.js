@@ -6,6 +6,7 @@ const I18nPlugin = require("i18n-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries"); // Will be unecessary in Webpack 5, apparently
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
+const TerserPlugin = require("terser-webpack-plugin");
 const webpack = require("webpack");
 const consts = require("./consts");
 const languages = {
@@ -103,7 +104,6 @@ module.exports = Object.keys(languages).map((language) => {
                 template: "src/index.html",
                 minify: {
                     collapseWhitespace: true,
-  
                 },
                 filename: `index-${language}.html`,
                 favicon: "src/favicon.ico",
@@ -131,6 +131,18 @@ module.exports = Object.keys(languages).map((language) => {
                     statsFilename: path.resolve(__dirname, `stats/xbreader-${language}.json`)
                 })]
                 : [] 
-        )
+        ),
+        optimization: {
+            minimizer: [
+                new TerserPlugin({
+                    sourceMap: true,
+                    terserOptions: {
+                        output: {
+                            comments: false
+                        }
+                    }
+                })
+            ]
+        }
     };
 });
