@@ -5,6 +5,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const I18nPlugin = require("i18n-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries"); // Will be unecessary in Webpack 5, apparently
+const WebpackBar = require("webpackbar");
 const webpack = require("webpack");
 const consts = require("./consts");
 
@@ -17,7 +18,8 @@ module.exports = {
     devServer: {
         contentBase: path.join(__dirname, "bin"),
         compress: true,
-        port: 8080
+        port: 8080,
+        noInfo: true
     },
     entry: {
         xbstyles: [
@@ -93,6 +95,9 @@ module.exports = {
     },
     target: "web",
     plugins: [
+        new WebpackBar({
+            name: "XBReader"
+        }),
         new HtmlWebpackPlugin({
             title: "XBReader",
             template: "src/index.html",
@@ -105,7 +110,9 @@ module.exports = {
             }
         }),
         new I18nPlugin(null),
-        new FixStyleOnlyEntriesPlugin(),
+        new FixStyleOnlyEntriesPlugin({
+            silent: true
+        }),
         new MiniCssExtractPlugin({
             filename: "[name].css",
         }),
