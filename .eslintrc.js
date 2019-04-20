@@ -1,13 +1,13 @@
 module.exports =  {
-  parser:  '@typescript-eslint/parser',
+  parser:  "@typescript-eslint/parser",
   extends:  [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended'
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
   ],
   plugins: ["@typescript-eslint"],
   parserOptions:  {
-    sourceType:  'module',
-    project: './tsconfig.json'
+    sourceType:  "module",
+    project: "./tsconfig.json"
   },
   env: {
     node: true,
@@ -17,31 +17,31 @@ module.exports =  {
   },
   rules: {
     indent: [
-      'error',
+      "error",
       4
     ],
-    'linebreak-style': [
-      'error',
-      'windows'
+    "linebreak-style": [
+      "error",
+      "windows"
     ],
-    'quotes': [
-      'error',
-      'double'
+    "quotes": [
+      "error",
+      "double"
     ],
-    'semi': [
-      'error',
-      'always'
+    "semi": [
+      "error",
+      "always"
     ],
     "comma-dangle": [
       "error", 
       "never"
     ],
-    'no-console': 'off',
-    'no-useless-escape': 'off'
+    "no-console": "off",
+    "no-useless-escape": "off"
   },
   globals: {
-    '__': true,
-    '__VERSION__': true,
-    '__NAME__': true
+    "__": true,
+    "__VERSION__": true,
+    "__NAME__": true
   }
 };
