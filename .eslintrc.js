@@ -4,12 +4,15 @@ module.exports =  {
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended'
   ],
+  plugins: ["@typescript-eslint"],
   parserOptions:  {
     sourceType:  'module',
   },
   env: {
-    browser: true,
-    es6: true
+    node: true,
+    es6: true,
+    commonjs: true,
+    browser: true
   },
   rules: {
     indent: [
@@ -27,6 +30,10 @@ module.exports =  {
     'semi': [
       'error',
       'always'
+    ],
+    "comma-dangle": [
+      "error", 
+      "never"
     ],
     'no-console': 'off',
     'no-useless-escape': 'off'
