@@ -7,6 +7,7 @@ module.exports =  {
   plugins: ["@typescript-eslint"],
   parserOptions:  {
     sourceType:  'module',
+    project: './tsconfig.json'
   },
   env: {
     node: true,
