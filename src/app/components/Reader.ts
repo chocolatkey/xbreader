@@ -83,7 +83,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
             brand: {
                 name: null,
                 logo: null,
-                embedded: false, // Whether to show interface meant for embedding in apps
+                embedded: false // Whether to show interface meant for embedding in apps
             },
             tabs: [], // Tabs on right side of top bar
             guideHidden: false, // Skip showing the reading direction guide
@@ -92,14 +92,14 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
             series: null, // Volume/Chapter data
 
             // Callback/Hooks
-            loader: (identifier: string) => { return null }, // Custom loader for the webpub. Can return a URL, WebPub Object or Promise
+            loader: (identifier: string) => { return null; }, // Custom loader for the webpub. Can return a URL, WebPub Object or Promise
             onPublicationLoad: (reader: any) => {}, // Right after the publication is fully loaded
             onBeforeReady: (reader: any) => {}, // Right before final preparations are carried out
             onReady: (reader: any) => {}, // When redrawing has finished
             onPageChange: (pnum: number, direction: string, isSpread: boolean) => {}, // When page is changed
             onLastPage: (series: any) => true, // When trying to go further after the last page. If returns true, auto-advance
             onToggleInterface: () => {}, // When interface is shown/hidden
-            onDRM: (loader: any, mixedSrc: any) => {}, // When images are protected, this function provides DRM capabilities
+            onDRM: (loader: any, mixedSrc: any) => {} // When images are protected, this function provides DRM capabilities
         }, config);
     }
 
@@ -153,37 +153,37 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
         }, 2000);
         this.hint = this.mobile ? __("Swipe or tap ") : __("Navigate ");
         switch (direction) {
-        case XBReadingDirection.LTR:
-            this.direction = direction; // Left to right
-            this.hint = this.hint + __("left-to-right");
-            break;
-        case XBReadingDirection.RTL:
-            this.direction = direction; // Right to left
-            this.hint = this.hint + __("right-to-left");
-            break;
-        case XBReadingDirection.TTB:
-            this.direction = direction; // Top to bottom
-            this.hint = __("Scroll down");
-            if(!this.slider) {
+            case XBReadingDirection.LTR:
+                this.direction = direction; // Left to right
+                this.hint = this.hint + __("left-to-right");
+                break;
+            case XBReadingDirection.RTL:
+                this.direction = direction; // Right to left
+                this.hint = this.hint + __("right-to-left");
+                break;
+            case XBReadingDirection.TTB:
+                this.direction = direction; // Top to bottom
+                this.hint = __("Scroll down");
+                if(!this.slider) {
                 // TTB-only publication!
-                console.log("TTB lock");
+                    console.log("TTB lock");
+                    this.slider.ttb = true;
+                }
                 this.slider.ttb = true;
+                this.slider.rtl = false;
+                this.slider.resizeHandler(true);
+                if(sML.Mobile)
+                    this.slider.slideToCurrent(false, true);
+                // maybe settimeout?
+                this.binder.updateMovingParameters(this.direction);
+                return true;
+            default: {
+                console.error("Invalid flow direction: " + direction);
+                const err = new xbError(9400, __("Invalid flow!"));
+                this.hint = err.message;
+                err.go();
+                return false;
             }
-            this.slider.ttb = true;
-            this.slider.rtl = false;
-            this.slider.resizeHandler(true);
-            if(sML.Mobile)
-                this.slider.slideToCurrent(false, true);
-            // maybe settimeout?
-            this.binder.updateMovingParameters(this.direction);
-            return true;
-        default: {
-            console.error("Invalid flow direction: " + direction);
-            const err = new xbError(9400, __("Invalid flow!"));
-            this.hint = err.message;
-            err.go();
-            return false;
-        }
         }
         // Horizontal (RTL or LTR)
         this.slider.ttb = false;
@@ -327,11 +327,11 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
                     onmouseup: bnd ? bnd.mtimerUpdater : null,
                     onmousedown: bnd ? bnd.mtimerUpdater : null,
                     onmousemove: bnd ? bnd.mousemoveHandler : null,
-                    ontouchmove: bnd ? bnd.touchmoveHandler : null,
+                    ontouchmove: bnd ? bnd.touchmoveHandler : null
                 }, m(Spine, {
                     slider: sldr,
                     binder: bnd
-                }, pages)),
+                }, pages))
             ]),
             m("div.br-guide", {
                 class: "br-guide__" + directionToString(this.direction) + ((vnode.state.guideHidden || !vnode.state.publication.isReady) ? " hide" : "")

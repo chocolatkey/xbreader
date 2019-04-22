@@ -1,5 +1,5 @@
 interface Window {
-    [key:string]: any;
+    [key: string]: any;
     xbreader: any;
     xbconfig: XBConfig;
 }
@@ -22,23 +22,23 @@ interface XBBrand {
 }
 
 interface XBChapter {
-    no: Number;
+    no: number;
     title: string;
     uuid: string;
-    selected: Boolean;
+    selected: boolean;
 }
 
 interface XBVolume {
-    no: Number;
+    no: number;
     title: string;
     uuid: string;
     chapters: XBChapter[];
 }
 
 interface XBConfig {
-    [key:string]: any;
+    [key: string]: any;
     brand: XBBrand;
-    tabs: Array<XBTab>;
+    tabs: XBTab[];
     prefix: string;
     mount: HTMLElement;
     guideHidden: boolean;

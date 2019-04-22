@@ -100,15 +100,15 @@ export default class Series {
     get selector() {
         if(!this.exists)
             if(this.publication.pmetadata.Title)
-                return m("span#br-chapter", <Child>this.publication.pmetadata.Title);
+                return m("span#br-chapter", this.publication.pmetadata.Title as Child);
             else
                 return null;
 
         return m("select#br-chapter", {
             title: __("Chapter selection"),
             onchange: (e: Event) => {
-                const st = <HTMLSelectElement>e.target;
-                m.route.set("/:id", { id: (<HTMLOptionElement>st[st.selectedIndex]).value, }, { replace: false });
+                const st = e.target as HTMLSelectElement;
+                m.route.set("/:id", { id: (st[st.selectedIndex] as HTMLOptionElement).value }, { replace: false });
             }
         }, this.volumes.map(volume => {
             const chaptersOptions: Vnode<any, any>[] = [];
@@ -116,7 +116,7 @@ export default class Series {
                 chaptersOptions.push(m("option", {
                     value: chapter.uuid,
                     selected: this.isSelected(chapter)
-                }, <Child>chapter.title));
+                }, chapter.title as Child));
             });
             if(volume.title)
                 return m("optgroup", {

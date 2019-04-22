@@ -381,7 +381,7 @@ export default class Publication { // extends ReadiumPublication
 
         if(!manifest.metadata.numberOfPages)
             manifest.metadata.numberOfPages = manifest.readingOrder.length;
-        const requiredMetadataKeys = ["title", /*"belongsTo"*/];
+        const requiredMetadataKeys = ["title" /*"belongsTo"*/];
         if(!this.keysInObj(requiredMetadataKeys, manifest.metadata))
             return false;
 
@@ -413,7 +413,7 @@ export default class Publication { // extends ReadiumPublication
     }
 
     get direction(): XBReadingDirection {
-        return parseDirection(this.pmetadata.Direction)
+        return parseDirection(this.pmetadata.Direction);
     }
 
     get shift() {

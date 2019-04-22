@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* global require __dirname module */
 
 const path = require("path");
@@ -26,7 +27,7 @@ module.exports = {
             "./src/css/styles.scss"
         ],
         xbreader: [
-            "./src/app/index.ts",
+            "./src/app/index.ts"
         ],
         loader: [
             "./src/app/loader.js"
@@ -34,7 +35,7 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, "./bin"),
-        filename: "[name]-en.js",
+        filename: "[name]-en.js"
     },
     module: {
         rules: [{
@@ -49,7 +50,7 @@ module.exports = {
         {
             test: /\.mjs$/,
             include: /node_modules/,
-            type: "javascript/auto",
+            type: "javascript/auto"
         },
         {
             test: /\.(s*)css$/,
@@ -70,7 +71,7 @@ module.exports = {
                             "./node_modules"
                         ]
                     }
-                },
+                }
             ]
         },
         {
@@ -79,7 +80,7 @@ module.exports = {
             options: {
                 name: "[name]-[hash].[ext]"
             }
-        }],
+        }]
     },
     resolve: {
         extensions: [ ".tsx", ".ts", ".js", ".jsx" ],
@@ -114,7 +115,7 @@ module.exports = {
             silent: true
         }),
         new MiniCssExtractPlugin({
-            filename: "[name].css",
+            filename: "[name].css"
         }),
         new webpack.DefinePlugin(stringifiedConstants)
     ]
