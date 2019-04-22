@@ -33,7 +33,9 @@ module.exports =  {
       "never"
     ],
     "no-console": "off",
-    "no-useless-escape": "off"
+    "no-useless-escape": "off",
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-member-accessibility': 'off',
   },
   globals: {
     "__": true,
