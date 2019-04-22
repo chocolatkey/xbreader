@@ -16,10 +16,6 @@ module.exports =  {
     browser: true
   },
   rules: {
-    indent: [
-      "error",
-      4
-    ],
     "linebreak-style": [
       "error",
       "unix"
