@@ -2,7 +2,7 @@
     Inspired by Siema (https://github.com/pawelgrzybek/siema)
  */
 
-import m, { CVnode, ChildArray, Child, Vnode } from "mithril";
+import m, { CVnode, ChildArray, Vnode } from "mithril";
 import Slider from "xbreader/models/Slider";
 import Peripherals from "xbreader/helpers/peripherals";
 import Page from "./Page";

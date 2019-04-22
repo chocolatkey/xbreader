@@ -52,7 +52,7 @@ export default class ErrorView implements ClassComponent<ErrorAttrs> {
             this.errorMessage = __("Unknown error");
     }
 
-    view({attrs}: CVnode<ErrorAttrs>) {
+    view() {
         return [
             m("div.br-error__container", [
                 (this.config.brand && this.config.brand.embedded) ? m("div.br__notifier", m(Logo, this.config.brand)) : null,

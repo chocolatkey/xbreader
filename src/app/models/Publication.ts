@@ -320,7 +320,7 @@ export default class Publication { // extends ReadiumPublication
             method: "GET",
             url: manifestPath,
             background: true,
-            extract: (xhr, _) => {
+            extract: xhr => {
                 const success = (xhr.status >= 200 && xhr.status < 300) || xhr.status === 304 || (/^file:\/\//i).test(manifestPath);
                 if(!success)
                     throw new xbError(xhr.status);
@@ -338,7 +338,7 @@ export default class Publication { // extends ReadiumPublication
     }
 
     loadFromData(manifestData: Publication) {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             this.Metadata = manifestData.Metadata;
             this.Spine = manifestData.Spine;
             this.Links = manifestData.Links;

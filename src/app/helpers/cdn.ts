@@ -99,7 +99,7 @@ export default {
         return `https://i${this.hash(ele.host, index, 0, 2)}.wp.com/${ele.authority + ele.path}?strip=all&quality=${spec.quality}${item.Height ? "&h=" + item.Height : ""}`;
     },
     // NebelGrind Gate
-    nebelgrind: function(item: Link, index: number) {
+    nebelgrind: function(item: Link) {
         const match = item.Href.match(NG_IMG_MATCHER);
         if(!match) return item.Href;
         if(!item.Height) return item.Href;
