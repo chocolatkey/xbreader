@@ -1,6 +1,6 @@
 import { XBReadingDirection } from "xbreader/components/Reader";
 
-export function isNumeric(n: any) : n is number | string {
+export function isNumeric(n: any): n is number | string {
     return !isNaN(parseFloat(n)) && isFinite(n);
 }
 
@@ -9,16 +9,16 @@ export function intVal(n: number | string): number {
 }
 
 export function parseDirection(d: XBReadingDirection | string): XBReadingDirection {
-    if(typeof d === 'string')
+    if(typeof d === "string")
         switch (d) {
             case "ltr":
                 return XBReadingDirection.LTR;
             case "rtl":
                 return XBReadingDirection.RTL;
             case "ttb":
-                return XBReadingDirection.TTB
+                return XBReadingDirection.TTB;
             default: // auto included
-                return XBReadingDirection.LTR
+                return XBReadingDirection.LTR;
         }
     else
         return d as XBReadingDirection;

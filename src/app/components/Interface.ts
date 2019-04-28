@@ -123,7 +123,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                 onclick: () => {
                     slider.fit = !slider.fit;
                 },
-                title: slider.fit ? __("Fit to width") : __("Fit to height"),
+                title: slider.fit ? __("Fit to width") : __("Fit to height")
             }, [
                 m("i", {
                     class: slider.fit ? "br-i-wide" : "br-i-thin"
@@ -134,7 +134,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                 onclick: () => {
                     slider.toggleSpread();
                 },
-                title: slider.single ? __("Spread view") : __("Single page view"),
+                title: slider.single ? __("Spread view") : __("Single page view")
             }, [
                 m("i", {
                     class: slider.single ? "br-i-spread" : "br-i-single"
@@ -205,7 +205,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                 this.sliderSystem(slider, publication, brand.embedded),
                 m("div.br-botbar-controls", {
                     class: isPortrait ? "portrait" : "landscape",
-                    style: publication.isTtb ? "display: none;" : null,
+                    style: publication.isTtb ? "display: none;" : null
                 }, [
                     tweakButton,
                     m("button#br-view__rvm", {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* global require __dirname module */
 
 const path = require("path");
@@ -6,7 +7,7 @@ const I18nPlugin = require("i18n-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries"); // Will be unecessary in Webpack 5, apparently
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
-const WebpackBar = require('webpackbar');
+const WebpackBar = require("webpackbar");
 const TerserPlugin = require("terser-webpack-plugin");
 const webpack = require("webpack");
 const consts = require("./consts");
@@ -29,17 +30,17 @@ module.exports = Object.keys(languages).map((language) => {
                 "./src/css/styles.scss"
             ],
             xbreader: [
-                "./src/app/index.ts",
+                "./src/app/index.ts"
             ],
             loader: [
                 "./src/app/loader.js"
-            ],
+            ]
         },
         name: language,
         devtool: "source-map",
         output: {
             path: path.resolve(__dirname, "./dist"),
-            filename: `[name]-${language}.js`,
+            filename: `[name]-${language}.js`
         },
         module: {
             rules: [{
@@ -69,7 +70,7 @@ module.exports = Object.keys(languages).map((language) => {
                                 "./node_modules"
                             ]
                         }
-                    },
+                    }
                 ]
             },
             {
@@ -101,13 +102,13 @@ module.exports = Object.keys(languages).map((language) => {
         },
         plugins: [
             new WebpackBar({
-                name: 'XBReader'
+                name: "XBReader"
             }),
             new HtmlWebpackPlugin({
                 title: "XBReader",
                 template: "src/index.html",
                 minify: {
-                    collapseWhitespace: true,
+                    collapseWhitespace: true
                 },
                 filename: `index-${language}.html`,
                 favicon: "src/favicon.ico",
@@ -120,7 +121,7 @@ module.exports = Object.keys(languages).map((language) => {
             }),
             new I18nPlugin(languages[language]),
             new MiniCssExtractPlugin({
-                filename: "[name].css",
+                filename: "[name].css"
             }),
             new FixStyleOnlyEntriesPlugin({
                 silent: true

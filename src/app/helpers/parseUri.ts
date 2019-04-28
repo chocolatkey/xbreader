@@ -18,7 +18,7 @@ export const options = {
 export function parse (str: string) {
     var	o   = options,
         m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
-        uri:{ [index:string] : any } = {},
+        uri: { [index: string]: any } = {},
         i   = 14;
 
     while (i--) uri[o.key[i]] = m[i] || "";

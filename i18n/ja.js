@@ -26,5 +26,4 @@ module.exports = {
     "Back": "戻る",
     "Forward": "進む",
     "Settings": "操作設定"
-    
 };

@@ -25,7 +25,7 @@ declare interface UAFlags {
 }
 
 class sML {
-    [key:string]: any;
+    [key: string]: any;
 
     constructor() {
         const nUA = navigator.userAgent;
@@ -92,7 +92,7 @@ class sML {
         if(Pros) {
             if(Pros.extraHTML) Obj.innerHTML = Obj.innerHTML + Pros.extraHTML;
             if(Pros.on) this.Event.add(Obj, Pros.on);
-            if(Sty) this.CSS.set(Obj, Sty)
+            if(Sty) this.CSS.set(Obj, Sty);
         }
         return Obj;
     }

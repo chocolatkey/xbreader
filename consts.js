@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* global module require */
+
 const pkg = require("./package.json");
 module.exports = {
     __VERSION__: pkg.version + "-" + (new Date).getTime(),

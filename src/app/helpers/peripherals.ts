@@ -74,7 +74,7 @@ export default class Peripherals {
     mousePos: BibiEvent;
     currentCursor: string;
 
-    MovingParameters: { [keyName:string] : string | number } = {
+    MovingParameters: { [keyName: string]: string | number } = {
         "Space": 1,
         "Backspace": -1,
         "Page Up": -1,
@@ -91,8 +91,8 @@ export default class Peripherals {
         "Zero": "zoom-reset",
         "Return": "menu"
     };
-    ActiveKeys: { [keyName:string] : number } = {};
-    KeyCodes: { [type:string] : Object } = {
+    ActiveKeys: { [keyName: string]: number } = {};
+    KeyCodes: { [type: string]: Object } = {
         keydown: {},
         keyup: {},
         keypress: {}
@@ -196,17 +196,17 @@ export default class Peripherals {
         const p = e.data.split(":"); // xbr:<action>:<data>
         const v = p[2]; // Data
         switch (p[1]) { // Action
-        case "move": {
-            this.moveBy(isNaN(v as any) ? v : parseInt(v));
-            break;
-        }
-        case "goto": {
-            this.slider.goTo(parseInt(v) - 1);
-            break;
-        }
-        // TODO more
-        default:
-            break;
+            case "move": {
+                this.moveBy(isNaN(v as any) ? v : parseInt(v));
+                break;
+            }
+            case "goto": {
+                this.slider.goTo(parseInt(v) - 1);
+                break;
+            }
+            // TODO more
+            default:
+                break;
         }
         
     }
@@ -270,25 +270,25 @@ export default class Peripherals {
         e.stopPropagation();
 
         switch (e.touches.length) {
-        case 3:
-            this.ui.toggle();
-            return;
-        case 2: {
-            // Pinch
-            e.preventDefault();
-            this.clearDrag();
-            if(this.pointerDown)
-                this.pinch.startOffset = {
-                    X: this.slider.zoomer.translate.X && this.slider.zoomer.scale > 1 ? this.slider.zoomer.translate.X : e.touches[0].pageX,
-                    Y: this.slider.zoomer.translate.Y && this.slider.zoomer.scale > 1 ? this.slider.zoomer.translate.Y : e.touches[0].pageY
-                };
-            else
-                this.pinch.startOffset = this.coordinator.getTouchCenter(e);
-            this.pinch.startDistance = this.coordinator.getTouchDistance(e);
-            this.isPinching = true;
-            this.pointerDown = true;
-            return;
-        }
+            case 3:
+                this.ui.toggle();
+                return;
+            case 2: {
+                // Pinch
+                e.preventDefault();
+                this.clearDrag();
+                if(this.pointerDown)
+                    this.pinch.startOffset = {
+                        X: this.slider.zoomer.translate.X && this.slider.zoomer.scale > 1 ? this.slider.zoomer.translate.X : e.touches[0].pageX,
+                        Y: this.slider.zoomer.translate.Y && this.slider.zoomer.scale > 1 ? this.slider.zoomer.translate.Y : e.touches[0].pageY
+                    };
+                else
+                    this.pinch.startOffset = this.coordinator.getTouchCenter(e);
+                this.pinch.startDistance = this.coordinator.getTouchDistance(e);
+                this.isPinching = true;
+                this.pointerDown = true;
+                return;
+            }
         }
 
         this.pointerDown = true;
@@ -349,8 +349,8 @@ export default class Peripherals {
                     /*X: center.X,
                     Y: center.Y,*/
                     X: this.pinch.startOffset.X,
-                    Y: this.pinch.startOffset.Y,
-                },
+                    Y: this.pinch.startOffset.Y
+                }
             };
             this.pinch.startDistance = currentDistance;
             return;
@@ -473,28 +473,28 @@ export default class Peripherals {
                 const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) == sliderLength;
                 if (this.slider.ttb) { // Vertical controls
                     switch (this.mousePos.Division.Y) {
-                    case VerticalThird.Bottom:
-                        this.changeCursor(atLastSlide ? "not-allowed" : "s-resize");
-                        break;
-                    case VerticalThird.Top:
-                        this.changeCursor(atFirstSlide ? "not-allowed" : "n-resize");
-                        break;
-                    case VerticalThird.Middle:
-                        this.changeCursor("pointer");
-                        break;
+                        case VerticalThird.Bottom:
+                            this.changeCursor(atLastSlide ? "not-allowed" : "s-resize");
+                            break;
+                        case VerticalThird.Top:
+                            this.changeCursor(atFirstSlide ? "not-allowed" : "n-resize");
+                            break;
+                        case VerticalThird.Middle:
+                            this.changeCursor("pointer");
+                            break;
                     }
                 } else { // Horizontal controls
                     const rtl = this.slider.rtl;
                     switch (this.mousePos.Division.X) {
-                    case HorizontalThird.Left:
-                        this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed" : "w-resize");
-                        break;
-                    case HorizontalThird.Right:
-                        this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed" : "e-resize");
-                        break;
-                    case HorizontalThird.Center:
-                        this.changeCursor("pointer");
-                        break;
+                        case HorizontalThird.Left:
+                            this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed" : "w-resize");
+                            break;
+                        case HorizontalThird.Right:
+                            this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed" : "e-resize");
+                            break;
+                        case HorizontalThird.Center:
+                            this.changeCursor("pointer");
+                            break;
                     }
                 }
             } else {
@@ -516,9 +516,9 @@ export default class Peripherals {
     }
 
     updateKeyCodes(EventTypes: string[] | string, KeyCodesToUpdate: Object) {
-        if (typeof (<string[]>EventTypes).join != "function") EventTypes = [EventTypes as string];
+        if (typeof (EventTypes as string[]).join != "function") EventTypes = [EventTypes as string];
         if (typeof KeyCodesToUpdate == "function") KeyCodesToUpdate = KeyCodesToUpdate();
-        (<string[]>EventTypes).forEach((EventType) => {
+        (EventTypes as string[]).forEach((EventType) => {
             this.KeyCodes[EventType] = sML.edit(this.KeyCodes[EventType], KeyCodesToUpdate);
         });
     }
@@ -551,91 +551,91 @@ export default class Peripherals {
                 "Page Up": 0,
                 "Page Down": 0,
                 "End": 0,
-                "Home": 0,
+                "Home": 0
             });
         else
             sML.edit(this.MovingParameters, {
                 "Page Up": -1,
                 "Page Down": 1,
                 "End": "foot",
-                "Home": "head",
+                "Home": "head"
             });
     }
 
     updateMovingParameters(ARD: XBReadingDirection) {
         switch (ARD) {
-        case XBReadingDirection.TTB:
-            return sML.edit(this.MovingParameters, {
-                "Up Arrow": 0, // -1
-                "Right Arrow": 0,
-                "Down Arrow": 0, // 1
-                "Left Arrow": 0,
-                "W": -1,
-                "D": 0,
-                "S": 1,
-                "A": 0,
-                "UP ARROW": "head",
-                "RIGHT ARROW": "",
-                "DOWN ARROW": "foot",
-                "LEFT ARROW": "",
-                "Plus": 0,
-                "Minus": 0,
-                "Zero": 0,
-            });
-        case XBReadingDirection.LTR:
-            return sML.edit(this.MovingParameters, {
-                "Up Arrow": 0,
-                "Right Arrow": 1,
-                "Down Arrow": 0,
-                "Left Arrow": -1,
-                "W": 0,
-                "D": 1,
-                "S": 0,
-                "A": -1,
-                "UP ARROW": "",
-                "RIGHT ARROW": "foot",
-                "DOWN ARROW": "",
-                "LEFT ARROW": "head",
-                "Plus": "zoom-in",
-                "Minus": "zoom-out",
-                "Zero": "zoom-reset",
-            });
-        case XBReadingDirection.RTL:
-            return sML.edit(this.MovingParameters, {
-                "Up Arrow": 0,
-                "Right Arrow": -1,
-                "Down Arrow": 0,
-                "Left Arrow": 1,
-                "W": 0,
-                "D": -1,
-                "S": 0,
-                "A": 1,
-                "UP ARROW": "",
-                "RIGHT ARROW": "head",
-                "DOWN ARROW": "",
-                "LEFT ARROW": "foot",
-                "Plus": "zoom-in",
-                "Minus": "zoom-out",
-                "Zero": "zoom-reset",
-            });
-        default:
-            return sML.edit(this.MovingParameters, {
-                "Up Arrow": 0,
-                "Right Arrow": 0,
-                "Down Arrow": 0,
-                "Left Arrow": 0,
-                "W": 0,
-                "D": 0,
-                "S": 0,
-                "A": 0,
-                "UP ARROW": "",
-                "RIGHT ARROW": "",
-                "DOWN ARROW": "",
-                "LEFT ARROW": "",
-                "Plus": 0,
-                "Minus": 0,
-                "Zero": 0,
-            });
+            case XBReadingDirection.TTB:
+                return sML.edit(this.MovingParameters, {
+                    "Up Arrow": 0, // -1
+                    "Right Arrow": 0,
+                    "Down Arrow": 0, // 1
+                    "Left Arrow": 0,
+                    "W": -1,
+                    "D": 0,
+                    "S": 1,
+                    "A": 0,
+                    "UP ARROW": "head",
+                    "RIGHT ARROW": "",
+                    "DOWN ARROW": "foot",
+                    "LEFT ARROW": "",
+                    "Plus": 0,
+                    "Minus": 0,
+                    "Zero": 0
+                });
+            case XBReadingDirection.LTR:
+                return sML.edit(this.MovingParameters, {
+                    "Up Arrow": 0,
+                    "Right Arrow": 1,
+                    "Down Arrow": 0,
+                    "Left Arrow": -1,
+                    "W": 0,
+                    "D": 1,
+                    "S": 0,
+                    "A": -1,
+                    "UP ARROW": "",
+                    "RIGHT ARROW": "foot",
+                    "DOWN ARROW": "",
+                    "LEFT ARROW": "head",
+                    "Plus": "zoom-in",
+                    "Minus": "zoom-out",
+                    "Zero": "zoom-reset"
+                });
+            case XBReadingDirection.RTL:
+                return sML.edit(this.MovingParameters, {
+                    "Up Arrow": 0,
+                    "Right Arrow": -1,
+                    "Down Arrow": 0,
+                    "Left Arrow": 1,
+                    "W": 0,
+                    "D": -1,
+                    "S": 0,
+                    "A": 1,
+                    "UP ARROW": "",
+                    "RIGHT ARROW": "head",
+                    "DOWN ARROW": "",
+                    "LEFT ARROW": "foot",
+                    "Plus": "zoom-in",
+                    "Minus": "zoom-out",
+                    "Zero": "zoom-reset"
+                });
+            default:
+                return sML.edit(this.MovingParameters, {
+                    "Up Arrow": 0,
+                    "Right Arrow": 0,
+                    "Down Arrow": 0,
+                    "Left Arrow": 0,
+                    "W": 0,
+                    "D": 0,
+                    "S": 0,
+                    "A": 0,
+                    "UP ARROW": "",
+                    "RIGHT ARROW": "",
+                    "DOWN ARROW": "",
+                    "LEFT ARROW": "",
+                    "Plus": 0,
+                    "Minus": 0,
+                    "Zero": 0
+                });
         }
     }
 
@@ -782,30 +782,30 @@ export default class Peripherals {
         const ev = this.coordinator.getBibiEvent(event);
         if (this.slider.ttb) { // Vertical controls
             switch (ev.Division.Y) {
-            case VerticalThird.Bottom:
-                this.moveBy(1);
-                break;
-            case VerticalThird.Top:
-                this.moveBy(-1);
-                break;
-            case VerticalThird.Middle:
-                this.ui.toggle();
-                m.redraw();
-                break;
+                case VerticalThird.Bottom:
+                    this.moveBy(1);
+                    break;
+                case VerticalThird.Top:
+                    this.moveBy(-1);
+                    break;
+                case VerticalThird.Middle:
+                    this.ui.toggle();
+                    m.redraw();
+                    break;
             }
         } else { // Horizontal controls
             const next = this.slider.rtl ? HorizontalThird.Left : HorizontalThird.Right;
             const prev = this.slider.rtl ? HorizontalThird.Right : HorizontalThird.Left;
             switch (ev.Division.X) {
-            case next:
-                this.delayedMoveBy(1);
-                break;
-            case prev:
-                this.delayedMoveBy(-1);
-                break;
-            case HorizontalThird.Center:
-                this.delayedToggle();
-                break;
+                case next:
+                    this.delayedMoveBy(1);
+                    break;
+                case prev:
+                    this.delayedMoveBy(-1);
+                    break;
+                case HorizontalThird.Center:
+                    this.delayedToggle();
+                    break;
             }
         }
     }

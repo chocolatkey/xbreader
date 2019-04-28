@@ -6,7 +6,7 @@ var supportedLanguages = [ // Languages supported for XBReader
     "en",
     "ja",
     "de",
-    "fr",
+    "fr"
 ];
 
 function getLanguage() {

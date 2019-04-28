@@ -5,7 +5,7 @@ import { Properties } from "@r2-shared-js/models/metadata-properties";
 export default class Navigator {
     ttb: boolean;
     shift: boolean;
-    spreads: Array<Array<Link>>;
+    spreads: Link[][];
     nLandscape: number;
 
     constructor(publication: Publication) {

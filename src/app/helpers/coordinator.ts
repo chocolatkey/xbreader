@@ -60,7 +60,7 @@ export default class Coordinator {
             Coord.X = Eve.pageX;
             Coord.Y = Eve.pageY;
         }
-        if((<HTMLElement>Eve.target).ownerDocument.documentElement == this.HTML) {
+        if((Eve.target as HTMLElement).ownerDocument.documentElement == this.HTML) {
             Coord.X -= (this.HTML.scrollLeft + this.Body.scrollLeft);
             Coord.Y -= (this.HTML.scrollTop + this.Body.scrollTop);
         } else {
@@ -118,7 +118,7 @@ export default class Coordinator {
         const Division: NinthPoint = {
             X: null,
             Y: null
-        }
+        };
         if(Ratio.X < BorderL) Division.X = HorizontalThird.Left;
         else if(BorderR < Ratio.X) Division.X = HorizontalThird.Right;
         else                       Division.X = HorizontalThird.Center;

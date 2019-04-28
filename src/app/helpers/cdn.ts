@@ -61,12 +61,12 @@ export default {
         } else
             quality *= 0.98;
         switch (Platform.networkType()) {
-        case 1: // Medium network
-            height = Math.min(dDimension, RESOLUTION_MEDIUM, height);
-            break;
-        case 2: // Slow network
-            height = Math.min(dDimension, RESOLUTION_LOW, height);
-            break;
+            case 1: // Medium network
+                height = Math.min(dDimension, RESOLUTION_MEDIUM, height);
+                break;
+            case 2: // Slow network
+                height = Math.min(dDimension, RESOLUTION_LOW, height);
+                break;
         }
         return {
             quality: Math.floor(quality),
@@ -99,7 +99,7 @@ export default {
         return `https://i${this.hash(ele.host, index, 0, 2)}.wp.com/${ele.authority + ele.path}?strip=all&quality=${spec.quality}${item.Height ? "&h=" + item.Height : ""}`;
     },
     // NebelGrind Gate
-    nebelgrind: function(item: Link, index: number) {
+    nebelgrind: function(item: Link) {
         const match = item.Href.match(NG_IMG_MATCHER);
         if(!match) return item.Href;
         if(!item.Height) return item.Href;
@@ -120,14 +120,14 @@ export default {
         if(!this.isApplicableHost(item.Href) || !item.findFlag("isImage")) return item.Href;
         const whatcdn = window.xbconfig.cdn; // TODO not the global (need to figure out how to pass this through the class chain)
         switch (whatcdn) {
-        case "photon":
-            return this.photon(item, index);
-        case "google":
-            return this.google(item, index);
-        case "nebelgrind":
-            return this.nebelgrind(item, index);
-        default:
-            return item.Href;
+            case "photon":
+                return this.photon(item, index);
+            case "google":
+                return this.google(item, index);
+            case "nebelgrind":
+                return this.nebelgrind(item, index);
+            default:
+                return item.Href;
         }
     }
 };

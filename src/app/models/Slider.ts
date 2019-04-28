@@ -14,7 +14,7 @@ export interface Zoomer {
     translate: {
         X: number;
         Y: number;
-    }
+    };
 }
 
 export default class Slider {
@@ -48,7 +48,7 @@ export default class Slider {
             translate: {
                 X: 0,
                 Y: 0
-            },
+            }
         };
         this.spread = true;
         this.ttb = false;
@@ -188,7 +188,7 @@ export default class Slider {
                 return;
             }
             // Go to next chapter
-            m.route.set("/:id", { id: next.uuid, }, { replace: false });
+            m.route.set("/:id", { id: next.uuid }, { replace: false });
         }
     }
 
