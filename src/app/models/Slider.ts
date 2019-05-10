@@ -283,7 +283,7 @@ export default class Slider {
             return;
         }
         if(this.single && !this.ttb) // Scroll back to top for next page
-            setTimeout(() => {
+            window.setTimeout(() => {
                 this && this.binder && this.binder.coordinator && this.binder.coordinator.HTML && this.binder.coordinator.HTML.scrollTo(0, 0);
             }, 100);
 

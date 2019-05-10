@@ -302,7 +302,7 @@ export default class Peripherals {
 
     mtimerUpdater(e: MithrilEvent) { // TODO mithril event type
         e.redraw = false;
-        setTimeout(() => {
+        window.setTimeout(() => {
             clearTimeout(this.mtimer);
         }, 100);
     }
@@ -318,7 +318,7 @@ export default class Peripherals {
         if (this.drag.endX) {
             this.updateAfterDrag();
         }
-        setTimeout(() => {
+        window.setTimeout(() => {
             this.clearDrag();
         }, 50);
     }
@@ -451,7 +451,7 @@ export default class Peripherals {
         } else {
             if(!e.special) {
                 clearTimeout(this.mtimer);
-                const mouseIt = setTimeout(() => {
+                const mouseIt = window.setTimeout(() => {
                     this.ui.mousing = false; // Race!
                 }, 50);
                 this.mousePos = this.coordinator.getBibiEvent(e);
@@ -460,7 +460,7 @@ export default class Peripherals {
                     this.ui.mousing = true;
                     this.ui.toggle(true);
                 } else {
-                    this.mtimer = setTimeout(() => {
+                    this.mtimer = window.setTimeout(() => {
                         if(this.mousePosOut || this.ui.mousing)
                             return;
                         this.ui.toggle(false);
@@ -746,7 +746,7 @@ export default class Peripherals {
             // When rapidly navigating, ignore double clicks until cooldown
             this.disableDblClick = true;
             clearTimeout(this.dblDisabler);
-            this.dblDisabler = setTimeout(() => {
+            this.dblDisabler = window.setTimeout(() => {
                 this.disableDblClick = false;
             }, 1000);
         } else if (typeof MovingParameter == "string") {
@@ -819,7 +819,7 @@ export default class Peripherals {
     }
 
     delayedMoveBy(MovingParameter: any) {
-        this.dtimer = setTimeout(() => {
+        this.dtimer = window.setTimeout(() => {
             if (!this.pdblclick) {
                 this.moveBy(MovingParameter);
             }
@@ -923,7 +923,7 @@ export default class Peripherals {
         if (CW.Wheeled !== WheelState.None) {
             Eve.BibiSwiperWheel = CW;
             clearTimeout(this.Timer_cooldown);
-            this.Timer_cooldown = setTimeout(() => this.onwheeled_hot = false, 300);
+            this.Timer_cooldown = window.setTimeout(() => this.onwheeled_hot = false, 300);
             if (!this.onwheeled_hot && !this.processVScroll()) {
                 Eve.preventDefault();
                 this.onwheeled_hot = true;
@@ -933,7 +933,7 @@ export default class Peripherals {
         if (PWl >= 3) PWs.shift();
         PWs.push(CW);
         clearTimeout(this.onwheelTimer_stop);
-        this.onwheelTimer_stop = setTimeout(() => {
+        this.onwheelTimer_stop = window.setTimeout(() => {
             this.PreviousWheels = [];
         }, 192);
     }
@@ -945,7 +945,7 @@ export default class Peripherals {
         }
         //E.dispatch("bibi:scrolls", Eve);
         clearTimeout(this.Timer_onscrolled);
-        this.Timer_onscrolled = setTimeout(() => {
+        this.Timer_onscrolled = window.setTimeout(() => {
             this.Scrolling = false;
         }, 123);
     }

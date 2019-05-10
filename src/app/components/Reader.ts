@@ -114,7 +114,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
 
     resizeHandler() {
         clearTimeout(this.resizer);
-        this.resizer = setTimeout(() => {
+        this.resizer = window.setTimeout(() => {
             m.redraw();
             if(this.direction == XBReadingDirection.TTB && this.slider)
                 this.slider.slideToCurrent();
@@ -146,7 +146,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
         if(this.slider.zoomer) this.slider.zoomer.scale = 1;
         this.guideHidden = this.config.guideHidden;
         clearTimeout(this.guideHider);
-        this.guideHider = setTimeout(() => {
+        this.guideHider = window.setTimeout(() => {
             if(this.guideHidden) return;
             this.guideHidden = true;
             m.redraw();
@@ -233,7 +233,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
             this.switchDirection(this.publication.direction);
             this.config.onBeforeReady(this);
             m.redraw();
-            setTimeout(() => {
+            window.setTimeout(() => {
                 if(this.ui && !this.ui.mousing)
                     this.ui.toggle(false);
                 m.redraw();
