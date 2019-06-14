@@ -51,13 +51,7 @@ div#br-topbar {
                 font-size: 34px;
             }
 
-            &:hover {
-                border: solid 1px $hoverColor;
-            }
-        
-            &:active {
-                border: solid 1px $activeColor;
-            }
+            @include hover();
         }
     }
 

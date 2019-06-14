@@ -1,5 +1,5 @@
 interface Window {
-    [key:string]: any;
+    [key: string]: any;
     xbreader: any;
     xbconfig: XBConfig;
 }
@@ -22,29 +22,44 @@ interface XBBrand {
 }
 
 interface XBChapter {
-    no: Number;
+    no: number;
     title: string;
     uuid: string;
-    selected: Boolean;
+    selected: boolean;
 }
 
 interface XBVolume {
-    no: Number;
+    no: number;
     title: string;
     uuid: string;
     chapters: XBChapter[];
 }
 
+interface XBOption {
+    label: string;
+    description?: string;
+    value: string;
+}
+
+interface XBSetting {
+    title: string;
+    description?: string;
+    name: string;
+    value: string;
+    options: XBOption[];
+}
+
 interface XBConfig {
-    [key:string]: any;
+    [key: string]: any;
     brand: XBBrand;
-    tabs: Array<XBTab>;
+    tabs: XBTab[];
     prefix: string;
     mount: HTMLElement;
     guideHidden: boolean;
     cdn: string | boolean;
     preview: boolean;
     loader(identifier: string): Object; // TODO Object -> WebPub
+    onInit(reader: any): void;
     onPublicationLoad(reader: any): void;
     onBeforeReady(reader: any): void;
     onReady(reader: any): void;

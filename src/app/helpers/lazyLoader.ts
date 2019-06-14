@@ -155,9 +155,9 @@ export default class LazyLoader {
     }
 
     provoke(imageItem: CVnodeDOM<HTMLImageElement | HTMLCanvasElement>, currentIndex: number) {
-        this.image = <any>imageItem.dom; // :(
+        this.image = imageItem.dom as any;
         if(this.drm)
-            this.canvas = <HTMLCanvasElement>this.image; // C
+            this.canvas = this.image as HTMLCanvasElement; // C
         const diff = Math.abs(this.index - currentIndex); // Distance of this page from current page
         clearTimeout(this.highTime);
 
@@ -186,7 +186,7 @@ export default class LazyLoader {
             if(workerSupported)
                 worker.postMessage({src: this.original, mode: "CANCEL"});
             else
-                (<HTMLImageElement>this.preloader).src = ""; // Cancels currently loading image
+                (this.preloader as HTMLImageElement).src = ""; // Cancels currently loading image
             this.preloader = null; // Reset the preloader
         }
     }
@@ -198,7 +198,7 @@ export default class LazyLoader {
             this.canvas.toBlob((blob) => {
                 this.blob = URL.createObjectURL(blob);
                 if(!this.loaded)
-                    (<HTMLImageElement>this.image).src = this.blob;
+                    (this.image as HTMLImageElement).src = this.blob;
             });
         } else {
             let binStr = atob(this.canvas.toDataURL(type, quality).split(",")[1]),
@@ -220,7 +220,11 @@ export default class LazyLoader {
             const cd = this.canvas;
             if (!cd)
                 return;
-            const ctx = cd.getContext("2d");
+            let ctx = null;
+
+            try {
+                ctx = cd.getContext("2d");
+            } catch (error) {}
 
             if(ctx) {
                 ctx.clearRect(0, 0, cd.width, cd.height);
@@ -232,7 +236,7 @@ export default class LazyLoader {
                     ctx.fillStyle = "grey";
     
                     ctx.font = "normal bold 150px sans-serif";
-                    ctx.fillText(<string>element, cd.width / 2, cd.height / 2);
+                    ctx.fillText(element as string, cd.width / 2, cd.height / 2);
     
                     ctx.font = "normal 20px sans-serif";
                     const fn = this.original.split("/");
@@ -251,7 +255,7 @@ export default class LazyLoader {
         if(this.image) {
             if(this.loaded) {
                 if(!workerSupported && !this.drm) // C
-                    (<HTMLImageElement>this.image).src = (<HTMLImageElement>this.preloader).src;
+                    (this.image as HTMLImageElement).src = (this.preloader as HTMLImageElement).src;
                 if(this.blob)
                     URL.revokeObjectURL(this.blob);
                 return;
@@ -302,17 +306,17 @@ export default class LazyLoader {
         }
         if (!workerSupported) {
             this.preloader = document.createElement("img");
-            (<HTMLImageElement>this.preloader).onload = () => {
+            (this.preloader as HTMLImageElement).onload = () => {
                 if (!this.preloader)
                     return;
                 if(this.drm)
-                    this.drm(this, (<HTMLImageElement>this.preloader).src);
+                    this.drm(this, (this.preloader as HTMLImageElement).src);
                 else {
                     this.loaded = true;
                     requestAnimationFrame(() => this.drawAsSoon());
                 }
             };
-            (<HTMLImageElement>this.preloader).onerror = () => {
+            (this.preloader as HTMLImageElement).onerror = () => {
                 window.setTimeout(() => {
                     if(!this.loaded && this.preloader) {
                         console.error("Error loading page " + this.original);
@@ -321,7 +325,7 @@ export default class LazyLoader {
                     }
                 }, 1000);
             };
-            (<HTMLImageElement>this.preloader).src = this.original;
+            (this.preloader as HTMLImageElement).src = this.original;
         } else {
             this.preloader = {
                 src: null
@@ -333,7 +337,10 @@ export default class LazyLoader {
                     this.drm(this, img);
                 else {
                     this.loaded = true;
-                    (<HTMLImageElement>this.image).src = img;
+                    (this.image as HTMLImageElement).onload = () => {
+                        URL.revokeObjectURL(img);
+                    };
+                    (this.image as HTMLImageElement).src = img;
                 }
                 // this.blob = img;
             }).catch((err: Error) => {
