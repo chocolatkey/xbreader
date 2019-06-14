@@ -59,6 +59,7 @@ interface XBConfig {
     cdn: string | boolean;
     preview: boolean;
     loader(identifier: string): Object; // TODO Object -> WebPub
+    onInit(reader: any): void;
     onPublicationLoad(reader: any): void;
     onBeforeReady(reader: any): void;
     onReady(reader: any): void;

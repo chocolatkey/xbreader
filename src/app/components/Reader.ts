@@ -50,6 +50,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
 
     constructor(vnode: Vnode<ReaderAttrs>) {
         this.config = window.xbconfig = Reader.mergeSettings(vnode.attrs.config);
+        this.config.onMount(this);
         this.guideHidden = this.config.guideHidden;
         this.r = Math.random();
         this.publication = new Publication();
@@ -93,6 +94,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
 
             // Callback/Hooks
             loader: (identifier: string) => { return null }, // Custom loader for the webpub. Can return a URL, WebPub Object or Promise
+            onMount: (reader: any) => {}, // As soon as this component is mounted
             onPublicationLoad: (reader: any) => {}, // Right after the publication is fully loaded
             onBeforeReady: (reader: any) => {}, // Right before final preparations are carried out
             onReady: (reader: any) => {}, // When redrawing has finished
@@ -196,6 +198,11 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
         return true;
     }
 
+    destroy() {
+        this.onremove();
+        m.mount(this.config.mount, null);
+    }
+
     /**
      * Called when reader is being destroyed, for example when changing chapters
      */
@@ -205,9 +212,12 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
             this.binder.destroy();
         if(this.slider)
             this.slider.destroy();
+        
+        // Remove reader listeners
+        window.removeEventListener("orientationchange", this.resizeHandler);
 
         // Destroy classes & objects
-        this.binder = this.slider = this.publication = this.series = this.ui = this.config = null;
+        this.binder = this.slider = this.publication = this.series = this.ui = null;
     }
 
     oncreate(vnode: Vnode<ReaderAttrs, this>) {
