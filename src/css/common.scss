@@ -5,8 +5,12 @@
     border-style: none;
     border: 0;
     font-size: 100%;
-	font-weight: normal;
-	font-style: normal;
+	//font-weight: normal;
+	//font-style: normal;
+}
+
+h1 {
+	font-weight: 400;
 }
 
 li {
@@ -76,6 +80,28 @@ $guide-size: 140px;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	speak: none;
+}
+
+@mixin hover() {
+	&:hover, &:focus {
+		border: solid 1px $hoverColor;
+    }
+
+    &:active {
+        border: solid 1px $activeColor;
+    }
+}
+
+@mixin shadow_hover() {
+
+	@include hover();
+	&:hover {
+		box-shadow: 1px 1px 3px 0 rgba(0,0,0,.8);
+	}
+
+	&:active {
+		box-shadow: 1px 1px 1px 0 rgba(0,0,0,.8);
+	}
 }
 
 // Indexes

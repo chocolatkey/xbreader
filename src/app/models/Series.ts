@@ -15,7 +15,6 @@ export default class Series {
         this.volumes = series ? series : (pvols ? pvols.Value : []);
         this.autoSelect = null;
         this.metadata = (publication.pmetadata.BelongsTo && publication.pmetadata.BelongsTo.Series) ? publication.pmetadata.BelongsTo.Series : [];
-
         this.chapters = this.buildChapterList();
     }
 

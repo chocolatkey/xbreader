@@ -22,13 +22,10 @@ $w: calc(100% - 160px);
     margin-left: .05em;
     cursor: pointer;
 
-    &:hover {
-        border: solid 1px $hoverColor;
-    }
+    @include hover();
 
     &:active {
         box-shadow: 1px 1px 3px 0 rgba(0,0,0,.8);
-        border: solid 1px $activeColor;
     }
 }
 

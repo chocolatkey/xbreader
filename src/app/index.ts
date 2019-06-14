@@ -10,10 +10,10 @@ window.xbreader = (config: XBConfig) => {
     console.log(`${__NAME__} ${__VERSION__}`);
     if(!config)
         config = {} as XBConfig;
-    const mountingPoint = config.mount ? config.mount : document.body;
+    config.mount = config.mount ? config.mount : document.body;
     if(config.prefix)
         m.route.prefix(config.prefix);
-    m.route(mountingPoint, "/error/404", {
+    m.route(config.mount, "/error/404", {
         "/error/:code": new errorView(config),
         "/error/:code/:message": new errorView(config),
         "/:id": {
