@@ -167,7 +167,7 @@ export default class LazyLoader {
 
         // If index of page near current page, load after predicted end of transition
         else if(diff <= HIGH_THRESHOLD) {
-            this.highTime = setTimeout(() => {
+            this.highTime = window.setTimeout(() => {
                 this.prepare();
             }, 1000);
 
@@ -317,7 +317,7 @@ export default class LazyLoader {
                 }
             };
             (this.preloader as HTMLImageElement).onerror = () => {
-                setTimeout(() => {
+                window.setTimeout(() => {
                     if(!this.loaded && this.preloader) {
                         console.error("Error loading page " + this.original);
                         this.blob = null;
@@ -344,7 +344,7 @@ export default class LazyLoader {
                 }
                 // this.blob = img;
             }).catch((err: Error) => {
-                setTimeout(() => {
+                window.setTimeout(() => {
                     if(!this.loaded && this.preloader) {
                         console.error(`Error fetching page ${this.original}\n${err}`);
                         this.blob = null;

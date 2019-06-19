@@ -170,7 +170,7 @@ export default class Page implements ClassComponent<PageAttrs> {
             else {
                 innerItemAttrs.height = document.documentElement.clientHeight;
                 if(vnode.attrs.index === slider.currentSlide)
-                    setTimeout(() => {
+                    window.setTimeout(() => {
                         //document.documentElement.style.overflowY = "hidden";
                     }, 50);
                 innerItemAttrs.onload = (e: Event) => {
