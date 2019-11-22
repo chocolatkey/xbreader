@@ -17,9 +17,13 @@ module.exports =  {
   },
   rules: {
     "linebreak-style": [
-      "error",
+      "off",
       "unix"
     ],
+    "camelcase": "off",
+    "@typescript-eslint/camelcase": ["off"],
+    "@typescript-eslint/class-name-casing": ["off"],
+    "no-empty": ["error", {"allowEmptyCatch": true}],
     "quotes": [
       "error",
       "double"
@@ -36,10 +40,10 @@ module.exports =  {
     "no-useless-escape": "off",
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-member-accessibility': 'off',
-    '@typescript-eslint/type-annotation-spacing': {
+    '@typescript-eslint/type-annotation-spacing': ["warn", {
       "before": false,
-      "after": false
-    }
+      "after": true
+    }]
   },
   globals: {
     "__": true,

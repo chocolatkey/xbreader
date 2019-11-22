@@ -92,21 +92,21 @@ a {
     width: auto;
 }
 
-// todo wut this
-html.slider-opened div#bibi-slider {
-    background: $primaryBackground !important;
-}
-
 .br__notifier {
+	position: relative;
 	z-index: $z-index_notifier-board;
 	background: $primaryBackground;
 	color: $primaryForeground;
 	padding: 20px;
 	display: block;
 	width: 100%;
-	height: 100%;
+	position: fixed;
 	margin: 0 auto;
 	text-align: center;
+}
+
+.br-help {
+	cursor: help;
 }
 
 .br-loader__container {
@@ -173,7 +173,7 @@ div#br-book {
     //height: calc(100% - #{$top-bar-height});
     min-height: 100%;
 	height: auto;
-    transition: 0.3s ease-in-out;
+    transition: 0.15s ease-in-out;
 	transition-property: transform;
 	outline: none;
 	//		transform: translateY( 0  );
@@ -181,17 +181,21 @@ div#br-book {
 	&.pinching {
 		transition: none;
 	}
+	contain: paint;
 }
 
 div#br-topbar, div#br-botbar {
-    transition-property: all;
-	transition-duration: .05s;
-    transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
     background-color: rgba($primaryBackground, 0.9) !important;
 
     &:hover {
         background-color: rgba($primaryBackground, 0.95) !important;
-    }
+	}
+	
+	&.animate {
+		transition-property: all;
+		transition-duration: .05s;
+		transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+	}
 }
 
 .br-tab-bar {
@@ -227,14 +231,14 @@ div#br-topbar, div#br-botbar {
 
 	border: 1px solid transparent;
 
+	@include shadow_hover();
+
 	&:hover {
 		background-color: darken($primaryBackground, 20%);
-		border-color: $hoverColor;
 	}
 
 	&:active {
 		background-color: darken($primaryBackground, 40%);
-		border-color: $activeColor;
 	}
 
 	// Icons
@@ -244,14 +248,13 @@ div#br-topbar, div#br-botbar {
 		width: 24px;
 		height: 24px;
 	}
-}
 
-@media screen and (max-width: 600px) {
-    .br-tab {
-        padding: 0 12px
-    }
+	@media screen and (max-width: 600px) {
+		& {
+			padding: 0 12px
+		}
+	}
 }
-
 
 @import "./components/slider.scss";
 @import "./components/topbar.scss";
@@ -259,4 +262,5 @@ div#br-topbar, div#br-botbar {
 @import "./components/arrows.scss";
 @import "./components/spinner.scss";
 @import "./components/guide.scss";
+@import "./components/dialog.scss";
 @import "./error.scss";

@@ -5,10 +5,14 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
+import { t } from "ttag";
 import m from "mithril";
 import Navigator from "./Navigator";
 import xbError from "./xbError";
 import Link from "./Link";
+import { parseDirection } from "xbreader/helpers/utils";
+import { XBReadingDirection } from "xbreader/components/Reader";
+
 import { LCP } from "@r2-lcp-js/parser/epub/lcp";
 import { JsonStringConverter } from "@r2-utils-js/_utils/ta-json-string-converter";
 // https://github.com/edcarroll/ta-json
@@ -20,19 +24,17 @@ import {
     OnDeserialized,
     JSON as TAJSON
 } from "ta-json-x";
-
 import { IInternal } from "@r2-shared-js/models/internal";
 import { Metadata } from "@r2-shared-js/models/metadata";
-import { Contributor } from "@r2-shared-js/models/metadata-contributor";
-import { parseDirection } from "xbreader/helpers/utils";
-import { XBReadingDirection } from "xbreader/components/Reader";
 
+// tslint:disable-next-line:max-line-length
+// https://github.com/readium/webpub-manifest/blob/0ac78ab5c270a608c39b4b04fc90bd9b1d281896/schema/publication.schema.json
 @JsonObject()
-export default class Publication { // extends ReadiumPublication
+export default class Publication {
     ready: boolean;
     url: string;
     navi: Navigator;
-    
+
     // tslint:disable-next-line:max-line-length
     // https://github.com/readium/webpub-manifest/blob/0ac78ab5c270a608c39b4b04fc90bd9b1d281896/schema/publication.schema.json#L6
     @JsonProperty("@context")
@@ -57,11 +59,9 @@ export default class Publication { // extends ReadiumPublication
     @JsonProperty("readingOrder")
     @JsonElementType(Link)
     public Spine2!: Link[];
-
     @JsonProperty("spine")
     @JsonElementType(Link)
     public Spine1!: Link[] | undefined;
-
     get Spine(): Link[] | undefined {
         return this.Spine2 ? this.Spine2 : this.Spine1;
     }
@@ -78,51 +78,44 @@ export default class Publication { // extends ReadiumPublication
     @JsonElementType(Link)
     public Resources!: Link[];
 
-    // TODO: not in JSON Schema?? https://github.com/readium/webpub-manifest/issues/17
     // tslint:disable-next-line:max-line-length
-    // https://github.com/readium/webpub-manifest/blob/0ac78ab5c270a608c39b4b04fc90bd9b1d281896/schema/publication.schema.json
+    // https://github.com/readium/webpub-manifest/blob/917c83e798e3eda42b3e9d0dc92f0fef31b16211/schema/publication.schema.json#L58
     @JsonProperty("toc")
     @JsonElementType(Link)
     public TOC!: Link[];
 
-    // TODO: not in JSON Schema?? https://github.com/readium/webpub-manifest/issues/17
     // tslint:disable-next-line:max-line-length
-    // https://github.com/readium/webpub-manifest/blob/0ac78ab5c270a608c39b4b04fc90bd9b1d281896/schema/publication.schema.json
+    // https://github.com/readium/webpub-manifest/blob/917c83e798e3eda42b3e9d0dc92f0fef31b16211/schema/extensions/epub/subcollections.schema.json#L7
     @JsonProperty("page-list")
     @JsonElementType(Link)
     public PageList!: Link[];
 
-    // TODO: not in JSON Schema?? https://github.com/readium/webpub-manifest/issues/17
     // tslint:disable-next-line:max-line-length
-    // https://github.com/readium/webpub-manifest/blob/0ac78ab5c270a608c39b4b04fc90bd9b1d281896/schema/publication.schema.json
+    // https://github.com/readium/webpub-manifest/blob/917c83e798e3eda42b3e9d0dc92f0fef31b16211/schema/extensions/epub/subcollections.schema.json#L13
     @JsonProperty("landmarks")
     @JsonElementType(Link)
     public Landmarks!: Link[];
 
-    // TODO: not in JSON Schema?? https://github.com/readium/webpub-manifest/issues/17
     // tslint:disable-next-line:max-line-length
-    // https://github.com/readium/webpub-manifest/blob/0ac78ab5c270a608c39b4b04fc90bd9b1d281896/schema/publication.schema.json
+    // https://github.com/readium/webpub-manifest/blob/917c83e798e3eda42b3e9d0dc92f0fef31b16211/schema/extensions/epub/subcollections.schema.json#L25
     @JsonProperty("loi")
     @JsonElementType(Link)
     public LOI!: Link[];
 
-    // TODO: not in JSON Schema?? https://github.com/readium/webpub-manifest/issues/17
     // tslint:disable-next-line:max-line-length
-    // https://github.com/readium/webpub-manifest/blob/0ac78ab5c270a608c39b4b04fc90bd9b1d281896/schema/publication.schema.json
+    // https://github.com/readium/webpub-manifest/blob/917c83e798e3eda42b3e9d0dc92f0fef31b16211/schema/extensions/epub/subcollections.schema.json#L19
     @JsonProperty("loa")
     @JsonElementType(Link)
     public LOA!: Link[];
 
-    // TODO: not in JSON Schema?? https://github.com/readium/webpub-manifest/issues/17
     // tslint:disable-next-line:max-line-length
-    // https://github.com/readium/webpub-manifest/blob/0ac78ab5c270a608c39b4b04fc90bd9b1d281896/schema/publication.schema.json
+    // https://github.com/readium/webpub-manifest/blob/917c83e798e3eda42b3e9d0dc92f0fef31b16211/schema/extensions/epub/subcollections.schema.json#L37
     @JsonProperty("lov")
     @JsonElementType(Link)
     public LOV!: Link[];
 
-    // TODO: not in JSON Schema?? https://github.com/readium/webpub-manifest/issues/17
     // tslint:disable-next-line:max-line-length
-    // https://github.com/readium/webpub-manifest/blob/0ac78ab5c270a608c39b4b04fc90bd9b1d281896/schema/publication.schema.json
+    // https://github.com/readium/webpub-manifest/blob/917c83e798e3eda42b3e9d0dc92f0fef31b16211/schema/extensions/epub/subcollections.schema.json#L31
     @JsonProperty("lot")
     @JsonElementType(Link)
     public LOT!: Link[];
@@ -131,14 +124,6 @@ export default class Publication { // extends ReadiumPublication
     // @JsonProperty("images")
     // @JsonElementType(Link)
     // public Images!: Link[];
-
-    // TODO subcollection?
-    // tslint:disable-next-line:max-line-length
-    // https://github.com/readium/webpub-manifest/blob/0ac78ab5c270a608c39b4b04fc90bd9b1d281896/schema/publication.schema.json#L65
-    // tslint:disable-next-line:max-line-length
-    // https://github.com/readium/webpub-manifest/blob/0ac78ab5c270a608c39b4b04fc90bd9b1d281896/schema/subcollection.schema.json
-    // public OtherLinks: Link[];
-    // public OtherCollections: IPublicationCollection[];
 
     public LCP: LCP | undefined;
 
@@ -224,10 +209,13 @@ export default class Publication { // extends ReadiumPublication
         return undefined;
     }
 
+    // Note: currently only used internally for META-INF/license.lcpl?
     public AddLink(typeLink: string, rel: string[], url: string, templated: boolean | undefined) {
         const link = new Link();
         link.AddRels(rel);
-        link.Href = url;
+
+        link.setHrefDecoded(url);
+
         link.TypeLink = typeLink;
 
         if (typeof templated !== "undefined") {
@@ -247,12 +235,12 @@ export default class Publication { // extends ReadiumPublication
         // tslint:disable-next-line:max-line-length
         // https://github.com/readium/webpub-manifest/blob/0ac78ab5c270a608c39b4b04fc90bd9b1d281896/schema/publication.schema.json#L60
         if (!this.Metadata) {
-            console.warn("Publication.Metadata is not set!");
+            console.log("Publication.Metadata is not set!");
         }
         // tslint:disable-next-line:max-line-length
         // https://github.com/readium/webpub-manifest/blob/0ac78ab5c270a608c39b4b04fc90bd9b1d281896/schema/publication.schema.json#L62
         if (!this.Spine) {
-            console.warn("Publication.Spine/ReadingOrder is not set!");
+            console.log("Publication.Spine/ReadingOrder is not set!");
         }
         // TODO: many EPUB publications do not have Links
         // tslint:disable-next-line:max-line-length
@@ -298,7 +286,7 @@ export default class Publication { // extends ReadiumPublication
 
     parseManifest(rawManifest: any) {
         if(!rawManifest)
-            throw new xbError(9400, __("Manifest data empty"));
+            throw new xbError(9400, t`Manifest data empty`);
         if(rawManifest instanceof Publication)
             return rawManifest;
         let md;
@@ -308,7 +296,7 @@ export default class Publication { // extends ReadiumPublication
             md = rawManifest;
 
         if(!this.isValidManifest(md))
-            throw new xbError(9400, __("Invalid WebPub manifest"));
+            throw new xbError(9400, t`Invalid WebPub manifest`);
         for (const attrname in md.metadata.xbr) {
             this.setSpecial(attrname, md.metadata.xbr[attrname]);
         }
@@ -353,7 +341,7 @@ export default class Publication { // extends ReadiumPublication
         });
     }
 
-    keysInObj(keys: string[], obj: any) {
+    private keysInObj(keys: string[], obj: any) {
         let ok = true;
         keys.forEach((key) => {
             if(key in obj === false)
@@ -370,7 +358,7 @@ export default class Publication { // extends ReadiumPublication
         }
     }
 
-    isValidManifest(manifest: any) { // TODO stricter
+    private isValidManifest(manifest: any) { // TODO stricter
         Publication.fixDeprecated(manifest, "spine", "readingOrder");
         const requiredRootKeys = ["metadata", "links", "readingOrder"];
         if(!this.keysInObj(requiredRootKeys, manifest))
@@ -381,7 +369,7 @@ export default class Publication { // extends ReadiumPublication
 
         if(!manifest.metadata.numberOfPages)
             manifest.metadata.numberOfPages = manifest.readingOrder.length;
-        const requiredMetadataKeys = ["title", /*"belongsTo"*/];
+        const requiredMetadataKeys = ["title" /*"belongsTo"*/];
         if(!this.keysInObj(requiredMetadataKeys, manifest.metadata))
             return false;
 
@@ -404,16 +392,13 @@ export default class Publication { // extends ReadiumPublication
     }
 
     get series() {
-        if(this.pmetadata.BelongsTo && this.pmetadata.BelongsTo.Series) {
-            if(this.pmetadata.BelongsTo.Series[0])
-                return this.pmetadata.BelongsTo.Series[0];
-            //return this.pmetadata.BelongsTo.Series;                    
-        } else return new Contributor;
-        
+        if(this.pmetadata.BelongsTo && this.pmetadata.BelongsTo.Series)
+            return this.pmetadata.BelongsTo.Series;
+        return [];
     }
 
     get direction(): XBReadingDirection {
-        return parseDirection(this.pmetadata.Direction)
+        return parseDirection(this.pmetadata.Direction);
     }
 
     get shift() {

@@ -60,7 +60,7 @@ export default class Coordinator {
             Coord.X = Eve.pageX;
             Coord.Y = Eve.pageY;
         }
-        if((<HTMLElement>Eve.target).ownerDocument.documentElement == this.HTML) {
+        if((Eve.target as HTMLElement).ownerDocument.documentElement == this.HTML) {
             Coord.X -= (this.HTML.scrollLeft + this.Body.scrollLeft);
             Coord.Y -= (this.HTML.scrollTop + this.Body.scrollTop);
         } else {
@@ -106,19 +106,20 @@ export default class Coordinator {
             X: Coord.X / window.innerWidth,
             Y: Coord.Y / window.innerHeight
         };
+        var BorderT, BorderB, BorderL, BorderR;
         if(FlipperWidth < 1) { // Ratio
-            var BorderL = BorderT =     FlipperWidth;
-            var BorderR = BorderB = 1 - FlipperWidth;
+            BorderL = BorderT =     FlipperWidth;
+            BorderR = BorderB = 1 - FlipperWidth;
         } else { // Pixel to Ratio
-            var BorderL = FlipperWidth / window.innerWidth;
-            var BorderT = FlipperWidth / window.innerHeight;
-            var BorderR = 1 - BorderL;
-            var BorderB = 1 - BorderT;
+            BorderL = FlipperWidth / window.innerWidth;
+            BorderT = FlipperWidth / window.innerHeight;
+            BorderR = 1 - BorderL;
+            BorderB = 1 - BorderT;
         }
         const Division: NinthPoint = {
             X: null,
             Y: null
-        }
+        };
         if(Ratio.X < BorderL) Division.X = HorizontalThird.Left;
         else if(BorderR < Ratio.X) Division.X = HorizontalThird.Right;
         else                       Division.X = HorizontalThird.Center;

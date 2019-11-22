@@ -18,11 +18,7 @@
     }
 }
 
-.hide {
-    display: none;
-}
-
-html.no-js .jss {
+html.no-js .jss, .hide {
     display: none !important;
 }
 

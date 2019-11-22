@@ -2,62 +2,59 @@
     Inspired by Siema (https://github.com/pawelgrzybek/siema)
  */
 
+import { t } from "ttag";
 import m from "mithril";
 import sML from "../helpers/sMLstub";
 import Publication from "./Publication";
 import Navigator from "./Navigator";
 import Series from "./Series";
 import Peripherals from "xbreader/helpers/peripherals";
+import Config from "./Config";
 
 export interface Zoomer {
     scale: number;
     translate: {
         X: number;
         Y: number;
-    }
+    };
 }
 
 export default class Slider {
-    navigator: Navigator;
-    publication: Publication;
-    series: Series;
-    config: XBConfig;
-    transform: string;
-    currentSlide: number;
+    private readonly navigator: Navigator;
+    readonly series: Series;
+    readonly publication: Publication;
+    private readonly config: Config;
+    private transform: string = null;
+    currentSlide: number = 0;
     rtl: boolean;
-    ttb: boolean;
+    ttb: boolean = false;
     spread: boolean;
     fit: boolean;
     guideHidden: boolean;
     binder: Peripherals;
     width: number;
     height: number;
-    zoomer: Zoomer; // TODO specific
-    properties: Object; // TODO CSS styles
-    resizeBoundHandler: EventListenerOrEventListenerObject;
+    zoomer: Zoomer = {
+        scale: 1,
+        translate: {
+            X: 0,
+            Y: 0
+        }
+    };
+    properties: Record<string, any>; // TODO CSS styles
+    private readonly resizeBoundHandler: EventListenerOrEventListenerObject;
 
-    constructor(series: Series, publication: Publication, binder: Peripherals, config: XBConfig) {
+    constructor(series: Series, publication: Publication, binder: Peripherals, config: Config) {
         this.navigator = publication.navi;
         this.publication = publication;
         this.series = series;
         this.binder = binder;
-        this.config = config; // TODO rename to config once slider config is eliminated!!!
+        this.config = config;
 
-        this.zoomer = {
-            scale: 1,
-            translate: {
-                X: 0,
-                Y: 0
-            },
-        };
-        this.spread = true;
-        this.ttb = false;
+        this.spread = config.spread;
 
         this.rtl = this.publication.rtl;
-        this.currentSlide = 0;
-        this.fit = false;
-        this.transform = null;
-        this.resolveSlidesNumber();
+        this.fit = config.fit;
         this.updateProperties(true);
         this.resizeBoundHandler = this.resizeHandler.bind(this);
         window.addEventListener("resize", this.resizeBoundHandler);
@@ -77,7 +74,6 @@ export default class Slider {
             this.currentSlide = this.length <= this.perPage ? 0 : this.length - 1;
         }
 
-        this.resolveSlidesNumber();
         this.updateProperties(true);
         if(slide && !sML.Mobile)
             this.slideToCurrent(!fast, fast);
@@ -88,10 +84,17 @@ export default class Slider {
         window.removeEventListener("resize", this.resizeBoundHandler);
     }
 
-    updateProperties(animate: boolean, fast = true) {
-        let margin = "0";
+    /**
+     * It is important that these values be cached to avoid spamming them on redraws, they are expensive.
+     */
+    private updateDimensions() {
         this.width = document.documentElement.clientWidth;
         this.height = document.documentElement.clientHeight;
+    }
+
+    updateProperties(animate: boolean, fast = true) {
+        let margin = "0";
+        this.updateDimensions();
         if(this.perPage > 1 && this.shift)
             margin = `${this.width / 2}px`;
         if(this.ttb) {
@@ -100,7 +103,7 @@ export default class Slider {
             };
         } else {
             this.properties = {
-                transition: animate ? `all ${fast ? 150 : 500}ms ease-out` : "all 0ms ease-out", // TODO vary
+                transition: (animate && this.config.animate) ? `all ${fast ? 150 : 500}ms ease-out` : "all 0ms ease-out",
                 marginRight: this.rtl ? margin : "0",
                 marginLeft: this.rtl ? "0" : margin,
                 width: `${(this.width / this.perPage) * this.length}px`,
@@ -113,12 +116,12 @@ export default class Slider {
         return 50;
     }
 
-    get easing() {
+    private get easing() {
         return "ease-out";
     }
 
     get perPage() {
-        return this.spread && !this.portrait ? 2 : 1;
+        return this.spread && !this.portrait && !this.ttb ? 2 : 1;
     }
 
     get portrait() {
@@ -126,17 +129,10 @@ export default class Slider {
     }
 
     get single() {
-        return !this.spread || this.portrait;
+        return !this.spread || this.portrait || this.ttb;
     }
 
-    resolveSlidesNumber() {
-        if (!this.spread) //  || this.ttb
-            this.spread = false;
-        else
-            this.spread = true;
-    }
-
-    get nLandscape() {
+    private get nLandscape() {
         return this.navigator.nLandscape ? this.navigator.nLandscape : 0;
     }
 
@@ -169,7 +165,7 @@ export default class Slider {
             this.spread = false;
             if(this.currentSlide > 1) this.currentSlide--;
         }
-        this.resizeHandler(true);
+        requestAnimationFrame(() => this.resizeHandler(true));
     }
 
     onChange() {
@@ -177,26 +173,40 @@ export default class Slider {
             this.guideHidden = true;
         this.zoomer.scale = 1;
         m.redraw();
-        this.config.onPageChange(this.currentSlide + (this.single ? 1 : 0), this.direction, !this.single);
+        this.config.state.onPageChange(this.currentSlide + (this.single ? 1 : 0), this.direction, !this.single);
     }
 
     onLastPage() {
-        if(this.config.onLastPage(this.series)) {
+        if(this.config.state.onLastPage(this.series)) {
             const next = this.series.next;
+            
             if(!next) { // No more chapters left
-                alert(__("You've reached the end of this series!"));
+                this.bounce(this.rtl);
                 return;
             }
             // Go to next chapter
-            m.route.set("/:id", { id: next.uuid, }, { replace: false });
+            m.route.set("/:id", { id: next.uuid }, { replace: false });
         }
+    }
+
+    bounce(rtl = false) {
+        requestAnimationFrame(() => {
+            this.transform = `translate3d(${this.offset+(50 * (rtl ? 1 : -1))}px, 0, 0)`;
+            this.updateProperties(true, true);
+            m.redraw();
+            setTimeout(() => {
+                this.transform = `translate3d(${this.offset}px, 0, 0)`;
+                this.updateProperties(true, true);
+                m.redraw();
+            }, 100);
+        });
     }
 
     /**
      * Go to next slide.
      * @param {number} [howManySlides=1] - How many items to slide forward.
      */
-    next(howManySlides = 1) {
+    next(howManySlides: number = 1) {
         // early return when there is nothing to slide
         if (this.slength <= this.perPage) {
             return;
@@ -223,7 +233,7 @@ export default class Slider {
      * Go to previous slide.
      * @param {number} [howManySlides=1] - How many items to slide backward.
      */
-    prev(howManySlides = 1) {
+    prev(howManySlides: number = 1) {
         // early return when there is nothing to slide
         if (this.slength <= this.perPage) {
             return;
@@ -238,7 +248,8 @@ export default class Slider {
         if (beforeChange !== this.currentSlide) {
             this.slideToCurrent(true);
             this.onChange();
-        }
+        } else
+            this.bounce(!this.rtl);
     }
     
 
@@ -265,10 +276,14 @@ export default class Slider {
         return br_slider;
     }
 
+    private get offset() {
+        return (this.rtl ? 1 : -1) * this.currentSlide * (this.width / this.perPage);
+    }
+
     /**
      * Moves sliders frame to position of currently active slide
      */
-    slideToCurrent(enableTransition?: boolean, fast = true) {
+    slideToCurrent(enableTransition?: boolean, fast = true, changed = true) {
         if (this.ttb) {
             const br_slider = this.selector;
             if(!br_slider) return;
@@ -282,25 +297,24 @@ export default class Slider {
             });
             return;
         }
-        if(this.single && !this.ttb) // Scroll back to top for next page
+        if(this.single && !this.ttb && changed) // Scroll back to top for next/prev page
             window.setTimeout(() => {
                 this && this.binder && this.binder.coordinator && this.binder.coordinator.HTML && this.binder.coordinator.HTML.scrollTo(0, 0);
             }, 100);
 
-        const offset = (this.rtl ? 1 : -1) * this.currentSlide * (this.width / this.perPage);
-
+        this.updateDimensions();
         if (enableTransition) {
             // This one is tricky, I know but this is a perfect explanation:
             // https://youtu.be/cCOL7MC4Pl0
             requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    this.transform = `translate3d(${offset}px, 0, 0)`;
+                requestAnimationFrame(() => { 
+                    this.transform = `translate3d(${this.offset}px, 0, 0)`;
                     this.updateProperties(true, fast);
                     m.redraw();
                 });
             });
         } else {
-            this.transform = `translate3d(${offset}px, 0, 0)`;
+            this.transform = `translate3d(${this.offset}px, 0, 0)`;
             this.updateProperties(false);
             m.redraw();
         }

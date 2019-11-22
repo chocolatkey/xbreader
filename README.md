@@ -22,11 +22,12 @@ or use over a cdn
 
 ```bash
 https://cdn.jsdelivr.net/npm/xbreader/dist/xbreader-en.js
+https://unpkg.com/xbreader/dist/xbreader-en.js
 ```
 
 ## Configuration
 
-xbreader uses window.xbconfig for any custom configuration. Click [here](https://github.com/chocolatkey/xbreader/blob/master/src/app/components/Reader.ts#L78) for the default configuration.
+window.xbreader takes an XBConfig instance. Click [here](https://github.com/chocolatkey/xbreader/blob/master/src/app/components/Reader.ts#L78) for the default configuration.
 
 ## Documentation
 

@@ -1,8 +1,8 @@
 import m from "mithril";
 
 export default class xbError {
-    errCode: number;
-    errMessage: string;
+    private errCode: number;
+    private errMessage: string;
 
     constructor(code: number, message?: string) {
         this.errCode = code;

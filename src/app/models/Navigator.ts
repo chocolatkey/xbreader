@@ -1,24 +1,23 @@
+import { t } from "ttag";
 import Publication from "./Publication";
 import Link from "./Link";
 import Slider from "./Slider";
 import { Properties } from "@r2-shared-js/models/metadata-properties";
 export default class Navigator {
-    ttb: boolean;
-    shift: boolean;
-    spreads: Array<Array<Link>>;
-    nLandscape: number;
+    private readonly ttb: boolean;
+    shift: boolean = true; // TODO getter
+    private spreads: Link[][] = [];
+    nLandscape: number; // TODO getter
 
     constructor(publication: Publication) {
-        this.spreads = [];
         this.ttb = publication.isTtb;
-        this.shift = true;
 
         this.index(publication);
         this.testShift(publication);
         console.log(`Indexed ${this.spreads.length} spreads for ${publication.spine.length} items`);
     }
 
-    index(publication: Publication, redo = false) {
+    private index(publication: Publication, redo = false) {
         this.nLandscape = 0;
         publication.spine.forEach((item, index) => {
             if (!/^(?:[a-z]+:)?\/\//i.test(item.Href)) // convert URL relative to manifest to absolute URL
@@ -42,7 +41,7 @@ export default class Navigator {
         this.buildSpreads(publication.spine);
     }
 
-    testShift(publication: Publication) {
+    private testShift(publication: Publication) {
         let wasLastSingle = false;
         this.spreads.forEach((item, index) => {
             if(item.length > 1)
@@ -67,7 +66,7 @@ export default class Navigator {
             this.index(publication, true); // Re-index spreads
     }
 
-    buildSpreads(spine: Link[]) {
+    private buildSpreads(spine: Link[]) {
         let currentSet: Link[] = [];
         spine.forEach((item, index) => {
             if(!index && this.shift) {
@@ -97,7 +96,7 @@ export default class Navigator {
                 return "?";
             }
             if(spread.length && spread[0].findFlag("final"))
-                return __("END");
+                return t`END`;
             spread.forEach((item, index) => {
                 if(!index)
                     spreadString += item.findSpecial("number").Value;
@@ -108,7 +107,7 @@ export default class Navigator {
         } else {
             const spread = this.spreads[this.spreads.length - 1];
             if(slider.currentSlide + 1 === slider.length && spread && spread.length && spread[0].findFlag("final"))
-                return __("END");
+                return t`END`;
             return slider.currentSlide + 1;
         }
     }

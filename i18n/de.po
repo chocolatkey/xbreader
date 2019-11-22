@@ -1,0 +1,338 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Plural-Forms: nplurals = 2; plural = (n != 1);\n"
+"Language: de\n"
+"mime-version: 1.0\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src\app\views\error.ts:7
+msgid "Your client issued a bad request."
+msgstr "Die Anfrage-Nachricht war fehlerhaft aufgebaut."
+
+#: src\app\views\error.ts:8
+msgid "You have been denied access to this content."
+msgstr ""
+
+#: src\app\views\error.ts:9
+msgid "The content you requested does not exist."
+msgstr ""
+
+#: src\app\views\error.ts:10
+msgid "This content has expired or is no longer available."
+msgstr ""
+
+#: src\app\views\error.ts:11
+msgid "The server has encountered an error."
+msgstr "Ein Fehler ist aufgetreten "
+
+#: src\app\views\error.ts:12
+msgid "Content is temporarily unavailable."
+msgstr "Inhalt momentan nicht verfügbar."
+
+#: src\app\views\error.ts:37
+#: src\app\views\error.ts:50
+msgid "Invalid error"
+msgstr ""
+
+#: src\app\views\error.ts:53
+msgid "Unknown error"
+msgstr "Unbekannter Fehler"
+
+#: src\app\views\error.ts:61
+#, javascript-format
+msgid "Error ${ paddedErrorCode }"
+msgstr ""
+
+#: src\app\views\read.ts:25
+msgid "Invalid content ID"
+msgstr ""
+
+#: src\app\partials\Logo.ts:17
+msgid "Back"
+msgstr "Zurück"
+
+#: src\app\models\Config.ts:11
+msgid "↔ Layout"
+msgstr ""
+
+#: src\app\models\Config.ts:12
+msgid "Override the reading format of spreads in horizontal reading"
+msgstr ""
+
+#: src\app\models\Config.ts:17
+msgid "Spread"
+msgstr ""
+
+#: src\app\models\Config.ts:18
+msgid "When appropriate, show two pages at a time like a book"
+msgstr ""
+
+#: src\app\models\Config.ts:22
+msgid "Single Page"
+msgstr ""
+
+#: src\app\models\Config.ts:23
+msgid "Only show one page at a time"
+msgstr ""
+
+#: src\app\models\Config.ts:29
+msgid "↕ Page Fit"
+msgstr ""
+
+#: src\app\models\Config.ts:30
+msgid "Override the fit of pages in vertical or single page reading"
+msgstr ""
+
+#: src\app\models\Config.ts:35
+msgid "Fit Width"
+msgstr ""
+
+#: src\app\models\Config.ts:36
+msgid "Fit page to width of screen, but don't go overboard"
+msgstr ""
+
+#: src\app\models\Config.ts:40
+msgid "Fit Height"
+msgstr ""
+
+#: src\app\models\Config.ts:41
+msgid "Fit page to height of screen"
+msgstr ""
+
+#: src\app\models\Config.ts:47
+msgid "Animations"
+msgstr "Animationen"
+
+#: src\app\models\Config.ts:52
+msgid "On"
+msgstr "Ein"
+
+#: src\app\models\Config.ts:56
+msgid "Off"
+msgstr "Aus"
+
+#: src\app\models\Config.ts:62
+msgid "Background"
+msgstr "Hintergrund"
+
+#: src\app\models\Config.ts:67
+msgid "Gray"
+msgstr "Grau"
+
+#: src\app\models\Config.ts:71
+msgid "Black"
+msgstr "Schwarz"
+
+#: src\app\models\Config.ts:75
+msgid "White"
+msgstr "Weiss"
+
+#: src\app\models\Navigator.ts:99
+#: src\app\models\Navigator.ts:110
+msgid "END"
+msgstr "ENDE"
+
+#: src\app\models\Publication.ts:289
+msgid "Manifest data empty"
+msgstr ""
+
+#: src\app\models\Publication.ts:299
+msgid "Invalid WebPub manifest"
+msgstr ""
+
+#: src\app\models\Series.ts:117
+msgid "Chapter selection"
+msgstr "Auswahl der Kapitel"
+
+#: src\app\components\Reader.ts:219
+#: src\app\helpers\lazyLoader.ts:388
+msgid "Loading..."
+msgstr "Ladet..."
+
+#: src\app\helpers\lazyLoader.ts:407
+#: src\app\helpers\lazyLoader.ts:434
+msgid "Error!"
+msgstr ""
+
+#: src\app\components\Interface.ts:39
+msgid "Select Page"
+msgstr "Seite auswählen"
+
+#: src\app\components\Interface.ts:63
+msgid "Current Page"
+msgstr "Aktuelle Seite"
+
+#: src\app\components\Interface.ts:65
+msgid "Input a page number"
+msgstr "Seitennummer eingeben"
+
+#: src\app\components\Interface.ts:71
+msgid "# of Pages"
+msgstr "Seitenanzahl"
+
+#: src\app\components\Interface.ts:87
+#. Has a next chapter
+#. Leftmost slider control
+msgid "Go to the next chapter"
+msgstr "Zum nächsten Kapitel"
+
+#: src\app\components\Interface.ts:92
+#. Has a next chapter
+msgid "Next"
+msgstr ""
+
+#: src\app\components\Interface.ts:101
+#. Has a previous chapter
+msgid "Go to the previous chapter"
+msgstr "Zum vorherigen Kapitel"
+
+#: src\app\components\Interface.ts:106
+#. Has a previous chapter
+msgid "Prev"
+msgstr ""
+
+#: src\app\components\Interface.ts:131
+#. Vertical tweaking
+msgid "Fit to width"
+msgstr "Breite anpassen"
+
+#: src\app\components\Interface.ts:131
+#. Vertical tweaking
+msgid "Fit to height"
+msgstr "Höhe anpassen"
+
+#: src\app\components\Interface.ts:142
+#: src\app\components\Interface.ts:143
+#. Horizontal tweaking
+msgid "Spread view"
+msgstr ""
+
+#: src\app\components\Interface.ts:142
+#: src\app\components\Interface.ts:143
+#. Horizontal tweaking
+msgid "Single page view"
+msgstr ""
+
+#: src\app\components\Interface.ts:166
+#: src\app\components\Interface.ts:208
+#. Tabs exist, show tab functionality
+msgid "Menu"
+msgstr "Menü"
+
+#: src\app\components\Interface.ts:181
+msgid "Top bar"
+msgstr ""
+
+#: src\app\components\Interface.ts:186
+msgid "Logo"
+msgstr "Logo"
+
+#: src\app\components\Interface.ts:190
+msgid "Title"
+msgstr "Titel"
+
+#: src\app\components\Interface.ts:193
+msgid "Series"
+msgstr "Serie"
+
+#: src\app\components\Interface.ts:200
+msgid "Menu toggle"
+msgstr ""
+
+#: src\app\components\Interface.ts:216
+msgid "Bottom bar"
+msgstr ""
+
+#: src\app\components\Interface.ts:225
+msgid "Toggle reading direction"
+msgstr "Leserichtung wechseln"
+
+#: src\app\components\Page.ts:163
+msgid "Blank Page"
+msgstr ""
+
+#: src\app\components\Page.ts:172
+#, javascript-format
+msgid "Page ${ pageNumber }"
+msgstr "Seite ${ pageNumber }"
+
+#: src\app\components\Reader.ts:75
+msgid "Initializing..."
+msgstr "Initializierung..."
+
+#: src\app\components\Reader.ts:138
+msgid "Swipe or tap"
+msgstr ""
+
+#: src\app\components\Reader.ts:138
+msgid "Navigate"
+msgstr ""
+
+#: src\app\components\Reader.ts:142
+#. Left to right
+#, javascript-format
+msgid "${ this.hint } left-to-right"
+msgstr "Links nach Rechts ${ this.hint }"
+
+#: src\app\components\Reader.ts:146
+#. Right to left
+msgid "${ this.hint } right-to-left"
+msgstr "Rechts nach Links ${ this.hint }"
+
+#: src\app\components\Reader.ts:150
+#. Top to bottom
+msgid "Scroll down"
+msgstr ""
+
+#: src\app\components\Reader.ts:166
+msgid "Invalid flow!"
+msgstr ""
+
+#: src\app\components\Reader.ts:215
+msgid "No item specified"
+msgstr ""
+
+#: src\app\components\Reader.ts:218
+msgid "Fetching info..."
+msgstr ""
+
+#: src\app\components\Reader.ts:315
+#. Rendering
+msgid "Content"
+msgstr ""
+
+#: src\app\components\Reader.ts:319
+#. Rendering
+msgid "Book"
+msgstr "Buch"
+
+#: src\app\components\Reader.ts:345
+#. Rendering
+msgid "Reading Guide"
+msgstr ""
+
+#: src\app\components\Settings.ts:24
+msgid "Global Settings"
+msgstr ""
+
+#: src\app\components\Settings.ts:44
+msgid "Settings saved!"
+msgstr "Einstellungen gespeichert!"
+
+#: src\app\components\Settings.ts:46
+msgid "Failed saving settings"
+msgstr "Fehler aufgetreten beim speichern der Einstellungen"
+
+#: src\app\components\Settings.ts:67
+#. m("button", {
+#. onclick: () => {
+#. // apply
+#. }
+#. }, t`Apply`),
+msgid "Close"
+msgstr "Schliessen"
+
+#: src\app\components\Spine.ts:33
+msgid "Spine"
+msgstr ""

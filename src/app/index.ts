@@ -9,13 +9,13 @@ import errorView from "./views/error";
 window.xbreader = (config: XBConfig) => {
     console.log(`${__NAME__} ${__VERSION__}`);
     if(!config)
-        config = {} as XBConfig;
+        config = {} as any as XBConfig;
     config.mount = config.mount ? config.mount : document.body;
     if(config.prefix)
-        m.route.prefix(config.prefix);
+        m.route.prefix = config.prefix;
     m.route(config.mount, "/error/404", {
-        "/error/:code": new errorView(config),
-        "/error/:code/:message": new errorView(config),
+        "/error/:code": () => new errorView(config),
+        "/error/:code/:message": () => new errorView(config),
         "/:id": {
             onmatch: () => {
                 config.preview = false;
@@ -28,7 +28,7 @@ window.xbreader = (config: XBConfig) => {
                 return new readView(config);
             }
         },
-        "/:id/:page": {
+        "/:id/:nav": {
             onmatch: () => {
                 config.preview = false;
                 return new readView(config);

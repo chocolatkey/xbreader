@@ -1,20 +1,20 @@
+import { t } from "ttag";
 import m, { Vnode, Child } from "mithril";
 import Publication from "./Publication";
 import { Contributor } from "@r2-shared-js/models/metadata-contributor";
 
 export default class Series {
-    publication: Publication;
-    metadata: Contributor[];
-    chapters: XBChapter[];
-    autoSelect: string;
-    volumes: XBVolume[]; // TODO type
+    private readonly publication: Publication;
+    private readonly metadata: Contributor[];
+    private readonly chapters: XBChapter[];
+    private autoSelect: string = null;
+    volumes: XBVolume[];
 
     constructor(publication: Publication, series: XBVolume[]) {
         this.publication = publication;
         const pvols = publication.findSpecial("volumes");
         this.volumes = series ? series : (pvols ? pvols.Value : []);
-        this.autoSelect = null;
-        this.metadata = (publication.pmetadata.BelongsTo && publication.pmetadata.BelongsTo.Series) ? publication.pmetadata.BelongsTo.Series : [];
+        this.metadata = publication.series ? publication.series : [];
         this.chapters = this.buildChapterList();
     }
 
@@ -27,6 +27,11 @@ export default class Series {
             });
     }
 
+    get firstSeries() {
+        if(this.metadata.length > 0) return this.metadata[0];
+        return null;
+    }
+
     isSelected(chapter: XBChapter) {
         return chapter.selected || chapter.uuid === this.autoSelect;
     }
@@ -35,12 +40,16 @@ export default class Series {
      * Has a series been passed to XBReader
      */
     get exists() {
-        return this.volumes.length > 0;
+        return this.volumes.length > 0 || this.firstSeries !== null;
     }
 
-    buildChapterList() {
+    get isSolo() {
+        return this.chapters.length == 0 || !this.exists;
+    }
+
+    private buildChapterList() {
         if(!this.exists)
-            return;
+            return [];
         const chapters: XBChapter[] = [];
         let alreadySelected = false;
         this.volumes.forEach(volume => {
@@ -69,7 +78,6 @@ export default class Series {
                 return currChapter;
             }
         }
-        console.error("Couldn't find the current chapter in the series! Make sure one is selected");
         return null;
     }
 
@@ -81,6 +89,7 @@ export default class Series {
         for (let i = 0; i < this.chapters.length; i++)
             if(this.isSelected(this.chapters[i]))
                 return this.chapters[i + 1] ? this.chapters[i + 1] : null;
+        return null;
     }
 
     /**
@@ -91,23 +100,24 @@ export default class Series {
         for (let i = 0; i < this.chapters.length; i++)
             if(this.isSelected(this.chapters[i]))
                 return this.chapters[i - 1] ? this.chapters[i - 1] : null;
+        return null;
     }
 
     /**
      * Create an HTML select element with the series' volumes and chapters
      */
     get selector() {
-        if(!this.exists)
+        if(this.isSolo)
             if(this.publication.pmetadata.Title)
-                return m("span#br-chapter", <Child>this.publication.pmetadata.Title);
+                return m("span.br-toolbar__ellipsis#br-chapter", this.publication.pmetadata.Title as Child);
             else
                 return null;
 
         return m("select#br-chapter", {
-            title: __("Chapter selection"),
+            title: t`Chapter selection`,
             onchange: (e: Event) => {
-                const st = <HTMLSelectElement>e.target;
-                m.route.set("/:id", { id: (<HTMLOptionElement>st[st.selectedIndex]).value, }, { replace: false });
+                const st = e.target as HTMLSelectElement;
+                m.route.set("/:id", { id: (st[st.selectedIndex] as HTMLOptionElement).value }, { replace: false });
             }
         }, this.volumes.map(volume => {
             const chaptersOptions: Vnode<any, any>[] = [];
@@ -115,7 +125,7 @@ export default class Series {
                 chaptersOptions.push(m("option", {
                     value: chapter.uuid,
                     selected: this.isSelected(chapter)
-                }, <Child>chapter.title));
+                }, chapter.title as Child));
             });
             if(volume.title)
                 return m("optgroup", {

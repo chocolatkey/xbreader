@@ -1,0 +1,338 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Plural-Forms: nplurals = 2; plural = (n > 1);\n"
+"Language: fr\n"
+"mime-version: 1.0\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src\app\views\error.ts:7
+msgid "Your client issued a bad request."
+msgstr "Votre client a fait une mauvaise demande."
+
+#: src\app\views\error.ts:8
+msgid "You have been denied access to this content."
+msgstr "On vous a refusé l'accès à ce contenu."
+
+#: src\app\views\error.ts:9
+msgid "The content you requested does not exist."
+msgstr "Le contenu que vous avez demandé n'existe pas."
+
+#: src\app\views\error.ts:10
+msgid "This content has expired or is no longer available."
+msgstr "Ce contenu a expiré ou n'est plus disponible."
+
+#: src\app\views\error.ts:11
+msgid "The server has encountered an error."
+msgstr "Le serveur a rencontré une erreur."
+
+#: src\app\views\error.ts:12
+msgid "Content is temporarily unavailable."
+msgstr "Le contenu est temporairement indisponible."
+
+#: src\app\views\error.ts:37
+#: src\app\views\error.ts:50
+msgid "Invalid error"
+msgstr "Erreur invalide"
+
+#: src\app\views\error.ts:53
+msgid "Unknown error"
+msgstr "Erreur inconnu"
+
+#: src\app\views\error.ts:61
+#, javascript-format
+msgid "Error ${ paddedErrorCode }"
+msgstr "Erreur ${ paddedErrorCode }"
+
+#: src\app\views\read.ts:25
+msgid "Invalid content ID"
+msgstr "ID de contenu invalide"
+
+#: src\app\partials\Logo.ts:17
+msgid "Back"
+msgstr "Retour"
+
+#: src\app\models\Config.ts:11
+msgid "↔ Layout"
+msgstr "Disposition ↔"
+
+#: src\app\models\Config.ts:12
+msgid "Override the reading format of spreads in horizontal reading"
+msgstr "Permet de passer d’une page simple à une double page et inversement."
+
+#: src\app\models\Config.ts:17
+msgid "Spread"
+msgstr "Double page"
+
+#: src\app\models\Config.ts:18
+msgid "When appropriate, show two pages at a time like a book"
+msgstr "Si possible, affiche les pages deux par deux"
+
+#: src\app\models\Config.ts:22
+msgid "Single Page"
+msgstr "Une page"
+
+#: src\app\models\Config.ts:23
+msgid "Only show one page at a time"
+msgstr "Affichage des pages une par une"
+
+#: src\app\models\Config.ts:29
+msgid "↕ Page Fit"
+msgstr "Affichage ↕"
+
+#: src\app\models\Config.ts:30
+msgid "Override the fit of pages in vertical or single page reading"
+msgstr "Permet d’ajuster l’affichage des pages en fonction de la largeur ou de la hauteur"
+
+#: src\app\models\Config.ts:35
+msgid "Fit Width"
+msgstr "Largeur"
+
+#: src\app\models\Config.ts:36
+msgid "Fit page to width of screen, but don't go overboard"
+msgstr "Ajuste la page à la largeur de l’écran"
+
+#: src\app\models\Config.ts:40
+msgid "Fit Height"
+msgstr "Hauteur"
+
+#: src\app\models\Config.ts:41
+msgid "Fit page to height of screen"
+msgstr "Adapter la page à la hauteur de l'écran"
+
+#: src\app\models\Config.ts:47
+msgid "Animations"
+msgstr "Animations"
+
+#: src\app\models\Config.ts:52
+msgid "On"
+msgstr ""
+
+#: src\app\models\Config.ts:56
+msgid "Off"
+msgstr ""
+
+#: src\app\models\Config.ts:62
+msgid "Background"
+msgstr "Arrière-plan"
+
+#: src\app\models\Config.ts:67
+msgid "Gray"
+msgstr "Gris"
+
+#: src\app\models\Config.ts:71
+msgid "Black"
+msgstr "Noir"
+
+#: src\app\models\Config.ts:75
+msgid "White"
+msgstr "Blanc"
+
+#: src\app\models\Navigator.ts:99
+#: src\app\models\Navigator.ts:110
+msgid "END"
+msgstr "FIN"
+
+#: src\app\models\Publication.ts:289
+msgid "Manifest data empty"
+msgstr "Manifeste de données vide"
+
+#: src\app\models\Publication.ts:299
+msgid "Invalid WebPub manifest"
+msgstr "Manifeste WebPub invalide"
+
+#: src\app\models\Series.ts:117
+msgid "Chapter selection"
+msgstr "Sélection du chaptire"
+
+#: src\app\components\Reader.ts:219
+#: src\app\helpers\lazyLoader.ts:388
+msgid "Loading..."
+msgstr "Chargement..."
+
+#: src\app\helpers\lazyLoader.ts:407
+#: src\app\helpers\lazyLoader.ts:434
+msgid "Error!"
+msgstr "Erreur!"
+
+#: src\app\components\Interface.ts:39
+msgid "Select Page"
+msgstr "Choisir la page"
+
+#: src\app\components\Interface.ts:63
+msgid "Current Page"
+msgstr "Page actuelle"
+
+#: src\app\components\Interface.ts:65
+msgid "Input a page number"
+msgstr "Entrer un numéro de page"
+
+#: src\app\components\Interface.ts:71
+msgid "# of Pages"
+msgstr "# de Pages"
+
+#: src\app\components\Interface.ts:87
+#. Has a next chapter
+#. Leftmost slider control
+msgid "Go to the next chapter"
+msgstr "Aller au chapitre suivant"
+
+#: src\app\components\Interface.ts:92
+#. Has a next chapter
+msgid "Next"
+msgstr "Proch."
+
+#: src\app\components\Interface.ts:101
+#. Has a previous chapter
+msgid "Go to the previous chapter"
+msgstr "Aller au chapitre précédent"
+
+#: src\app\components\Interface.ts:106
+#. Has a previous chapter
+msgid "Prev"
+msgstr "Préc."
+
+#: src\app\components\Interface.ts:131
+#. Vertical tweaking
+msgid "Fit to width"
+msgstr "Adapter à la largeur"
+
+#: src\app\components\Interface.ts:131
+#. Vertical tweaking
+msgid "Fit to height"
+msgstr "Adapter à la hauteur"
+
+#: src\app\components\Interface.ts:142
+#: src\app\components\Interface.ts:143
+#. Horizontal tweaking
+msgid "Spread view"
+msgstr "Affichage double page"
+
+#: src\app\components\Interface.ts:142
+#: src\app\components\Interface.ts:143
+#. Horizontal tweaking
+msgid "Single page view"
+msgstr "Affichage des pages une par une"
+
+#: src\app\components\Interface.ts:166
+#: src\app\components\Interface.ts:208
+#. Tabs exist, show tab functionality
+msgid "Menu"
+msgstr "Menu"
+
+#: src\app\components\Interface.ts:181
+msgid "Top bar"
+msgstr "Barre supérieure"
+
+#: src\app\components\Interface.ts:186
+msgid "Logo"
+msgstr "Logo"
+
+#: src\app\components\Interface.ts:190
+msgid "Title"
+msgstr "Titre"
+
+#: src\app\components\Interface.ts:193
+msgid "Series"
+msgstr "Série"
+
+#: src\app\components\Interface.ts:200
+msgid "Menu toggle"
+msgstr "Bouton de menu"
+
+#: src\app\components\Interface.ts:216
+msgid "Bottom bar"
+msgstr "Barre inférieure"
+
+#: src\app\components\Interface.ts:225
+msgid "Toggle reading direction"
+msgstr "Changer le sens de lecture"
+
+#: src\app\components\Page.ts:163
+msgid "Blank Page"
+msgstr "Page Blanche"
+
+#: src\app\components\Page.ts:172
+#, javascript-format
+msgid "Page ${ pageNumber }"
+msgstr "Page ${ pageNumber }"
+
+#: src\app\components\Reader.ts:75
+msgid "Initializing..."
+msgstr "Initialisation..."
+
+#: src\app\components\Reader.ts:138
+msgid "Swipe or tap"
+msgstr "Swiper ou tapoter"
+
+#: src\app\components\Reader.ts:138
+msgid "Navigate"
+msgstr "Naviguer"
+
+#: src\app\components\Reader.ts:142
+#. Left to right
+#, javascript-format
+msgid "${ this.hint } left-to-right"
+msgstr "${ this.hint } de gauche à droite"
+
+#: src\app\components\Reader.ts:146
+#. Right to left
+msgid "${ this.hint } right-to-left"
+msgstr "${ this.hint } de droite à gauche"
+
+#: src\app\components\Reader.ts:150
+#. Top to bottom
+msgid "Scroll down"
+msgstr "Défilement vers le bas"
+
+#: src\app\components\Reader.ts:166
+msgid "Invalid flow!"
+msgstr "Débit invalide!"
+
+#: src\app\components\Reader.ts:215
+msgid "No item specified"
+msgstr "Aucun article spécifié"
+
+#: src\app\components\Reader.ts:218
+msgid "Fetching info..."
+msgstr "Assemblage des pages…"
+
+#: src\app\components\Reader.ts:315
+#. Rendering
+msgid "Content"
+msgstr "Contenu"
+
+#: src\app\components\Reader.ts:319
+#. Rendering
+msgid "Book"
+msgstr "Livre"
+
+#: src\app\components\Reader.ts:345
+#. Rendering
+msgid "Reading Guide"
+msgstr "Guide de lecture"
+
+#: src\app\components\Settings.ts:24
+msgid "Global Settings"
+msgstr "Paramètres globaux"
+
+#: src\app\components\Settings.ts:44
+msgid "Settings saved!"
+msgstr "Réglages sauvegardés!"
+
+#: src\app\components\Settings.ts:46
+msgid "Failed saving settings"
+msgstr "Échec des paramètres d'enregistrement"
+
+#: src\app\components\Settings.ts:67
+#. m("button", {
+#. onclick: () => {
+#. // apply
+#. }
+#. }, t`Apply`),
+msgid "Close"
+msgstr "Fermer"
+
+#: src\app\components\Spine.ts:33
+msgid "Spine"
+msgstr "Dos"

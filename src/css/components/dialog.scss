@@ -1,0 +1,153 @@
+.br-dialog {
+    position: relative;
+    cursor: default;
+    width: auto;
+    max-width: 500px;
+    height: auto;
+    background: rgba($color: $primaryBackground, $alpha: 0.95);
+    border: 1px solid $primaryForeground;
+    border-radius: 1px;
+    padding: 15px;
+    margin: auto;
+    margin-top: $top-bar-height + 20px;
+    display: inline-block;
+    z-index: $z-index_menu + 1;
+
+    @media (max-width: 600px) {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    h1 {
+        font-size: 24px;
+        text-align: center;
+    }
+
+    span {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+    }
+
+    button {
+        margin: 0 5px;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 3px;
+        border: 1px solid $primaryForeground;
+        outline: none;
+
+        flex: auto;
+
+        @include shadow_hover();
+    }
+
+
+    &__container {
+        background: rgba($color: #000, $alpha: 0.3);
+        cursor: pointer;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: $z-index_menu;
+        overflow-x: hidden;
+        overflow-y: auto;
+        text-align: center;
+    }
+
+    text-align: left;
+
+    .br-form {
+        &__input {
+            display: flex;
+            margin-top: 12px;
+
+            @media (max-width: 600px) {
+                display: block;
+            }
+
+            &__label {
+                margin: auto 0;
+                width: 100px;
+                margin-right: 16px;
+
+                @media (max-width: 600px) {
+                    margin-bottom: 6px;
+                }
+            }
+
+            &__options {
+                display: inline-flex;
+                white-space: nowrap;
+                background-color: white;
+                border-radius: 3px;
+                overflow: hidden;
+
+                &__input:checked + label {
+                    color: white;
+                    background-color: lighten(black, 45%);
+                }
+
+                &__input {
+                    display: none;
+                }
+
+                &__label {
+                    padding: 9px 8px 9px 8px;
+                    cursor: pointer;
+                    //transition: all 0.15s ease;
+                    border: 1px solid $primaryForeground;
+
+                    transition: all .1s ease;
+                    @include shadow_hover();
+
+                    &:active {
+                        color: $tertiaryForeground;
+                        background-color: $tertiaryBackground;
+                    }
+                }
+            }
+        }
+    }
+
+    /*button {
+        margin: 0 5px;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 3px;
+        border: 1px solid $primaryForeground;
+    }*/
+
+    &__buttons {
+        display: flex;
+        margin: 24px 0 auto;
+        justify-content: flex-end;
+
+        &>span {
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+
+            &:first-child {
+                transition: color 0.15s ease;
+
+                &:hover {
+                    color: gray;
+                }
+            }
+
+            &:last-child {
+                background-color: darken(gray, 5%);
+                color: white;
+                margin-left: 6px;
+                transition: background-color 0.15s ease;
+
+                &:hover {
+                    background-color: lighten(gray, 10%);
+                }
+            }
+        }
+    }
+}

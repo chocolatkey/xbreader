@@ -1,8 +1,10 @@
+import { t } from "ttag";
 import m, { ClassComponent, Vnode } from "mithril";
 import Reader from "xbreader/components/Reader";
 
 export interface ReadAttrs {
-    id: string;
+    readonly id: string;
+    readonly nav: string;
 }
 
 export default class ReadView implements ClassComponent<ReadAttrs> {
@@ -20,7 +22,7 @@ export default class ReadView implements ClassComponent<ReadAttrs> {
             const xRegex = /^[@-Za-z(-;=\\_!]+$/i;
             if(!xRegex.test(this.cid)) {
                 console.error("Invalid content ID");
-                m.route.set("/error/:code/:message", { code: 400, message: "Invalid content ID" }, { replace: true });
+                m.route.set("/error/:code/:message", { code: 400, message: t`Invalid content ID` }, { replace: true });
                 this.cid = null;
             }
         }
@@ -28,7 +30,7 @@ export default class ReadView implements ClassComponent<ReadAttrs> {
 
     view({attrs}: Vnode<ReadAttrs, this>) {
         return [
-            m(Reader as any as Reader, {cid: attrs.id, config: this.config}),
+            m(Reader as any as Reader, {cid: attrs.id, /*nav: attrs.nav,*/ config: this.config})
         ];
     }
 }

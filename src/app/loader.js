@@ -1,3 +1,5 @@
+/* disable ttag */
+
 // Checks compatibility and loads XBReader in the appropriate language
 // WARNING: Do not use modern ECMAScript syntax in this file to be safe!
 
@@ -6,7 +8,7 @@ var supportedLanguages = [ // Languages supported for XBReader
     "en",
     "ja",
     "de",
-    "fr",
+    "fr"
 ];
 
 function getLanguage() {
@@ -22,7 +24,11 @@ function getLanguage() {
 // TODO no IE smaller than 10
 document.addEventListener("DOMContentLoaded", function() {
     var reader = document.createElement("script");
-    reader.src = __NAME__ + "-" + getLanguage() + ".js?v=" + __VERSION__;
+    var language = getLanguage();
+    if(language === "en")
+        reader.src = __NAME__ + ".js?v=" + __VERSION__;
+    else
+        reader.src = __NAME__ + "-" + getLanguage() + ".js?v=" + __VERSION__;
     document.head.appendChild(reader);
     reader.onload = function() {
         window.xbreader(window.xbconfig);

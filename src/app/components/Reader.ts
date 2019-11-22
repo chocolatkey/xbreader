@@ -1,3 +1,6 @@
+/*eslint no-unused-vars: "off", @typescript-eslint/no-unused-vars: "off" */
+
+import { t } from "ttag";
 import m, {ClassComponent, Vnode} from "mithril";
 import Publication from "../models/Publication";
 import Ui from "../models/Ui";
@@ -7,14 +10,16 @@ import sML from "../helpers/sMLstub";
 import Spine from "./Spine";
 import Page from "./Page";
 import Interface from "./Interface";
-import Platform from "../helpers/platform";
+import { checkRequestAnimationFrame } from "../helpers/platform";
 import Series from "../models/Series";
 import xbError from "../models/xbError";
 import { parseDirection, directionToString } from "xbreader/helpers/utils";
+import Config from "xbreader/models/Config";
+import { worker as workerPool } from "xbreader/helpers/lazyLoader";
 
 export interface ReaderAttrs {
-    cid: string;
-    config: XBConfig;
+    readonly cid: string;
+    readonly config: XBConfig;
 }
 
 export enum XBReadingDirection {
@@ -32,30 +37,28 @@ interface BookStyle {
 }
 
 export default class Reader implements ClassComponent<ReaderAttrs> {
-    config: XBConfig;
+    readonly config: Config;
     publication: Publication;
     guideHidden: boolean;
     guideHider: number;
     resizer: number;
     series: Series;
-    mobile: boolean;
-    r: number;
+    private readonly mobile: boolean;
     ui: Ui;
     slider: Slider;
-    hint: string;
-    loadingStatus: string;
+    private hint: string;
+    private loadingStatus: string;
     loadingFailed: boolean;
     direction: XBReadingDirection;
-    binder: Peripherals;
+    private binder: Peripherals;
 
     constructor(vnode: Vnode<ReaderAttrs>) {
-        this.config = window.xbconfig = Reader.mergeSettings(vnode.attrs.config);
-        this.config.onMount(this);
-        this.guideHidden = this.config.guideHidden;
-        this.r = Math.random();
+        this.config = new Config(vnode.attrs.config);
+        this.config.state.onMount(this);
+        this.guideHidden = this.config.state.guideHidden;
         this.publication = new Publication();
         this.series = null;
-        this.ui = new Ui(this.config.onToggleInterface);
+        this.ui = new Ui(this.config.state.onToggleInterface);
         if (sML.Mobile)
             this.mobile = true;
         else
@@ -69,40 +72,11 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
         }
         this.hint = "";
 
-        this.loadingStatus = __("Initializing...");
+        this.loadingStatus = t`Initializing...`;
         this.loadingFailed = false;
 
         window.addEventListener("orientationchange", this.resizeHandler);
-        Platform.checkRequestAnimationFrame();
-    }
-
-    static mergeSettings(config: XBConfig) {
-        return Object.assign({
-            prefix: null,
-            mount: document.body,
-            preview: false,
-            brand: {
-                name: null,
-                logo: null,
-                embedded: false, // Whether to show interface meant for embedding in apps
-            },
-            tabs: [], // Tabs on right side of top bar
-            guideHidden: false, // Skip showing the reading direction guide
-            cdn: false, // What CDN to use. False = no CDN
-            link: null, // WebPub URL to pass directly and load
-            series: null, // Volume/Chapter data
-
-            // Callback/Hooks
-            loader: (identifier: string) => { return null }, // Custom loader for the webpub. Can return a URL, WebPub Object or Promise
-            onMount: (reader: any) => {}, // As soon as this component is mounted
-            onPublicationLoad: (reader: any) => {}, // Right after the publication is fully loaded
-            onBeforeReady: (reader: any) => {}, // Right before final preparations are carried out
-            onReady: (reader: any) => {}, // When redrawing has finished
-            onPageChange: (pnum: number, direction: string, isSpread: boolean) => {}, // When page is changed
-            onLastPage: (series: any) => true, // When trying to go further after the last page. If returns true, auto-advance
-            onToggleInterface: () => {}, // When interface is shown/hidden
-            onDRM: (loader: any, mixedSrc: any) => {}, // When images are protected, this function provides DRM capabilities
-        }, config);
+        checkRequestAnimationFrame();
     }
 
     /**
@@ -121,6 +95,14 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
             if(this.direction == XBReadingDirection.TTB && this.slider)
                 this.slider.slideToCurrent();
         }, 50);
+    }
+
+    setTitle(title?: string) {
+        const bn = this.config.state.brand.name;
+        if(bn)
+            document.title = title ? `${bn} - ${title}` : title;
+        else
+            document.title = title ? title : __NAME__;
     }
 
     switchDirection(direction?: XBReadingDirection | string) {
@@ -146,46 +128,46 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
             return true;
         console.log("Setting direction: " + directionToString(direction));
         if(this.slider.zoomer) this.slider.zoomer.scale = 1;
-        this.guideHidden = this.config.guideHidden;
+        this.guideHidden = this.config.state.guideHidden;
         clearTimeout(this.guideHider);
         this.guideHider = window.setTimeout(() => {
             if(this.guideHidden) return;
             this.guideHidden = true;
             m.redraw();
         }, 2000);
-        this.hint = this.mobile ? __("Swipe or tap ") : __("Navigate ");
+        this.hint = this.mobile ? t`Swipe or tap` : t`Navigate`;
         switch (direction) {
-        case XBReadingDirection.LTR:
-            this.direction = direction; // Left to right
-            this.hint = this.hint + __("left-to-right");
-            break;
-        case XBReadingDirection.RTL:
-            this.direction = direction; // Right to left
-            this.hint = this.hint + __("right-to-left");
-            break;
-        case XBReadingDirection.TTB:
-            this.direction = direction; // Top to bottom
-            this.hint = __("Scroll down");
-            if(!this.slider) {
+            case XBReadingDirection.LTR:
+                this.direction = direction; // Left to right
+                this.hint = t`${this.hint} left-to-right`;
+                break;
+            case XBReadingDirection.RTL:
+                this.direction = direction; // Right to left
+                this.hint = t`${this.hint} right-to-left`;
+                break;
+            case XBReadingDirection.TTB:
+                this.direction = direction; // Top to bottom
+                this.hint = t`Scroll down`;
+                if(!this.slider) {
                 // TTB-only publication!
-                console.log("TTB lock");
+                    console.log("TTB lock");
+                    this.slider.ttb = true;
+                }
                 this.slider.ttb = true;
+                this.slider.rtl = false;
+                this.slider.resizeHandler(true);
+                if(this.mobile)
+                    this.slider.slideToCurrent(false, true);
+                // maybe settimeout?
+                this.binder.updateMovingParameters(this.direction);
+                return true;
+            default: {
+                console.error("Invalid flow direction: " + direction);
+                const err = new xbError(9400, t`Invalid flow!`);
+                this.hint = err.message;
+                err.go();
+                return false;
             }
-            this.slider.ttb = true;
-            this.slider.rtl = false;
-            this.slider.resizeHandler(true);
-            if(sML.Mobile)
-                this.slider.slideToCurrent(false, true);
-            // maybe settimeout?
-            this.binder.updateMovingParameters(this.direction);
-            return true;
-        default: {
-            console.error("Invalid flow direction: " + direction);
-            const err = new xbError(9400, __("Invalid flow!"));
-            this.hint = err.message;
-            err.go();
-            return false;
-        }
         }
         // Horizontal (RTL or LTR)
         this.slider.ttb = false;
@@ -200,8 +182,8 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
 
     destroy() {
         this.onremove();
-        m.mount(this.config.mount, null);
-        window.onpopstate = null; // Removes mithril's router history listener
+        m.mount(this.config.state.mount, null); // Unmount XBReader
+        workerPool.destroy(); // Terminate all Workers in the pool
     }
 
     /**
@@ -222,34 +204,39 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
     }
 
     oncreate(vnode: Vnode<ReaderAttrs, this>) {
-        let manifestPointer = this.config.loader(vnode.attrs.cid);
+        let manifestPointer: object | string = this.config.state.loader(vnode.attrs.cid);
         if(!manifestPointer)
-            if(this.config.link)
-                manifestPointer = this.config.link;
+            if(this.config.state.link)
+                manifestPointer = this.config.state.link;
             else
                 manifestPointer = vnode.attrs.cid + ".json";
         else if (!manifestPointer) {
             console.warn("No item specified");
-            m.route.set("/error/:code/:message", { code: 9400, message: __("No item specified") }, { replace: true });
+            m.route.set("/error/:code/:message", { code: 9400, message: t`No item specified` }, { replace: true });
             return;
         }
-        this.updateStatus(__("Fetching info..."));
+        this.updateStatus(t`Fetching info...`);
+        this.setTitle(t`Loading...`);
         this.publication.smartLoad(manifestPointer).then(() => {
-            this.config.onPublicationLoad(this);
-            this.series = new Series(this.publication, this.config.series);
+            this.config.state.onPublicationLoad(this);
+            this.series = new Series(this.publication, this.config.state.series);
             this.series.setRelations();
             this.slider = new Slider(this.series, this.publication, this.binder, this.config);
-            this.binder = new Peripherals(this);
+            this.binder = new Peripherals(this); 
             this.slider.binder = this.binder; // TODO improve
-            this.switchDirection(this.publication.direction);
-            this.config.onBeforeReady(this);
+            this.switchDirection(this.publication.direction);//this.config.overrideDirection(this.publication.direction));
+            this.config.state.onBeforeReady(this);
             m.redraw();
             window.setTimeout(() => {
                 if(this.ui && !this.ui.mousing)
                     this.ui.toggle(false);
                 m.redraw();
             }, 1500);
-            this.config.onReady(this);
+            if(this.publication.Metadata.Title)
+                this.setTitle(this.publication.Metadata.Title as string);
+            else
+                this.setTitle();
+            this.config.state.onReady(this);
             console.log("Reader component created");
         }).catch((error: xbError | Error) => {
             console.error(error);
@@ -265,6 +252,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
 
     view(vnode: Vnode<ReaderAttrs, this>) {
         const sldr = vnode.state.slider;
+        //console.log("VIEWR", vnode.state.publication, vnode.state.publication.ready);
         if(!(vnode.state.publication && vnode.state.publication.ready))
             return m("div.br-loader__container", [
                 m("div.spinner#br-loader__spinner"),
@@ -307,7 +295,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
                 isImage: page.findFlag("isImage"),
                 index: index,
                 slider: sldr,
-                drmCallback: this.config.onDRM,
+                drawCallback: this.config.state.onDraw,
                 binder: bnd,
                 blank: false
             });
@@ -316,11 +304,19 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
 
         // Rendering
         const rend = [
+            m("div.br__notifier", {
+                class: this.ui.notifierShown ? null : "hide"
+            }, this.ui.notification),
             m("div#br-main", {
-                style: vnode.state.publication.isReady ? null : "visibility: hidden;"
+                style: {
+                    visibility: vnode.state.publication.isReady ? "visible" : "hidden",
+                    background: this.config.background
+                },
+                "aria-label": t`Content`
             }, [
                 m("div#br-book", {
                     style: bookStyle,
+                    "aria-label": t`Book`,
                     class: bnd ? (bnd.isPinching ? "pinching" : "normal") : "",
                     tabindex: -1, // Needed to be able to focus on this element (from peripherals)
                     oncontextmenu: (e: MouseEvent) => {
@@ -338,21 +334,23 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
                     onmouseup: bnd ? bnd.mtimerUpdater : null,
                     onmousedown: bnd ? bnd.mtimerUpdater : null,
                     onmousemove: bnd ? bnd.mousemoveHandler : null,
-                    ontouchmove: bnd ? bnd.touchmoveHandler : null,
+                    ontouchmove: bnd ? bnd.touchmoveHandler : null
                 }, m(Spine, {
                     slider: sldr,
                     binder: bnd
-                }, pages)),
+                }, pages))
             ]),
             m("div.br-guide", {
-                class: "br-guide__" + directionToString(this.direction) + ((vnode.state.guideHidden || !vnode.state.publication.isReady) ? " hide" : "")
+                class: "br-guide__" + directionToString(this.direction) + ((vnode.state.guideHidden || !vnode.state.publication.isReady) ? " hide" : ""),
+                "aria-label": t`Reading Guide`
             }, this.hint)
         ];
         if (this.publication.isReady && this.slider)
             rend.push(m(Interface, {
                 reader: this,
                 model: this.ui,
-                slider: this.slider
+                slider: this.slider,
+                config: this.config
             }));
         return rend;
     }

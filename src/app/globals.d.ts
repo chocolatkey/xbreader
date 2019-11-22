@@ -1,7 +1,7 @@
 interface Window {
     [key: string]: any;
     xbreader: any;
-    xbconfig: XBConfig;
+    // xbconfig: XBConfig; DEPRECATED
 }
 
 interface MithrilEvent extends Event {
@@ -50,7 +50,8 @@ interface XBSetting {
 }
 
 interface XBConfig {
-    [key: string]: any;
+    //[key: string]: any;
+    settings: XBSetting[];
     brand: XBBrand;
     tabs: XBTab[];
     prefix: string;
@@ -58,7 +59,12 @@ interface XBConfig {
     guideHidden: boolean;
     cdn: string | boolean;
     preview: boolean;
-    loader(identifier: string): Object; // TODO Object -> WebPub
+    link: string;
+    series: XBVolume[];
+    loader(identifier: string): object; // TODO Object -> WebPub
+
+    // Reader callbacks
+    onMount(reader: any): void;
     onInit(reader: any): void;
     onPublicationLoad(reader: any): void;
     onBeforeReady(reader: any): void;
@@ -66,12 +72,19 @@ interface XBConfig {
     onPageChange(pnum: number, direction: string, isSpread: boolean): void;
     onLastPage(series: any): boolean; // TODO Series type
     onToggleInterface(): void;
-    onDRM(loader: any, mixedSrc: any): void;
+    onLoad(data: any): string;
+
+    // Page callbacks
+    onDraw(loader: any, source: any): void;
+
+    // Settings
+    additionalSettings: XBSetting[];
+    onSettingsSave(settings: Record<string, string>): boolean;
+    onSettingsLoad(version: string): Record<string, string>;
 }
 
 declare const __NAME__: string;
 declare const __VERSION__: string;
-declare function __(langstring: string): string; // i18n
 
 /// WebPub
 

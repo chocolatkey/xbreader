@@ -1,25 +1,26 @@
+import { t } from "ttag";
 import m, { ClassComponent, CVnode } from "mithril";
 import { isNumeric, intVal } from "../helpers/utils";
 import Logo from "../partials/Logo";
 
-const errorMappings: { [code: number] : string } = {
-    400: __("You issued a bad request."),
-    403: __("You are not allowed to view this content."),
-    404: __("The content you requested does not exist."),
-    410: __("This content has expired or is no longer available."),
-    500: __("The server has encountered an error."),
-    503: __("Content is temporarily unavailable."),
+const errorMappings: { [code: number]: string } = {
+    400: t`Your client issued a bad request.`,
+    403: t`You have been denied access to this content.`,
+    404: t`The content you requested does not exist.`,
+    410: t`This content has expired or is no longer available.`,
+    500: t`The server has encountered an error.`,
+    503: t`Content is temporarily unavailable.`
 };
 
 export interface ErrorAttrs {
-    message: string;
-    code: string;
+    readonly message: string;
+    readonly code: string;
 }
 
 export default class ErrorView implements ClassComponent<ErrorAttrs> {
-    config: XBConfig;
-    errorCode: number;
-    errorMessage: string;
+    private readonly config: XBConfig;
+    private errorCode: number;
+    private errorMessage: string;
 
     constructor(config: XBConfig) {
         this.config = config;
@@ -33,7 +34,7 @@ export default class ErrorView implements ClassComponent<ErrorAttrs> {
                 this.errorMessage = window.atob(decodeURIComponent(attrs.message));
             } catch(e) {
                 console.error("Failed decoding error message", e);
-                this.errorMessage = __("Invalid error");
+                this.errorMessage = t`Invalid error`;
             }
             this.errorCode = civ;
         }
@@ -46,20 +47,21 @@ export default class ErrorView implements ClassComponent<ErrorAttrs> {
                 this.errorCode = errObj.code;
                 this.errorMessage = errObj.message;
             } else {
-                this.errorMessage = __("Invalid error");
+                this.errorMessage = t`Invalid error`;
             }
         } else
-            this.errorMessage = __("Unknown error");
+            this.errorMessage = t`Unknown error`;
     }
 
     view({attrs}: CVnode<ErrorAttrs>) {
+        const paddedErrorCode = new String(this.errorCode).padStart(4, "0");
         return [
             m("div.br-error__container", [
                 (this.config.brand && this.config.brand.embedded) ? m("div.br__notifier", m(Logo, this.config.brand)) : null,
-                m("h1", `Error ${new String(this.errorCode).padStart(4, "0")}`),
+                m("h1", t`Error ${paddedErrorCode}`),
                 m("p", this.errorMessage),
                 m("span", `${__NAME__} ${__VERSION__}`)
-            ]),
+            ])
         ];
     }
 }

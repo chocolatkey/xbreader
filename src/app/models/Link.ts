@@ -1,9 +1,13 @@
 import { IInternal } from "@r2-shared-js/models/internal";
 import { Link as ReadiumLink } from "@r2-shared-js/models/publication-link";
-import { JsonObject, JsonProperty,JsonElementType, OnDeserialized } from "ta-json-x";
+import { JsonObject, JsonProperty, JsonElementType, OnDeserialized } from "ta-json-x";
 
 @JsonObject()
 export default class Link extends ReadiumLink {
+
+    @JsonProperty("alternate")
+    @JsonElementType(Link)
+    Alternates!: Link[];
 
     @JsonElementType(Object)
     @JsonProperty("xbr")
@@ -21,9 +25,7 @@ export default class Link extends ReadiumLink {
 
     public findFlag(key: string): boolean {
         if (this.Internal) {
-            const found = this.Internal.find((internal) => {
-                return internal.Name === key;
-            });
+            const found = this.Internal.find(internal => internal.Name === key);
             if (found) {
                 return found.Value ? true : false;
             }
@@ -33,9 +35,7 @@ export default class Link extends ReadiumLink {
 
     public findSpecial(key: string): IInternal | undefined {
         if (this.Internal) {
-            const found = this.Internal.find((internal) => {
-                return internal.Name === key;
-            });
+            const found = this.Internal.find(internal => internal.Name === key);
             if (found) {
                 return found;
             }

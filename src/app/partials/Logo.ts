@@ -1,9 +1,10 @@
+import { t } from "ttag";
 import m, { CVnode } from "mithril";
 
 export interface LogoAttrs {
-    embedded: boolean;
-    name: string;
-    logo: string;
+    readonly embedded: boolean;
+    readonly name: string;
+    readonly logo: string;
 }
 
 export default {
@@ -13,7 +14,7 @@ export default {
                 onclick: () => {
                     window.parent.postMessage("xbr:back", "*");
                 },
-                title: __("Back")
+                title: t`Back`
             }, [
                 m("i", {
                     class: "br-i-arrow_back"

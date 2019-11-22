@@ -51,30 +51,31 @@ export interface BibiMouseEvent extends MouseEvent {
 }
 
 export default class Peripherals {
-    [propName: string]: any; // :\
-
-    slider: Slider;
-    ui: Ui;
-    reader: Reader;
-    PreviousWheels: Wheel[] = [];
-    PreviousCoord: Point = {X: 0, Y: 0};
+    private readonly slider: Slider;
+    private readonly ui: Ui;
+    private readonly reader: Reader;
+    private PreviousWheels: Wheel[] = [];
+    private PreviousCoord: Point = {X: 0, Y: 0};
     isDragging = false;
     isPinching = false;
-    pointerDown = false;
+    private pointerDown = false;
     coordinator: Coordinator;
-    mtimer: number;
-    pdblclick: boolean;
-    Scrolling: boolean;
-    Timer_onscrolled: number;
-    Timer_cooldown: number;
-    onwheelTimer_stop: number;
-    onwheeled_hot: boolean;
-    drag: DragTracker;
-    pinch: PinchTracker;
-    mousePos: BibiEvent;
-    currentCursor: string;
+    private mtimer: number;
+    private pdblclick: boolean;
+    private dblDisabler: number;
+    private disableDblClick: boolean;
+    private dtimer: number;
+    private Scrolling: boolean;
+    private Timer_onscrolled: number;
+    private Timer_cooldown: number;
+    private onwheelTimer_stop: number;
+    private onwheeled_hot: boolean;
+    private drag: DragTracker;
+    private pinch: PinchTracker;
+    private mousePos: BibiEvent;
+    private currentCursor: string;
 
-    MovingParameters: { [keyName:string] : string | number } = {
+    private MovingParameters: { [keyName: string]: string | number } = {
         "Space": 1,
         "Backspace": -1,
         "Page Up": -1,
@@ -91,14 +92,14 @@ export default class Peripherals {
         "Zero": "zoom-reset",
         "Return": "menu"
     };
-    ActiveKeys: { [keyName:string] : number } = {};
-    KeyCodes: { [type:string] : Object } = {
+    private ActiveKeys: { [keyName: string]: number } = {};
+    private KeyCodes: { [type: string]: Record<string, any> } = {
         keydown: {},
         keyup: {},
         keypress: {}
     };
-    observers = ["keydown", "keyup", "keypress", "wheel", "scroll", "touchmove", "message"];
-    handlers = [
+    private observers = ["keydown", "keyup", "keypress", "wheel", "scroll", "touchmove", "message"];
+    private handlers = [
         "touchstartHandler", "touchendHandler", "touchmoveHandler", "mousedownHandler", "mouseupHandler", "mousemoveHandler", "mousemoveUpdater", "mtimerUpdater", "onkeydown", "onkeyup", "onkeypress", "onwheel", "onscroll", "ontouchmove", "onpointermove", "onclick", "ondblclick", "onmessage"
     ];
 
@@ -161,7 +162,7 @@ export default class Peripherals {
 
         // Bind all event handlers for referencability
         this.handlers.forEach(method => {
-            this[method] = this[method].bind(this);
+            (this as any)[method] = (this as any)[method].bind(this);
         });
         this.observe(window);
         const tx = document.documentElement;
@@ -196,17 +197,22 @@ export default class Peripherals {
         const p = e.data.split(":"); // xbr:<action>:<data>
         const v = p[2]; // Data
         switch (p[1]) { // Action
-        case "move": {
-            this.moveBy(isNaN(v as any) ? v : parseInt(v));
-            break;
-        }
-        case "goto": {
-            this.slider.goTo(parseInt(v) - 1);
-            break;
-        }
-        // TODO more
-        default:
-            break;
+            case "move": {
+                this.moveBy(isNaN(v as any) ? v : parseInt(v));
+                break;
+            }
+            case "goto": {
+                this.slider.goTo(parseInt(v) - 1);
+                break;
+            }
+            case "settings": {
+                this.reader.ui.toggleSettings();
+                m.redraw();
+                break;
+            }
+            // TODO more
+            default:
+                break;
         }
         
     }
@@ -237,7 +243,7 @@ export default class Peripherals {
     /**
      * Clear drag after touchend and mouseup event
      */
-    clearDrag() {
+    private clearDrag() {
         this.drag = {
             startX: 0,
             endX: 0,
@@ -270,25 +276,25 @@ export default class Peripherals {
         e.stopPropagation();
 
         switch (e.touches.length) {
-        case 3:
-            this.ui.toggle();
-            return;
-        case 2: {
-            // Pinch
-            e.preventDefault();
-            this.clearDrag();
-            if(this.pointerDown)
-                this.pinch.startOffset = {
-                    X: this.slider.zoomer.translate.X && this.slider.zoomer.scale > 1 ? this.slider.zoomer.translate.X : e.touches[0].pageX,
-                    Y: this.slider.zoomer.translate.Y && this.slider.zoomer.scale > 1 ? this.slider.zoomer.translate.Y : e.touches[0].pageY
-                };
-            else
-                this.pinch.startOffset = this.coordinator.getTouchCenter(e);
-            this.pinch.startDistance = this.coordinator.getTouchDistance(e);
-            this.isPinching = true;
-            this.pointerDown = true;
-            return;
-        }
+            case 3:
+                this.ui.toggle();
+                return;
+            case 2: {
+                // Pinch
+                e.preventDefault();
+                this.clearDrag();
+                if(this.pointerDown)
+                    this.pinch.startOffset = {
+                        X: this.slider.zoomer.translate.X && this.slider.zoomer.scale > 1 ? this.slider.zoomer.translate.X : e.touches[0].pageX,
+                        Y: this.slider.zoomer.translate.Y && this.slider.zoomer.scale > 1 ? this.slider.zoomer.translate.Y : e.touches[0].pageY
+                    };
+                else
+                    this.pinch.startOffset = this.coordinator.getTouchCenter(e);
+                this.pinch.startDistance = this.coordinator.getTouchDistance(e);
+                this.isPinching = true;
+                this.pointerDown = true;
+                return;
+            }
         }
 
         this.pointerDown = true;
@@ -349,8 +355,8 @@ export default class Peripherals {
                     /*X: center.X,
                     Y: center.Y,*/
                     X: this.pinch.startOffset.X,
-                    Y: this.pinch.startOffset.Y,
-                },
+                    Y: this.pinch.startOffset.Y
+                }
             };
             this.pinch.startDistance = currentDistance;
             return;
@@ -398,11 +404,11 @@ export default class Peripherals {
         }
     }
 
-    get isScaled() {
+    private get isScaled() {
         return this.slider.zoomer && this.slider.zoomer.scale > 1;
     }
 
-    addTouch(e: any) {
+    private addTouch(e: any) {
         e.touches = [{
             pageX: e.pageX,
             pageY: e.pageY
@@ -430,7 +436,7 @@ export default class Peripherals {
         }
     }
 
-    get mousePosOut() {
+    private get mousePosOut() {
         if(this.mousePos.Ratio.Y > 0.95 || this.mousePos.Ratio.Y < 0.05)
             return true;
         return false;
@@ -470,31 +476,31 @@ export default class Peripherals {
 
                 const sliderLength = this.slider.length - 1;
                 const atFirstSlide = Math.max(this.slider.currentSlide, 0) == 0;
-                const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) == sliderLength;
+                const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) == sliderLength && !this.slider.series.next;
                 if (this.slider.ttb) { // Vertical controls
                     switch (this.mousePos.Division.Y) {
-                    case VerticalThird.Bottom:
-                        this.changeCursor(atLastSlide ? "not-allowed" : "s-resize");
-                        break;
-                    case VerticalThird.Top:
-                        this.changeCursor(atFirstSlide ? "not-allowed" : "n-resize");
-                        break;
-                    case VerticalThird.Middle:
-                        this.changeCursor("pointer");
-                        break;
+                        case VerticalThird.Bottom:
+                            this.changeCursor(atLastSlide ? "not-allowed" : "s-resize");
+                            break;
+                        case VerticalThird.Top:
+                            this.changeCursor(atFirstSlide ? "not-allowed" : "n-resize");
+                            break;
+                        case VerticalThird.Middle:
+                            this.changeCursor("pointer");
+                            break;
                     }
                 } else { // Horizontal controls
                     const rtl = this.slider.rtl;
                     switch (this.mousePos.Division.X) {
-                    case HorizontalThird.Left:
-                        this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed" : "w-resize");
-                        break;
-                    case HorizontalThird.Right:
-                        this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed" : "e-resize");
-                        break;
-                    case HorizontalThird.Center:
-                        this.changeCursor("pointer");
-                        break;
+                        case HorizontalThird.Left:
+                            this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed" : "w-resize");
+                            break;
+                        case HorizontalThird.Right:
+                            this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed" : "e-resize");
+                            break;
+                        case HorizontalThird.Center:
+                            this.changeCursor("pointer");
+                            break;
                     }
                 }
             } else {
@@ -505,7 +511,7 @@ export default class Peripherals {
         }
     }
 
-    changeCursor(newCursor: string) {
+    private changeCursor(newCursor: string) {
         if (newCursor == this.currentCursor)
             return;
         this.currentCursor = newCursor;
@@ -515,10 +521,10 @@ export default class Peripherals {
         return this.currentCursor ? this.currentCursor : "pointer";
     }
 
-    updateKeyCodes(EventTypes: string[] | string, KeyCodesToUpdate: Object) {
-        if (typeof (<string[]>EventTypes).join != "function") EventTypes = [EventTypes as string];
+    private updateKeyCodes(EventTypes: string[] | string, KeyCodesToUpdate: Record<string, any>) {
+        if (typeof (EventTypes as string[]).join != "function") EventTypes = [EventTypes as string];
         if (typeof KeyCodesToUpdate == "function") KeyCodesToUpdate = KeyCodesToUpdate();
-        (<string[]>EventTypes).forEach((EventType) => {
+        (EventTypes as string[]).forEach((EventType) => {
             this.KeyCodes[EventType] = sML.edit(this.KeyCodes[EventType], KeyCodesToUpdate);
         });
     }
@@ -526,7 +532,7 @@ export default class Peripherals {
     /**
      * Recalculate drag/swipe event and reposition the frame of a slider
      */
-    updateAfterDrag() {
+    private updateAfterDrag() {
         const movement = (this.slider.rtl ? -1 : 1) * (this.drag.endX - this.drag.startX);
         const movementDistance = Math.abs(movement);
         const howManySliderToSlide = this.slider.perPage;
@@ -534,117 +540,120 @@ export default class Peripherals {
         const slideToNegativeClone = movement > 0 && this.slider.currentSlide - howManySliderToSlide < 0;
         const slideToPositiveClone = movement < 0 && this.slider.currentSlide + howManySliderToSlide > this.slider.slength - this.slider.perPage;
 
+        let changed = false;
         if (movement > 0 && movementDistance > this.slider.threshold && this.slider.slength > this.slider.perPage) {
             this.slider.prev(howManySliderToSlide);
+            changed = true;
         } else if (movement < 0 && movementDistance > this.slider.threshold && this.slider.slength > this.slider.perPage) {
             this.slider.next(howManySliderToSlide);
+            changed = true;
         }
         this.ui.toggle(false);
-        this.slider.slideToCurrent(true); // slideToNegativeClone || slideToPositiveClone
+        this.slider.slideToCurrent(true, true, changed); // slideToNegativeClone || slideToPositiveClone
     }
 
     ////////
 
-    updateSpecialParamters() { // TODO better naming
+    updateSpecialParameters() { // TODO better naming
         if(this.slider.single || this.slider.ttb)
             sML.edit(this.MovingParameters, {
                 "Page Up": 0,
                 "Page Down": 0,
                 "End": 0,
-                "Home": 0,
+                "Home": 0
             });
         else
             sML.edit(this.MovingParameters, {
                 "Page Up": -1,
                 "Page Down": 1,
                 "End": "foot",
-                "Home": "head",
+                "Home": "head"
             });
     }
 
     updateMovingParameters(ARD: XBReadingDirection) {
         switch (ARD) {
-        case XBReadingDirection.TTB:
-            return sML.edit(this.MovingParameters, {
-                "Up Arrow": 0, // -1
-                "Right Arrow": 0,
-                "Down Arrow": 0, // 1
-                "Left Arrow": 0,
-                "W": -1,
-                "D": 0,
-                "S": 1,
-                "A": 0,
-                "UP ARROW": "head",
-                "RIGHT ARROW": "",
-                "DOWN ARROW": "foot",
-                "LEFT ARROW": "",
-                "Plus": 0,
-                "Minus": 0,
-                "Zero": 0,
-            });
-        case XBReadingDirection.LTR:
-            return sML.edit(this.MovingParameters, {
-                "Up Arrow": 0,
-                "Right Arrow": 1,
-                "Down Arrow": 0,
-                "Left Arrow": -1,
-                "W": 0,
-                "D": 1,
-                "S": 0,
-                "A": -1,
-                "UP ARROW": "",
-                "RIGHT ARROW": "foot",
-                "DOWN ARROW": "",
-                "LEFT ARROW": "head",
-                "Plus": "zoom-in",
-                "Minus": "zoom-out",
-                "Zero": "zoom-reset",
-            });
-        case XBReadingDirection.RTL:
-            return sML.edit(this.MovingParameters, {
-                "Up Arrow": 0,
-                "Right Arrow": -1,
-                "Down Arrow": 0,
-                "Left Arrow": 1,
-                "W": 0,
-                "D": -1,
-                "S": 0,
-                "A": 1,
-                "UP ARROW": "",
-                "RIGHT ARROW": "head",
-                "DOWN ARROW": "",
-                "LEFT ARROW": "foot",
-                "Plus": "zoom-in",
-                "Minus": "zoom-out",
-                "Zero": "zoom-reset",
-            });
-        default:
-            return sML.edit(this.MovingParameters, {
-                "Up Arrow": 0,
-                "Right Arrow": 0,
-                "Down Arrow": 0,
-                "Left Arrow": 0,
-                "W": 0,
-                "D": 0,
-                "S": 0,
-                "A": 0,
-                "UP ARROW": "",
-                "RIGHT ARROW": "",
-                "DOWN ARROW": "",
-                "LEFT ARROW": "",
-                "Plus": 0,
-                "Minus": 0,
-                "Zero": 0,
-            });
+            case XBReadingDirection.TTB:
+                return sML.edit(this.MovingParameters, {
+                    "Up Arrow": 0, // -1
+                    "Right Arrow": 0,
+                    "Down Arrow": 0, // 1
+                    "Left Arrow": 0,
+                    "W": -1,
+                    "D": 0,
+                    "S": 1,
+                    "A": 0,
+                    "UP ARROW": "head",
+                    "RIGHT ARROW": "",
+                    "DOWN ARROW": "foot",
+                    "LEFT ARROW": "",
+                    "Plus": 0,
+                    "Minus": 0,
+                    "Zero": 0
+                });
+            case XBReadingDirection.LTR:
+                return sML.edit(this.MovingParameters, {
+                    "Up Arrow": 0,
+                    "Right Arrow": 1,
+                    "Down Arrow": 0,
+                    "Left Arrow": -1,
+                    "W": 0,
+                    "D": 1,
+                    "S": 0,
+                    "A": -1,
+                    "UP ARROW": "",
+                    "RIGHT ARROW": "foot",
+                    "DOWN ARROW": "",
+                    "LEFT ARROW": "head",
+                    "Plus": "zoom-in",
+                    "Minus": "zoom-out",
+                    "Zero": "zoom-reset"
+                });
+            case XBReadingDirection.RTL:
+                return sML.edit(this.MovingParameters, {
+                    "Up Arrow": 0,
+                    "Right Arrow": -1,
+                    "Down Arrow": 0,
+                    "Left Arrow": 1,
+                    "W": 0,
+                    "D": -1,
+                    "S": 0,
+                    "A": 1,
+                    "UP ARROW": "",
+                    "RIGHT ARROW": "head",
+                    "DOWN ARROW": "",
+                    "LEFT ARROW": "foot",
+                    "Plus": "zoom-in",
+                    "Minus": "zoom-out",
+                    "Zero": "zoom-reset"
+                });
+            default:
+                return sML.edit(this.MovingParameters, {
+                    "Up Arrow": 0,
+                    "Right Arrow": 0,
+                    "Down Arrow": 0,
+                    "Left Arrow": 0,
+                    "W": 0,
+                    "D": 0,
+                    "S": 0,
+                    "A": 0,
+                    "UP ARROW": "",
+                    "RIGHT ARROW": "",
+                    "DOWN ARROW": "",
+                    "LEFT ARROW": "",
+                    "Plus": 0,
+                    "Minus": 0,
+                    "Zero": 0
+                });
         }
     }
 
-    getKeyName(Eve: KeyboardEvent) {
+    private getKeyName(Eve: KeyboardEvent) {
         const KeyName = (this.KeyCodes[Eve.type] as any)[Eve.keyCode];
         return KeyName ? KeyName : "";
     }
 
-    onEvent(Eve: BibiKeyboardEvent) {
+    private onEvent(Eve: BibiKeyboardEvent) {
         Eve.KeyName = this.getKeyName(Eve);
         Eve.BibiModifierKeys = [];
         if (Eve.shiftKey) Eve.BibiModifierKeys.push("Shift");
@@ -671,7 +680,7 @@ export default class Peripherals {
         clearTimeout(this.mtimer);
         if (!this.onEvent(Eve)) return false;
         if (this.ActiveKeys[Eve.KeyName] && Date.now() - this.ActiveKeys[Eve.KeyName] < 300) {
-            this.updateSpecialParamters();
+            this.updateSpecialParameters();
             this.tryMoving(Eve);
         }
         if (Eve.KeyName) {
@@ -687,17 +696,17 @@ export default class Peripherals {
 
     unobserve(item: EventTarget) {
         this.observers.forEach((EventName) => {
-            item.removeEventListener(EventName, this["on" + EventName], false);
+            if(item) item.removeEventListener(EventName, (this as any)["on" + EventName], false);
         });
     }
 
     observe(item: EventTarget) {
         this.observers.forEach((EventName) => {
-            item.addEventListener(EventName, this["on" + EventName], false);
+            if(item) item.addEventListener(EventName, (this as any)["on" + EventName], false);
         });
     }
 
-    tryMoving(Eve: BibiKeyboardEvent) {
+    private tryMoving(Eve: BibiKeyboardEvent) {
         if (!Eve.KeyName) return false;
         var MovingParameter = this.MovingParameters[!Eve.shiftKey ? Eve.KeyName : Eve.KeyName.toUpperCase()];
         if (!MovingParameter) {
@@ -766,6 +775,8 @@ export default class Peripherals {
             } else if (MovingParameter === "zoom-reset") {
                 this.slider.zoomer.scale = 1;
             }
+            // TODO: change zoomer position to center when zooming with keyboard
+
         }
         if (MovingParameter === "menu")
             this.ui.toggle();
@@ -776,41 +787,41 @@ export default class Peripherals {
 
     // Pointer
 
-    evalPointer(event: MouseEvent, active: boolean) {
+    private evalPointer(event: MouseEvent, active: boolean) {
         if (!active)
             return;
         const ev = this.coordinator.getBibiEvent(event);
         if (this.slider.ttb) { // Vertical controls
             switch (ev.Division.Y) {
-            case VerticalThird.Bottom:
-                this.moveBy(1);
-                break;
-            case VerticalThird.Top:
-                this.moveBy(-1);
-                break;
-            case VerticalThird.Middle:
-                this.ui.toggle();
-                m.redraw();
-                break;
+                case VerticalThird.Bottom:
+                    this.moveBy(1);
+                    break;
+                case VerticalThird.Top:
+                    this.moveBy(-1);
+                    break;
+                case VerticalThird.Middle:
+                    this.ui.toggle();
+                    m.redraw();
+                    break;
             }
         } else { // Horizontal controls
             const next = this.slider.rtl ? HorizontalThird.Left : HorizontalThird.Right;
             const prev = this.slider.rtl ? HorizontalThird.Right : HorizontalThird.Left;
             switch (ev.Division.X) {
-            case next:
-                this.delayedMoveBy(1);
-                break;
-            case prev:
-                this.delayedMoveBy(-1);
-                break;
-            case HorizontalThird.Center:
-                this.delayedToggle();
-                break;
+                case next:
+                    this.delayedMoveBy(1);
+                    break;
+                case prev:
+                    this.delayedMoveBy(-1);
+                    break;
+                case HorizontalThird.Center:
+                    this.delayedToggle();
+                    break;
             }
         }
     }
 
-    delayedToggle() {
+    private delayedToggle() {
         if (!this.pdblclick) {
             this.ui.toggle();
             m.redraw();
@@ -818,7 +829,7 @@ export default class Peripherals {
         this.pdblclick = false;
     }
 
-    delayedMoveBy(MovingParameter: any) {
+    private delayedMoveBy(MovingParameter: any) {
         this.dtimer = window.setTimeout(() => {
             if (!this.pdblclick) {
                 this.moveBy(MovingParameter);
@@ -865,7 +876,9 @@ export default class Peripherals {
             this.ui.toggle(true);
     }
 
-    processVScroll() {
+    private processVScroll() {
+        if(this.ui.settingsShown)
+            return true;
         if (!this.slider.ttb)
             return false;
         const br_slider = document.getElementById("br-slider");
@@ -891,13 +904,13 @@ export default class Peripherals {
     }
 
     onwheel(Eve: BibiWheelEvent) {
-        let CW: Wheel = {} as Wheel,
+        let CW: Wheel = {} as any as Wheel,
             PWs = this.PreviousWheels,
             PWl = PWs.length;
         if (Math.abs(Eve.deltaX) > Math.abs(Eve.deltaY)) { // Horizontal scrolling
             CW.Distance = (Eve.deltaX < 0 ? -1 : 1) * (this.slider.rtl ? -1 : 1);
             CW.Delta = Math.abs(Eve.deltaX);
-        } else if (!this.slider.ttb && !this.slider.single) { // Vertical scrolling for horizontal view, only in spread view though
+        } else if (!this.slider.ttb && this.slider.spread) { // Vertical scrolling for horizontal view when not in single page mode
             CW.Distance = (Eve.deltaY < 0 ? -1 : 1);
             CW.Delta = Math.abs(Eve.deltaY);
         } else { // Single page scroll instantly hides interface
@@ -925,7 +938,7 @@ export default class Peripherals {
             clearTimeout(this.Timer_cooldown);
             this.Timer_cooldown = window.setTimeout(() => this.onwheeled_hot = false, 300);
             if (!this.onwheeled_hot && !this.processVScroll()) {
-                Eve.preventDefault();
+                // Eve.preventDefault(); Causes console error
                 this.onwheeled_hot = true;
                 this.moveBy(Eve.BibiSwiperWheel.Distance);
             }

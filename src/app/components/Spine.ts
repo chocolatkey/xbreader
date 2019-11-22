@@ -2,14 +2,15 @@
     Inspired by Siema (https://github.com/pawelgrzybek/siema)
  */
 
+import { t } from "ttag";
 import m, { CVnode, ChildArray, Child, Vnode } from "mithril";
 import Slider from "xbreader/models/Slider";
 import Peripherals from "xbreader/helpers/peripherals";
 import Page from "./Page";
 
 export interface SpineAttrs {
-    slider: Slider;
-    binder: Peripherals;
+    readonly slider: Slider;
+    readonly binder: Peripherals;
 }
 
 export default class Spine { // TODO turn into ClosureComponent
@@ -28,7 +29,8 @@ export default class Spine { // TODO turn into ClosureComponent
             ontouchstart: binder ? binder.touchstartHandler : null,
             ontouchend: binder ? binder.touchendHandler : null,
             onmouseup: binder ? binder.mouseupHandler : null,
-            onmousedown: binder ? binder.mousedownHandler : null
+            onmousedown: binder ? binder.mousedownHandler : null,
+            "aria-label": t`Spine`
         }, (children as ChildArray).map((page: Vnode<Page>) => {
             return m("div", {
                 style: slider.ttb ? {

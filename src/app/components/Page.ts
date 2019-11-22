@@ -1,37 +1,38 @@
+import { t } from "ttag";
 import m, {ClassComponent, Vnode} from "mithril";
 import SmartLoader from "../helpers/lazyLoader";
 import Link from "xbreader/models/Link";
 import Slider from "xbreader/models/Slider";
 import Peripherals, { BibiMouseEvent } from "xbreader/helpers/peripherals";
+import { canDrawBitmap } from "../helpers/platform";
 export const MAX_FIT_WIDTH = 1400;
 export const MAX_FIT_HEIGHT = 1000;
 
 export interface PageAttrs {
-    data: Link;
-    isImage: boolean;
-    blank: boolean;
-    index: number;
-    slider: Slider;
-    drmCallback: Function;
-    binder: Peripherals;
+    readonly data: Link;
+    readonly isImage: boolean;
+    readonly blank: boolean;
+    readonly index: number;
+    readonly slider: Slider;
+    readonly drawCallback: Function;
+    readonly binder: Peripherals;
 }
 
 interface InnerItemAttrs {
-    style: Object;
+    style: string | object;
 }
 
 export default class Page implements ClassComponent<PageAttrs> {
 
-    itemHeight: number | string;
-    itemWidth: number | string;
-    marginLeft: number;
-    marginRight: number;
-    marginTop: number;
+    private itemHeight: number | string;
+    private itemWidth: number | string;
+    private marginLeft: number;
+    private marginRight: number;
+    private marginTop: number;
 
     data: Link;
     blank: boolean;
-    loader: SmartLoader;
-    drmed: boolean;
+    private loader: SmartLoader;
 
 
     parseDimension(val: number | string) {
@@ -68,11 +69,10 @@ export default class Page implements ClassComponent<PageAttrs> {
 
     oninit(vnode: Vnode<PageAttrs, this>) {
         this.data = vnode.attrs.data;
-        this.drmed = (this.data.Properties && this.data.Properties.Encrypted) ? true : false;
         if (vnode.attrs.blank)
             this.blank = true;
         else
-            this.loader = new SmartLoader(this.data, vnode.attrs.index, vnode.attrs.drmCallback);
+            this.loader = new SmartLoader(this.data, vnode.attrs.index, vnode.attrs.drawCallback);
     }
 
 
@@ -80,17 +80,18 @@ export default class Page implements ClassComponent<PageAttrs> {
         const slider = vnode.attrs.slider;
         let spread = true;
         let free = false;
-        let docWidth = document.documentElement.clientWidth || document.body.clientWidth;
+        let docWidth;
         const docHeight = this.itemHeight = window.innerHeight;
         if (slider) {
-            docWidth = document.documentElement.clientWidth; // Other
+            docWidth = slider.width;
             if (slider.single || slider.ttb || this.landscape)
                 spread = false;
             if (slider.ttb && this.landscape) {
                 this.itemHeight = Math.min(this.data.Height, docHeight);
                 free = true;
             }
-        }
+        } else
+            docWidth = document.documentElement.clientWidth || document.body.clientWidth;
         this.marginLeft = this.marginRight = this.marginTop = 0;
         this.itemWidth = (this.itemHeight / this.data.Height) * this.data.Width;
         if (((this.itemWidth * 2) > docWidth && docHeight <= docWidth) && (!this.landscape || spread)) {
@@ -134,10 +135,12 @@ export default class Page implements ClassComponent<PageAttrs> {
                             this.itemWidth = "auto";
                             this.itemHeight = "auto";
                         }
+                        if(this.loader.reloader) // Keep the scrollbar from glitching as much (it still does some...)
+                            this.itemHeight = this.data.Height;
                     }
                 }
                 if(slider.ttb)
-                    this.marginTop = vnode.attrs.index > 0 ? 10 : 0;
+                    this.marginTop = vnode.attrs.index > 0 ? 10 : 0; // this.marginTop = this.loader.reloader ? this.data.Height : (vnode.attrs.index > 0 ? 10 : 0);
             }
             
             
@@ -156,19 +159,26 @@ export default class Page implements ClassComponent<PageAttrs> {
                 height: this.data.Height,
                 width: this.data.Width,
                 style: "background: transparent;", // TODO
-                draggable: false
+                draggable: false,
+                alt: t`Blank Page`
             });
         else if (this.loader && slider) {
+            const pageNumber = vnode.attrs.index+1;
             const innerItemAttrs: any = { // TODO interface
                 height: this.data.Height ? this.data.Height : "100%",
                 width: this.data.Width ? this.data.Width : "100%",
                 draggable: false,
-                title: this.data.Title
+                role: "img",
+                "aria-label": this.data.Title ? this.data.Title : t`Page ${pageNumber}`
             };
-            if(vnode.attrs.isImage)
-                innerItemIs = m(((this.drmed ? "canvas" : "img") + ".page-img.noget.noselect"), innerItemAttrs);
+            const indeterminateHeight = vnode.attrs.drawCallback || canDrawBitmap;
+            if(vnode.attrs.isImage) {
+                if(indeterminateHeight)
+                    innerItemAttrs.height = innerItemAttrs.width = 0;
+                innerItemIs = m(((indeterminateHeight ? "canvas" : "img") + ".page-img.noget.noselect"), innerItemAttrs);
+            }
             else {
-                innerItemAttrs.height = document.documentElement.clientHeight;
+                innerItemAttrs.height = slider.height;
                 if(vnode.attrs.index === slider.currentSlide)
                     window.setTimeout(() => {
                         //document.documentElement.style.overflowY = "hidden";
