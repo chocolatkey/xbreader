@@ -268,7 +268,6 @@ export default class Config {
             additionalSettings: [],
             guideHidden: false, // Skip showing the reading direction guide
             //transitions: true, // Animate page transitions. Can introduce lag at large page sizes
-            cdn: false, // What CDN to use. False = no CDN
             link: null, // WebPub URL to pass directly and load
             series: null, // Volume/Chapter data
 

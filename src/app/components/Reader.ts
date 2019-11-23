@@ -100,7 +100,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
     setTitle(title?: string) {
         const bn = this.config.state.brand.name;
         if(bn)
-            document.title = title ? `${bn} - ${title}` : title;
+            document.title = title ? `${title} - ${bn}` : title;
         else
             document.title = title ? title : __NAME__;
     }

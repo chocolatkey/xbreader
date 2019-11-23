@@ -57,7 +57,6 @@ interface XBConfig {
     prefix: string;
     mount: HTMLElement;
     guideHidden: boolean;
-    cdn: string | boolean;
     preview: boolean;
     link: string;
     series: XBVolume[];
