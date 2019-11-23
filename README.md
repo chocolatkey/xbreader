@@ -21,8 +21,11 @@ yarn add xbreader
 or use over a cdn
 
 ```bash
-https://cdn.jsdelivr.net/npm/xbreader/dist/xbreader-en.js
-https://unpkg.com/xbreader/dist/xbreader-en.js
+https://cdn.jsdelivr.net/npm/xbreader/dist/xbreader.js
+https://cdn.jsdelivr.net/npm/xbreader/dist/xbstyles.css
+or
+https://unpkg.com/xbreader/dist/xbreader.js
+https://unpkg.com/xbreader/dist/xbstyles.css
 ```
 
 ## Configuration
