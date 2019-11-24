@@ -131,9 +131,9 @@ module.exports = {
             filename: "[name].js",
             chunkFilename: "[id].js",
             translations: {
-                de: path.resolve(__dirname, "./i18n/de.po"),
-                fr: path.resolve(__dirname, "./i18n/fr.po"),
-                ja: path.resolve(__dirname, "./i18n/ja.po")
+                de: path.resolve(__dirname, "i18n/de.po"),
+                fr: path.resolve(__dirname, "i18n/fr.po"),
+                ja: path.resolve(__dirname, "i18n/ja.po")
             }
         })
     ].concat(
