@@ -31,7 +31,7 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, "./bin"),
-        filename: "[name]-en.js"
+        filename: "[name].js"
     },
     module: {
         rules: [{

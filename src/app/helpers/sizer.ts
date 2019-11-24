@@ -29,7 +29,7 @@ const closestResolution = (choices: Link[], ideal: number, width: boolean) => ch
  * @param item Manifest item pointing to a page
  */
 function gatherImages(item: Link): Link[] {
-    const allVersions: Link[] = item.Alternates;
+    const allVersions: Link[] = item.Alternates.slice(0); // Copy the array!
     if(!allVersions) return [item];
 
     allVersions.unshift(item); // Insert link itself at beginning for default
