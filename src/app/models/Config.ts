@@ -107,8 +107,8 @@ export default class Config {
     private readonly internalState: XBConfig;
     settings: XBSetting[];
 
-    private internalAnimateSettingIndex: number = -2;
-    private internalBackgroundSettingIndex: number = -2;
+    private internalAnimateSettingIndex = -2;
+    private internalBackgroundSettingIndex = -2;
     private internalBackgroundValue: string = BACKGROUND_GREY;
 
     constructor(custom: XBConfig) {
@@ -280,7 +280,8 @@ export default class Config {
             onPageChange: (pnum: number, direction: string, isSpread: boolean) => {}, // When page is changed
             onLastPage: (series: Series) => true, // When trying to go further after the last page. If returns true, auto-advance
             onToggleInterface: () => {}, // When interface is shown/hidden
-            onLoad: (data: Link) => data.Href,
+
+            onSource: null, // (data: object): object When you want to overrride the logic choosing the appropriate link object or inject/modify links
             onDraw: null, // (loader: any, source: any) => {} When images are protected, this function provides DRM and/or custom drawing capabilities
 
             // Settings provider - only need to implement for global settings

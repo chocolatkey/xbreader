@@ -71,9 +71,9 @@ interface XBConfig {
     onPageChange(pnum: number, direction: string, isSpread: boolean): void;
     onLastPage(series: any): boolean; // TODO Series type
     onToggleInterface(): void;
-    onLoad(data: any): string;
 
     // Page callbacks
+    onSource(data: object): object;
     onDraw(loader: any, source: any): void;
 
     // Settings

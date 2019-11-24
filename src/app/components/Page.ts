@@ -15,6 +15,7 @@ export interface PageAttrs {
     readonly index: number;
     readonly slider: Slider;
     readonly drawCallback: Function;
+    readonly chooseCallback: Function;
     readonly binder: Peripherals;
 }
 
@@ -72,7 +73,7 @@ export default class Page implements ClassComponent<PageAttrs> {
         if (vnode.attrs.blank)
             this.blank = true;
         else
-            this.loader = new SmartLoader(this.data, vnode.attrs.index, vnode.attrs.drawCallback);
+            this.loader = new SmartLoader(this.data, vnode.attrs.index, vnode.attrs.drawCallback, vnode.attrs.chooseCallback);
     }
 
 
@@ -111,7 +112,7 @@ export default class Page implements ClassComponent<PageAttrs> {
                 this.marginRight = (docWidth - this.itemWidth) / 2;
         }
 
-        let itemAttrs: InnerItemAttrs = {style: null};
+        const itemAttrs: InnerItemAttrs = {style: null};
         if (slider && (slider.ttb || slider.single)) { // Vertical (TTB) or forced single page
             if(slider.publication.isTtb || (this.data.Height / this.data.Width) > 2) { // TTB publication or very tall image
                 if(this.data.Height > MAX_FIT_HEIGHT && !this.landscape && this.data.Width < docWidth) { // Too large to fit, compromise with maxFit

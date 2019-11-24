@@ -259,7 +259,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
                 m("span#br-loader__message", vnode.state.loadingStatus)
             ]);
         // Additional
-        let bookStyle: BookStyle = {
+        const bookStyle: BookStyle = {
             overflow: "hidden",//vnode.state.slider ? (vnode.state.slider.ttb ? "auto" : "hidden") : "hidden",
             direction: sldr ? (vnode.state.slider.rtl ? "rtl" : "ltr") : "ltr",
             //"overflow-y": vnode.state.slider ? (vnode.state.slider.perPage == 1 ? "scroll" : "auto") : "auto", // TODO SMALLS SCREEN!
@@ -296,6 +296,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
                 index: index,
                 slider: sldr,
                 drawCallback: this.config.state.onDraw,
+                chooseCallback: this.config.state.onSource,
                 binder: bnd,
                 blank: false
             });

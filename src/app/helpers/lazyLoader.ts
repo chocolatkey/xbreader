@@ -147,8 +147,9 @@ export default class LazyLoader {
     private highTime: number;
     private preloader: HTMLImageElement | Record<string, any>;
     private drawT: number;
+    private readonly chooser: Function;
 
-    constructor(itemData: Link, indx: number, drawCallback: Function) {
+    constructor(itemData: Link, indx: number, drawCallback: Function, chooseCallback: Function) {
         this.best = itemData;
         this.href = itemData.Href;
 
@@ -158,6 +159,7 @@ export default class LazyLoader {
         this.reloader = true;
         this.blob = null;
         this.drawer = canDrawBitmap ? LazyLoader.drawBitmap : null;
+        this.chooser = chooseCallback ? chooseCallback : null;
 
         if(drawCallback) {
             this.drawer = drawCallback;
@@ -170,7 +172,10 @@ export default class LazyLoader {
     }
 
     get source() {
-        const best = bestImage(this.data);
+        let best: Link;
+        if(this.chooser !== null) // Give custom func a chance to choose the best link
+            best = this.chooser(this.data) as Link;
+        if(!best) best = bestImage(this.data);
         if(best !== this.best) {
             this.best = best;
             this.href = best.Href;
