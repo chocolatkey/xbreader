@@ -85,11 +85,10 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
             const nextLink =
                 m(`span.br-slider__${publication.rtl ? "lgo" : "rgo"}`, { // Leftmost slider control
                     title: t`Go to the next chapter`
-                }, m("a", {
+                }, m(m.route.Link, {
                     href: "/" + sseries.next.uuid,
-                    oncreate: m.route.link({ replace: false } as any),
-                    onupdate: m.route.link({ replace: false } as any)
-                } as any as m.Attributes, t`Next` as Child));
+                    options: {replace: false}
+                }, t`Next` as Child));
             if(publication.rtl)
                 items.unshift(nextLink);
             else
@@ -99,11 +98,10 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
             const prevLink = // Has a previous chapter
                 m(`span.br-slider__${publication.rtl ? "rgo" : "lgo"}`, {
                     title: t`Go to the previous chapter`
-                }, m("a", {
+                }, m(m.route.Link, {
                     href: "/" + sseries.prev.uuid,
-                    oncreate: m.route.link({ replace: false } as any),
-                    onupdate: m.route.link({ replace: false } as any)
-                } as any as m.Attributes, t`Prev` as Child));
+                    options: {replace: false}
+                }, t`Prev` as Child));
             if(publication.rtl)
                 items.push(prevLink);
             else
