@@ -262,7 +262,7 @@ export default class Config {
             },
             tabs: [{ // Tabs on right side of top bar
                 title: "Settings",
-                href: "javascript:window.postMessage('xbr:settings')",
+                href: "javascript:window.postMessage('xbr:settings', '*')",
                 icon: "cog"
             }],
             additionalSettings: [],
