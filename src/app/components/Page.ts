@@ -169,11 +169,11 @@ export default class Page implements ClassComponent<PageAttrs> {
                 height: this.data.Height ? this.data.Height : "100%",
                 width: this.data.Width ? this.data.Width : "100%",
                 draggable: false,
-                role: "img",
                 "aria-label": this.data.Title ? this.data.Title : t`Page ${pageNumber}`
             };
             const indeterminateHeight = vnode.attrs.drawCallback || canDrawBitmap;
             if(vnode.attrs.isImage) {
+                innerItemAttrs.role = "img";
                 if(indeterminateHeight)
                     innerItemAttrs.height = innerItemAttrs.width = 0;
                 innerItemIs = m(((indeterminateHeight ? "canvas" : "img") + ".page-img.noget.noselect"), innerItemAttrs);
