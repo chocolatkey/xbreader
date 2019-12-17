@@ -24,7 +24,7 @@ export default class Settings implements ClassComponent <SettingsAttrs> {
             m("h1", t`Global Settings`),
             m("form.br-form", attrs.config.settings.map((setting) => 
                 m("div.br-form__input", [
-                    m("div.br-form__input__label.br-help", {
+                    m("div.br-form__input__label" + (setting.description ? ".br-help" : ""), {
                         title: setting.description
                     }, setting.title),
                     m("div.br-form__input__options", {
