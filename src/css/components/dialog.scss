@@ -35,13 +35,14 @@
         padding: 5px;
         border-radius: 3px;
         border: 1px solid $primaryForeground;
+        background: darken($primaryBackground, 10%);
+        color: $primaryForeground;
         outline: none;
 
         flex: auto;
 
         @include shadow_hover();
     }
-
 
     &__container {
         background: rgba($color: #000, $alpha: 0.3);
