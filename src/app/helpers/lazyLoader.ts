@@ -27,7 +27,7 @@ if(workerSupported) {
         const ctx: Worker = self as any;
         //const useFetch = typeof(fetch) !== "undefined" ? true : false;
         //const useFetch = false;
-        let queued: QueueElement[] = [];
+        const queued: QueueElement[] = [];
         const locate = (src: string) => queued.map((o) => o.src).indexOf(src);
         const isQueued = (src: string) => locate(src) !== -1;
         const deqeue = (src: string) => {
