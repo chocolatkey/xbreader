@@ -81,13 +81,13 @@
             &__options {
                 display: inline-flex;
                 white-space: nowrap;
-                background-color: white;
+                background-color: $primaryBackground;
                 border-radius: 3px;
                 overflow: hidden;
 
                 &__input:checked + label {
-                    color: white;
-                    background-color: lighten(black, 45%);
+                    color: $secondaryBackground;
+                    background-color: $secondaryForeground;
                 }
 
                 &__input {
