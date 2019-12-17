@@ -111,43 +111,4 @@
             }
         }
     }
-
-    /*button {
-        margin: 0 5px;
-        cursor: pointer;
-        padding: 5px;
-        border-radius: 3px;
-        border: 1px solid $primaryForeground;
-    }*/
-
-    &__buttons {
-        display: flex;
-        margin: 24px 0 auto;
-        justify-content: flex-end;
-
-        &>span {
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-
-            &:first-child {
-                transition: color 0.15s ease;
-
-                &:hover {
-                    color: gray;
-                }
-            }
-
-            &:last-child {
-                background-color: darken(gray, 5%);
-                color: white;
-                margin-left: 6px;
-                transition: background-color 0.15s ease;
-
-                &:hover {
-                    background-color: lighten(gray, 10%);
-                }
-            }
-        }
-    }
 }
