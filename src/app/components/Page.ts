@@ -214,7 +214,7 @@ export default class Page implements ClassComponent<PageAttrs> {
                 innerItemIs = m("iframe.page-frame.noselect", innerItemAttrs); // + (vnode.attrs.data.findSpecial("final").Value ? "" : ".noget")
             }
             requestAnimationFrame(() => {
-                this.loader.provoke(innerItemIs as any, slider.currentSlide);
+                this.loader.provoke(innerItemIs as any, slider.viewingPage);
             });
         }
         return m(".item.noselect", itemAttrs, [

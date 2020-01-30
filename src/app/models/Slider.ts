@@ -136,6 +136,13 @@ export default class Slider {
         return this.navigator.nLandscape ? this.navigator.nLandscape : 0;
     }
 
+    get viewingPage() {
+        if(this.single || this.ttb) return this.currentSlide;
+        const spread = this.navigator.currentSpread(this);
+        if(!spread) return this.currentSlide; // Bad but prevents extremes
+        return this.publication.Spine.indexOf(spread[spread.length-1]);
+    }
+
     get shift() {
         return this.navigator.shift;
     }
