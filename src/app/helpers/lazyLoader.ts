@@ -19,6 +19,7 @@ interface QueueElement {
 
 type LoadableElement = HTMLImageElement | HTMLCanvasElement | HTMLIFrameElement;
 
+const offscreenCanvasSupported = typeof(OffscreenCanvas) === "undefined" ? false : true;
 const workerSupported = typeof(Worker) === "undefined" ? false : true;
 let f: Function;
 export let worker: WorkerPool;
@@ -237,10 +238,12 @@ export default class LazyLoader {
                     (this.element as HTMLImageElement).src = this.blob;
             });
         } else {
-            let binStr = atob(this.canvas.toDataURL(type, quality).split(",")[1]),
+            // eslint-disable-next-line no-var
+            var binStr = atob(this.canvas.toDataURL(type, quality).split(",")[1]),
                 len = binStr.length,
                 arr = new Uint8Array(len);
 
+            // eslint-disable-next-line no-var
             for (var i = 0; i < len; i++)
                 arr[i] = binStr.charCodeAt(i);
 
@@ -256,8 +259,8 @@ export default class LazyLoader {
             const cd = this.canvas;
             if (!cd)
                 return;
-            let ctx: CanvasRenderingContext2D;
-            let tempCanvas: HTMLCanvasElement;
+            let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+            let tempCanvas: HTMLCanvasElement | OffscreenCanvas;
             let dctx: ImageBitmapRenderingContext;
 
             try {
@@ -270,10 +273,14 @@ export default class LazyLoader {
                     ctx = cd.getContext("2d", {desynchronized: true}) as CanvasRenderingContext2D;
                 } else {
                     // Or prepare a temporary canvas for 2d drawing
-                    tempCanvas = document.createElement("canvas");
-                    tempCanvas.width = cd.width;
-                    tempCanvas.height = cd.height;
-                    ctx = tempCanvas.getContext("2d", {desynchronized: true}) as CanvasRenderingContext2D;
+                    if(offscreenCanvasSupported)
+                        tempCanvas = new OffscreenCanvas(cd.width, cd.height);
+                    else {
+                        tempCanvas = document.createElement("canvas");
+                        tempCanvas.width = cd.width;
+                        tempCanvas.height = cd.height;
+                    }
+                    ctx = tempCanvas.getContext("2d", {desynchronized: true}) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
                 }
             } catch (error) {}
 
@@ -296,7 +303,7 @@ export default class LazyLoader {
                     ctx.fillText(infoString, cd.width / 2, cd.height - 20);
                 }
                 if(dctx && !this.loaded) { // Needs to be transferred to the real canvas
-                    createImageBitmap(tempCanvas).then(ib => {
+                    createImageBitmap(tempCanvas).then((ib: ImageBitmap) => {
                         if(!this.loaded)
                             dctx.transferFromImageBitmap(ib);
                         ib.close();
