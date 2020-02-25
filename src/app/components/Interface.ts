@@ -63,7 +63,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
             title: t`Current Page`,
             onclick: () => {
                 const newPage = parseInt(prompt(`${t`Input a page number`} (${1}-${publication.pmetadata.NumberOfPages})`, (slider.currentSlide + 1).toString())) - 1;
-                if(newPage !== (slider.currentSlide + 1) && newPage >= 0 && newPage < publication.pmetadata.NumberOfPages)
+                if(newPage !== (slider.currentSlide + 1) && newPage >= 0)
                     slider.goTo(newPage);
             }
         }, publication.navi.getPageString(slider));
