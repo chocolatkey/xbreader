@@ -1,6 +1,6 @@
 {
   "name": "xbreader",
-  "version": "0.31.5",
+  "version": "0.31.6",
   "description": "Fixed-layout publication reader for the web",
   "author": "Henry <chocolatkey@gmail.com>",
   "contributors": [
@@ -65,5 +65,6 @@
     "webpack-dev-server": "^3.7.2",
     "webpack-fix-style-only-entries": "^0.3.0",
     "webpackbar": "^4.0.0"
-  }
+  },
+  "dependencies": {}
 }
