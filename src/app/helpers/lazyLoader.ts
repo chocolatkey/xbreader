@@ -266,7 +266,7 @@ export default class LazyLoader {
             try {
                 // We *have* to initialize the context for the first time as a bitmaprenderer if we want to use the same context in the future
                 if(canDrawBitmap)
-                    dctx = cd.getContext("bitmaprenderer") as any as ImageBitmapRenderingContext;
+                    dctx = cd.getContext("bitmaprenderer") as ImageBitmapRenderingContext;
 
                 // Fall back to 2d
                 if (!dctx) {
@@ -280,7 +280,8 @@ export default class LazyLoader {
                         tempCanvas.width = cd.width;
                         tempCanvas.height = cd.height;
                     }
-                    ctx = tempCanvas.getContext("2d", {desynchronized: true}) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+                    // Do NOT add {desynchronized: true} here! https://bugs.chromium.org/p/chromium/issues/detail?id=1072214#c14
+                    ctx = tempCanvas.getContext("2d") as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
                 }
             } catch (error) {}
 
@@ -342,7 +343,7 @@ export default class LazyLoader {
         const c = loader.canvas;
         c.height = loader.best.Height;
         c.width = loader.best.Width;
-        let ctx: CanvasRenderingContext2D | ImageBitmapRenderingContext = c.getContext("bitmaprenderer", { alpha: false }) as any as ImageBitmapRenderingContext; // Types don't have ImageBitmapRenderingContext...
+        let ctx: CanvasRenderingContext2D | ImageBitmapRenderingContext = c.getContext("bitmaprenderer", { alpha: false }) as ImageBitmapRenderingContext;
         if(!ctx) {
             ctx = c.getContext("2d", {desynchronized: true}) as CanvasRenderingContext2D;
             if(ctx)
