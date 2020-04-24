@@ -1,3 +1,4 @@
+/* eslint-disable no-var */
 /* disable ttag */
 
 // Checks compatibility and loads XBReader in the appropriate language
