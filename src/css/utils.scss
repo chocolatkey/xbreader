@@ -4,8 +4,8 @@
 }
 
 .noget {
-	@include prefix("user-drag", none);
-	@include prefix("pointer-events", none);
+    @include prefix("user-drag", none);
+    @include prefix("pointer-events", none);
 }
 
 .etext {

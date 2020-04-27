@@ -3,36 +3,36 @@
 @import "./utils.scss";
 
 html {
-	//overflow: hidden; //&.welcome { overflow: scroll !important; }
-	position: absolute; // for InAppBrowsers
-	@include trbl(0); // for InAppBrowsers
-	width: 100%;
-	min-height: 100%;
-	height: auto;
-	font-family: sans-serif;
-	//&.macOS   { font-family: "Helvetica", "Trebuchet MS", "游ゴシック", "Yu Gothic", "YuGothic", "ヒラギノ角ゴ ProN W3", "HiraKakuProN-W3", sans-serif; }
-	//&.iOS     { font-family: "Helvetica", "Trebuchet MS", "游ゴシック", "Yu Gothic", "YuGothic", "ヒラギノ角ゴ ProN W3", "HiraKakuProN-W3", sans-serif; }
-	//&.Windows { font-family: "Helvetica", "Trebuchet MS", "游ゴシック", "Yu Gothic", "YuGothic", "メイリオ",             "Meiryo",          sans-serif; }
-	-webkit-font-smoothing: subpixel-antialiased;
-	-webkit-text-size-adjust: 100%;
-	background: $tertiaryBackground;
-	user-select: none;
-	touch-action: pan-y;
+    //overflow: hidden; //&.welcome { overflow: scroll !important; }
+    position: absolute; // for InAppBrowsers
+    @include trbl(0); // for InAppBrowsers
+    width: 100%;
+    min-height: 100%;
+    height: auto;
+    font-family: sans-serif;
+    //&.macOS   { font-family: "Helvetica", "Trebuchet MS", "游ゴシック", "Yu Gothic", "YuGothic", "ヒラギノ角ゴ ProN W3", "HiraKakuProN-W3", sans-serif; }
+    //&.iOS     { font-family: "Helvetica", "Trebuchet MS", "游ゴシック", "Yu Gothic", "YuGothic", "ヒラギノ角ゴ ProN W3", "HiraKakuProN-W3", sans-serif; }
+    //&.Windows { font-family: "Helvetica", "Trebuchet MS", "游ゴシック", "Yu Gothic", "YuGothic", "メイリオ",             "Meiryo",          sans-serif; }
+    -webkit-font-smoothing: subpixel-antialiased;
+    -webkit-text-size-adjust: 100%;
+    background: $tertiaryBackground;
+    user-select: none;
+    touch-action: pan-y;
 }
 
 body {
-	* {
-		-webkit-tap-highlight-color: rgba(255,255,255,0);
-		-webkit-tap-highlight-color: transparent;
-	}
-	//position: absolute;
-	//@include trbl(0);
-	//overflow: hidden;
-	width: 100%;
-	min-height: 100%;
-	height: auto;
-	background: transparent no-repeat center center;
-	transition: opacity .25s ease;
+    * {
+        -webkit-tap-highlight-color: rgba(255,255,255,0);
+        -webkit-tap-highlight-color: transparent;
+    }
+    //position: absolute;
+    //@include trbl(0);
+    //overflow: hidden;
+    width: 100%;
+    min-height: 100%;
+    height: auto;
+    background: transparent no-repeat center center;
+    transition: opacity .25s ease;
 }
 
 a {
@@ -53,29 +53,29 @@ a {
 
 @media screen and (min-width: 600px) {
     /* width */
-	::-webkit-scrollbar {
-		width: 15px;
-	}
+    ::-webkit-scrollbar {
+        width: 15px;
+    }
 
-	/* Track */
-	::-webkit-scrollbar-track {
-		background: darken($tertiaryBackground, 5%); 
-	}
-	
-	/* Handle */
-	::-webkit-scrollbar-thumb {
-		background: lighten($tertiaryBackground, 5%); 
-	}
+    /* Track */
+    ::-webkit-scrollbar-track {
+        background: darken($tertiaryBackground, 5%); 
+    }
 
-	/* Handle on hover */
-	::-webkit-scrollbar-thumb:hover {
-		background: lighten($tertiaryBackground, 10%); 
-	}
+    /* Handle */
+    ::-webkit-scrollbar-thumb {
+        background: lighten($tertiaryBackground, 5%); 
+    }
 
-	/* Handle on active */
-	::-webkit-scrollbar-thumb:active {
-		background: lighten($tertiaryBackground, 10%); 
-	}
+    /* Handle on hover */
+    ::-webkit-scrollbar-thumb:hover {
+        background: lighten($tertiaryBackground, 10%); 
+    }
+
+    /* Handle on active */
+    ::-webkit-scrollbar-thumb:active {
+        background: lighten($tertiaryBackground, 10%); 
+    }
 }
 
 :not(.material-icons) {
@@ -93,25 +93,25 @@ a {
 }
 
 .br__notifier {
-	position: relative;
-	z-index: $z-index_notifier-board;
-	background: $primaryBackground;
-	color: $primaryForeground;
-	padding: 20px;
-	display: block;
-	width: 100%;
-	position: fixed;
-	margin: 0 auto;
-	text-align: center;
+    position: relative;
+    z-index: $z-index_notifier-board;
+    background: $primaryBackground;
+    color: $primaryForeground;
+    padding: 20px;
+    display: block;
+    width: 100%;
+    position: fixed;
+    margin: 0 auto;
+    text-align: center;
 }
 
 .br-help {
-	cursor: help;
+    cursor: help;
 }
 
 .br-loader__container {
-	position: absolute;
-	top: 42%;
+    position: absolute;
+    top: 42%;
     left: 0;
     right: 0;
 
@@ -131,22 +131,22 @@ a {
 }
 
 div#br-main {
-	-webkit-overflow-scrolling: touch;
-	//overflow: hidden;
-	box-sizing: border-box;
-	//padding: 35px 0;
-	//transition: .2s ease-out;
-	position: absolute;
-	z-index: $z-index_main;
-	@include trbl(0);
-	padding-top: $top-bar-height;
-	width: 100%;
-	min-height: 100%;
-	height: auto;
-	transition: .15s ease;
-	transform-origin: 0 0;
-	will-change: scroll-position, transform, opacity;
-	padding-top: 0;
+    -webkit-overflow-scrolling: touch;
+    //overflow: hidden;
+    box-sizing: border-box;
+    //padding: 35px 0;
+    //transition: .2s ease-out;
+    position: absolute;
+    z-index: $z-index_main;
+    @include trbl(0);
+    padding-top: $top-bar-height;
+    width: 100%;
+    min-height: 100%;
+    height: auto;
+    transition: .15s ease;
+    transform-origin: 0 0;
+    will-change: scroll-position, transform, opacity;
+    padding-top: 0;
 }
 
 .page-img,
@@ -154,16 +154,16 @@ div#br-main {
     max-height: 100%;
     max-width: 100%;
     margin: 0 auto;
-	display: block;
-	//height: auto;
-	direction: ltr;
+    display: block;
+    //height: auto;
+    direction: ltr;
 }
 
 img.page-img {
-	display: none;
-	&[src] {
-		display: block;
-	}
+    display: none;
+    &[src] {
+        display: block;
+    }
 }
 
 div#br-book {
@@ -172,16 +172,33 @@ div#br-book {
     width: 100%;
     //height: calc(100% - #{$top-bar-height});
     min-height: 100%;
-	height: auto;
+    height: auto;
     transition: 0.15s ease-in-out;
-	transition-property: transform;
-	outline: none;
-	//		transform: translateY( 0  );
-	//		html.panel-opened & { transform: translateY(36px); /* transform-origin: 50% 100%; transform: rotateX(-45deg); */ }
-	&.pinching {
-		transition: none;
-	}
-	contain: paint;
+    transition-property: transform;
+    outline: none;
+    // transform: translateY( 0  );
+    // html.panel-opened & { transform: translateY(36px); /* transform-origin: 50% 100%; transform: rotateX(-45deg); */ }
+    &.pinching {
+        transition: none;
+    }
+    &.cursor { // Custom cursors for Windows. TODO get EXACT coordinates
+        &__s-resize {
+            @include hdpicursor(s-resize, 10, 22);
+        }
+        &__e-resize {
+            @include hdpicursor(e-resize, 22, 10);
+        }
+        &__w-resize {
+            @include hdpicursor(w-resize, 4, 10);
+        }
+        &__n-resize {
+            @include hdpicursor(n-resize, 10, 4);
+        }
+        &__context-menu {
+            @include hdpicursor(context-menu, 0, 5);
+        }
+    }
+    contain: paint;
 }
 
 div#br-topbar, div#br-botbar {
@@ -189,71 +206,71 @@ div#br-topbar, div#br-botbar {
 
     &:hover {
         background-color: rgba($primaryBackground, 0.95) !important;
-	}
-	
-	&.animate {
-		transition-property: all;
-		transition-duration: .05s;
-		transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
-	}
+    }
+
+    &.animate {
+        transition-property: all;
+        transition-duration: .05s;
+        transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+    }
 }
 
 .br-tab-bar {
-	display: table;
-	position: relative;
-	height: 48px;
-	margin: 0 auto;
-	text-transform: uppercase;
+    display: table;
+    position: relative;
+    height: 48px;
+    margin: 0 auto;
+    text-transform: uppercase;
 }
 
 .br-tab {
-	-moz-osx-font-smoothing: grayscale;
-	-webkit-font-smoothing: antialiased;
-	font-size: .875rem;
-	line-height: 2.25rem;
-	font-weight: 500;
-	letter-spacing: .08929em;
-	text-transform: uppercase;
-	-webkit-tap-highlight-color: rgba(0,0,0,0);
-	will-change: transform,opacity;
-	display: table-cell;
-	position: relative;
-	box-sizing: border-box;
-	min-width: 0px;
-	min-height: 48px;
-	padding: 0 24px;
-	text-align: center;
-	text-decoration: none;
-	white-space: nowrap;
-	cursor: pointer;
-	overflow: hidden;
-	vertical-align: middle;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    font-size: .875rem;
+    line-height: 2.25rem;
+    font-weight: 500;
+    letter-spacing: .08929em;
+    text-transform: uppercase;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    will-change: transform,opacity;
+    display: table-cell;
+    position: relative;
+    box-sizing: border-box;
+    min-width: 0px;
+    min-height: 48px;
+    padding: 0 24px;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    overflow: hidden;
+    vertical-align: middle;
 
-	border: 1px solid transparent;
+    border: 1px solid transparent;
 
-	@include shadow_hover();
+    @include shadow_hover();
 
-	&:hover {
-		background-color: darken($primaryBackground, 20%);
-	}
+    &:hover {
+        background-color: darken($primaryBackground, 20%);
+    }
 
-	&:active {
-		background-color: darken($primaryBackground, 40%);
-	}
+    &:active {
+        background-color: darken($primaryBackground, 40%);
+    }
 
-	// Icons
-	& i {
-		display: block;
-		margin: 0 auto;
-		width: 24px;
-		height: 24px;
-	}
+    // Icons
+    & i {
+        display: block;
+        margin: 0 auto;
+        width: 24px;
+        height: 24px;
+    }
 
-	@media screen and (max-width: 600px) {
-		& {
-			padding: 0 12px
-		}
-	}
+    @media screen and (max-width: 600px) {
+        & {
+            padding: 0 12px
+        }
+    }
 }
 
 @import "./components/slider.scss";

@@ -5,16 +5,16 @@
     border-style: none;
     border: 0;
     font-size: 100%;
-	//font-weight: normal;
-	//font-style: normal;
+    //font-weight: normal;
+    //font-style: normal;
 }
 
 h1 {
-	font-weight: 400;
+    font-weight: 400;
 }
 
 li {
-	list-style: none outside;
+    list-style: none outside;
 }
 
 section, article, nav, aside,
@@ -64,29 +64,29 @@ $guide-size: 140px;
 @mixin prefix($P, $V) { -webkit-#{$P}: $V; -epub-#{$P}: $V; -moz-#{$P}: $V; -khtml-#{$P}: $V; -ms-#{$P}: $V; @content; #{$P}: $V; }
 
 @mixin font-icon($FamilyName) {
-	display: inline-block;
-	direction: ltr;
-	letter-spacing: normal;
-	text-transform: none;
-	text-rendering: optimizeLegibility;
-	white-space: nowrap;
-	word-wrap: normal;
-	font-family: $FamilyName;
-	font-style: normal;
-	font-weight: normal;
-	font-variant: normal;
-	-ms-font-feature-settings: 'liga' 1;
-	font-feature-settings: 'liga';
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	speak: none;
+    display: inline-block;
+    direction: ltr;
+    letter-spacing: normal;
+    text-transform: none;
+    text-rendering: optimizeLegibility;
+    white-space: nowrap;
+    word-wrap: normal;
+    font-family: $FamilyName;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    -ms-font-feature-settings: 'liga' 1;
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    speak: none;
 }
 
 @mixin hover() {
-	&:hover, &:focus {
-		border: solid 1px $hoverColor;
+    &:hover, &:focus {
+        border: solid 1px $hoverColor;
     }
-
+    
     &:active {
         border: solid 1px $activeColor;
     }
@@ -94,22 +94,27 @@ $guide-size: 140px;
 
 @mixin shadow_hover() {
 
-	@include hover();
-	&:hover {
-		box-shadow: 1px 1px 3px 0 rgba(0,0,0,.8);
-	}
+    @include hover();
+    &:hover {
+        box-shadow: 1px 1px 3px 0 rgba(0,0,0,.8);
+    }
 
-	&:active {
-		box-shadow: 1px 1px 1px 0 rgba(0,0,0,.8);
-	}
+    &:active {
+        box-shadow: 1px 1px 1px 0 rgba(0,0,0,.8);
+    }
+}
+
+@mixin hdpicursor($name, $x, $y) {
+    cursor: url("../img/cursors/" + $name + ".png") $x $y, $name;
+    cursor: -webkit-image-set(url("../img/cursors/" + $name + ".png") 1x, url("../img/cursors/" + $name + "@2x.png") 2x) $x $y, $name;
 }
 
 // Indexes
 
 
 $z-index_main: 1;
-	$z-index_main-book: 1;
-	$z-index_main-touchpanel: 10;
+    $z-index_main-book: 1;
+    $z-index_main-touchpanel: 10;
 
 $z-index_scrollbar: $z-index_main + 1;
 $z-index_progress: $z-index_main + 1;
@@ -119,16 +124,16 @@ $z-index_slider: $z-index_main + 10;
 $z-index_sub: 10;
 
 $z-index_veil: 100;
-	$z-index_veil-bottombar: 1;
-	$z-index_veil-cover: 10;
-	$z-index_veil-catcher: 10;
-	$z-index_veil-play: 10;
-	$z-index_veil-byebye: 10;
+    $z-index_veil-bottombar: 1;
+    $z-index_veil-cover: 10;
+    $z-index_veil-catcher: 10;
+    $z-index_veil-play: 10;
+    $z-index_veil-byebye: 10;
 
 $z-index_panel: 1000;
-	$z-index_panel-bookinfo: 1;
-	$z-index_panel-bottombar: $z-index_panel-bookinfo + 1;
-	$z-index_panel-topbar: 1000;
+    $z-index_panel-bookinfo: 1;
+    $z-index_panel-bottombar: $z-index_panel-bookinfo + 1;
+    $z-index_panel-topbar: 1000;
 
 $z-index_menu: $z-index_panel + 1;
 
