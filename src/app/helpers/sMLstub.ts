@@ -9,40 +9,46 @@
  */
 
 declare interface OSFlags {
-    iOS:number;
-    macOS:number;
-    WindowsPhone:number;
-    Windows:number;
-    Android:number;
-    Chrome:boolean;
-    Linux:boolean;
-    Firefox:boolean;
+    iOS: number;
+    macOS: number;
+    WindowsPhone: number;
+    Windows: number;
+    Android: number;
+    Chrome: boolean;
+    Linux: boolean;
+    Firefox: boolean;
 }
 
 declare interface UAFlags {
-    Gecko:number;
-    Firefox:number;
-    Opera:number;
-    Silk:number;
-    Chrome:number | boolean;
-    Chromium:number | boolean;
-    Safari:number;
-    Edge:number;
-    Blink:number | boolean;
-    WebKit:number;
-    Trident:number;
-    InternetExplorer:number;
-    Flash:number;
+    Gecko: number;
+    Firefox: number;
+    Opera: number;
+    Silk: number;
+    Chrome: number | boolean;
+    Chromium: number | boolean;
+    Safari: number;
+    Edge: number;
+    Blink: number | boolean;
+    WebKit: number;
+    Trident: number;
+    InternetExplorer: number;
+    Flash: number;
 }
 
 class sML {
-    [key:string]:any;
+    OperatingSystem: OSFlags;
+    OS: OSFlags; // Synonym for above
+    UserAgent: UAFlags;
+    UA: UAFlags; // Synonym for above
+    Environments: string[];
+    Env: string[]; // Synonym for above
+    Mobile: boolean;
 
     constructor() {
         const nUA = navigator.userAgent;
-        const getVersion = (Prefix:string, Reference?:string) => parseFloat(nUA.replace(new RegExp("^.*" + Prefix + "[ :\\/]?(\\d+([\\._]\\d+)?).*$"), Reference ? Reference : "$1").replace(/_/g, ".")) || undefined;
+        const getVersion = (Prefix: string, Reference?: string) => parseFloat(nUA.replace(new RegExp("^.*" + Prefix + "[ :\\/]?(\\d+([\\._]\\d+)?).*$"), Reference ? Reference : "$1").replace(/_/g, ".")) || undefined;
 
-        this.OperatingSystem = this.OS = ((OS:OSFlags) => {
+        this.OperatingSystem = this.OS = ((OS: OSFlags) => {
             if(/ \(iP(hone|ad|od touch);/.test(nUA)) OS.iOS     = getVersion("CPU (iPhone )?OS", "$2");
             else if(      /Mac OS X 10[\._]\d/.test(nUA)) OS.macOS   = getVersion("Mac OS X ");
             else if(  /Windows Phone( OS)? \d/.test(nUA)) OS.WindowsPhone = getVersion("Windows Phone OS") || getVersion("Windows Phone");
@@ -52,7 +58,7 @@ class sML {
             else if(                    /X11;/.test(nUA)) OS.Linux   = true;
             else if(                 /Firefox/.test(nUA)) OS.Firefox = true;
             return OS;
-        })({} as any as OSFlags);
+        })({} as OSFlags);
 
         this.Mobile = (this.OS.iOS || this.OS.Android || this.OS.WindowsPhone) ? true : false;
 
@@ -85,26 +91,26 @@ class sML {
             }
             //try { UA.Flash = parseFloat(navigator.mimeTypes['application/x-shockwave-flash'].enabledPlugin.description.replace(/^.+?([\d\.]+).*$/, '$1')); } catch(Err) {}
             return UA;
-        })({} as any as UAFlags);
+        })({} as UAFlags);
 
-        this.Environments = this.Env = ["OperatingSystem", "UserAgent"].reduce((Env, OS_UA) => { for(const Param in this[OS_UA]) if(this[OS_UA][Param]) Env.push(Param); return Env; }, []);
+        this.Environments = this.Env = ["OperatingSystem", "UserAgent"].reduce((Env, OS_UA) => { for(const Param in (this as any)[OS_UA]) if((this as any)[OS_UA][Param]) Env.push(Param); return Env; }, []);
     }
 
-    edit(Obj: any, ...ProSets: any) {
+    edit(Obj: object | HTMLElement, ...ProSets: any) {
         const l = ProSets.length;
-        if(Obj.tagName) {
+        if((Obj as HTMLElement).tagName) {
             for(let i = 0; i < l; i++) { const ProSet = ProSets[i];
                 for(const Pro in ProSet) {
                     if(Pro == "$1" || Pro == "style") continue;
-                    if(/^data-/.test(Pro)) Obj.setAttribute(Pro, ProSet[Pro]);
-                    else                   Obj[Pro] = ProSet[Pro];
+                    if(/^data-/.test(Pro)) (Obj as HTMLElement).setAttribute(Pro, ProSet[Pro]);
+                    else                   (Obj as any)[Pro] = ProSet[Pro];
                 }
-                if(ProSet.on) for(const EN in ProSet.on) Obj.addEventListener(EN, ProSet.on[EN]);
+                if(ProSet.on) for(const EN in ProSet.on) (Obj as HTMLElement).addEventListener(EN, ProSet.on[EN]);
                 //if(ProSet.style) this.CSS.setStyle(Obj, ProSet.style);
             }
         } else {
             for(let i = 0; i < l; i++) { const ProSet = ProSets[i];
-                for(const Pro in ProSet) Obj[Pro] = ProSet[Pro];
+                for(const Pro in ProSet) (Obj as any)[Pro] = ProSet[Pro];
             }
         }
         return Obj;
