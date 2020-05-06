@@ -139,9 +139,10 @@ export default class LazyLoader {
     private href: string;
     private readonly data: Link;
     private index: number;
-    private loaded: boolean;
-    reloader: boolean;
-    private blob: string;
+    private loaded = false;
+    public reloader = true;
+    private already = false;
+    private blob: string = null;
     private readonly drawer: Function;
     private canvas: HTMLCanvasElement;
     private element: LoadableElement;
@@ -156,9 +157,6 @@ export default class LazyLoader {
 
         this.data = itemData;
         this.index = indx;
-        this.loaded = false;
-        this.reloader = true;
-        this.blob = null;
         this.drawer = canDrawBitmap ? LazyLoader.drawBitmap : null;
         this.chooser = chooseCallback ? chooseCallback : null;
 
@@ -201,9 +199,10 @@ export default class LazyLoader {
                 this.prepare();
             }, 1000);
 
-        // If image is loaded on canvas, on mobile, and > HIGH_THRESHOLD away from the image
+        // If image is loaded on canvas and > HIGH_THRESHOLD away from the image
         // Especially needed on iOS where canvas memory is constrained
         } else if(this.loaded) {
+            this.already = true;
             if(this.drawer && this.canvas) {
                 const ctx = this.canvas.getContext("2d", {desynchronized: true}) as CanvasRenderingContext2D;
                 if(ctx)
@@ -253,7 +252,7 @@ export default class LazyLoader {
         }
     }
 
-    draw(element: HTMLElement | string) {
+    private draw(element: HTMLElement | string) {
         cancelAnimationFrame(this.drawT);
         this.drawT = requestAnimationFrame(() => {
             const cd = this.canvas;
@@ -397,7 +396,7 @@ export default class LazyLoader {
         } else if(this.preloader)
             return;
 
-        if (!this.loaded) {
+        if (!this.loaded && !this.already) {
             this.draw(t`Loading...`);
         }
         if (!workerSupported) {
