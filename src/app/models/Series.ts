@@ -109,12 +109,14 @@ export default class Series {
     get selector() {
         if(this.isSolo)
             if(this.publication.pmetadata.Title)
-                return m("span.br-toolbar__ellipsis#br-chapter", this.publication.pmetadata.Title as Child);
+                return m("span.br-toolbar__ellipsis#br-chapter", {
+                    title: this.publication.pmetadata.SubTitle ? this.publication.pmetadata.SubTitle : t`Chapter`
+                }, this.publication.pmetadata.Title as Child);
             else
                 return null;
 
         return m("select#br-chapter", {
-            title: t`Chapter selection`,
+            title: t`Chapter selection`, // TODO somehow incorporate the subtitle
             onchange: (e: Event) => {
                 const st = e.target as HTMLSelectElement;
                 m.route.set("/:id", { id: (st[st.selectedIndex] as HTMLOptionElement).value }, { replace: false });
