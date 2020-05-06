@@ -82,7 +82,7 @@ export default class Page implements ClassComponent<PageAttrs> {
         let spread = true;
         let free = false;
         let docWidth;
-        const docHeight = this.itemHeight = window.innerHeight;
+        const docHeight = this.itemHeight = window.innerHeight; // TODO memoize window.innerHeight
         if (slider) {
             docWidth = slider.width;
             if (slider.single || slider.ttb || this.landscape)

@@ -117,7 +117,6 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
         const slider = vnode.attrs.slider;
         const publication = vnode.attrs.reader.publication;
         const series = vnode.attrs.reader.series;
-        const isPortrait = window.innerHeight > window.innerWidth ? true : false;
         const config = vnode.attrs.config;
 
         let tweakButton: Vnode;
@@ -215,7 +214,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
             }, [
                 this.sliderSystem(slider, publication, brand.embedded),
                 m("div.br-botbar-controls", {
-                    class: isPortrait ? "portrait" : "landscape",
+                    class: slider.portrait ? "portrait" : "landscape",
                     style: publication.isTtb ? "display: none;" : null
                 }, [
                     tweakButton,
