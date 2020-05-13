@@ -88,7 +88,7 @@ if(workerSupported) {
                         if(!isQueued(src)) // Stop because canceled
                             return;
                         if(xhr.status && xhr.status < 400) {
-                            if(e.data.bitmap && canDrawBitmap) { // ImageBitmap supported
+                            if(e.data.bitmap && ("createImageBitmap" in self)) { // ImageBitmap supported
                                 createImageBitmap(xhr.response as Blob).then((bitmap) => {
                                     if(e.data.needRaw) {
                                         let url: string;
