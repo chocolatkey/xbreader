@@ -73,6 +73,8 @@ export default class Slider {
             this.currentSlide = this.length <= this.perPage ? 0 : this.length - 1;
         }
 
+        this.orientationInternal = -1;
+
         this.updateProperties(true);
         if(slide && !sML.Mobile)
             this.slideToCurrent(!fast, fast);
