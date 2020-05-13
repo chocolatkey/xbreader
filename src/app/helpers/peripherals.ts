@@ -486,7 +486,7 @@ export default class Peripherals {
                             this.changeCursor(atFirstSlide ? "not-allowed" : "n-resize");
                             break;
                         case VerticalThird.Middle:
-                            this.changeCursor("pointer");
+                            this.changeCursor("context-menu");
                             break;
                     }
                 } else { // Horizontal controls
@@ -499,7 +499,7 @@ export default class Peripherals {
                             this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed" : "e-resize");
                             break;
                         case HorizontalThird.Center:
-                            this.changeCursor("pointer");
+                            this.changeCursor("context-menu");
                             break;
                     }
                 }
@@ -881,9 +881,9 @@ export default class Peripherals {
             return true;
         if (!this.slider.ttb)
             return false;
-        const br_slider = document.getElementById("br-slider");
-        if(!br_slider) return false;
-        const pages = br_slider.children;
+        const br_spine = this.slider.selector;
+        if(!br_spine) return false;
+        const pages = br_spine.children;
         let totalHeight = 0;
         for (let index = 0; index < pages.length; index++) {
             const cpage = pages[index];

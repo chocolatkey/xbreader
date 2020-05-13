@@ -25,9 +25,10 @@ export default class Slider {
     readonly publication: Publication;
     private readonly config: Config;
     private transform: string = null;
-    currentSlide: number = 0;
+    private orientationInternal = -1; // Portrait = 1, Landscape = 0, Unknown = -1
+    currentSlide = 0;
     rtl: boolean;
-    ttb: boolean = false;
+    ttb = false;
     spread: boolean;
     fit: boolean;
     guideHidden: boolean;
@@ -58,10 +59,7 @@ export default class Slider {
         this.updateProperties(true);
         this.resizeBoundHandler = this.resizeHandler.bind(this);
         window.addEventListener("resize", this.resizeBoundHandler);
-    }
-
-    resizeListener() {
-        this.resizeHandler();
+        window.addEventListener("orientationchange", this.resizeBoundHandler);
     }
 
     /**
@@ -70,6 +68,7 @@ export default class Slider {
     resizeHandler(slide = true, fast = true) {
         // relcalculate currentSlide
         // prevent hiding items when browser width increases
+
         if (this.currentSlide + this.perPage > this.length) {
             this.currentSlide = this.length <= this.perPage ? 0 : this.length - 1;
         }
@@ -77,11 +76,16 @@ export default class Slider {
         this.updateProperties(true);
         if(slide && !sML.Mobile)
             this.slideToCurrent(!fast, fast);
+
         m.redraw();
+        /*
+            if(this.direction == XBReadingDirection.TTB && this.slider)
+                this.slider.slideToCurrent();*/
     }
 
     destroy() {
         window.removeEventListener("resize", this.resizeBoundHandler);
+        window.removeEventListener("orientationchange", this.resizeBoundHandler);
     }
 
     /**
@@ -125,7 +129,10 @@ export default class Slider {
     }
 
     get portrait() {
-        return window.innerHeight > window.innerWidth;
+        if(this.orientationInternal == -1) {
+            this.orientationInternal = window.innerHeight > window.innerWidth ? 1 : 0;
+        }
+        return this.orientationInternal === 1;
     }
 
     get single() {
@@ -139,8 +146,13 @@ export default class Slider {
     get viewingPage() {
         if(this.single || this.ttb) return this.currentSlide;
         const spread = this.navigator.currentSpread(this);
-        if(!spread) return this.currentSlide; // Bad but prevents extremes
-        return this.publication.Spine.indexOf(spread[spread.length-1]);
+        return spread && this.publication.Spine.indexOf(spread[spread.length-1]) || this.currentSlide;
+    }
+
+    get minViewingPage() {
+        if(this.single || this.ttb) return this.currentSlide;
+        const spread = this.navigator.currentSpread(this);
+        return spread && this.publication.Spine.indexOf(spread[0]) || this.currentSlide;
     }
 
     get shift() {
@@ -168,9 +180,10 @@ export default class Slider {
             this.currentSlide++;
             if (this.currentSlide % 2) // Prevent getting out of track
                 this.prev();
+            // console.log("single -> spread", this.currentSlide, this.minViewingPage);
         } else {
+            if(this.currentSlide > 1) this.currentSlide = this.minViewingPage;
             this.spread = false;
-            if(this.currentSlide > 1) this.currentSlide--;
         }
         requestAnimationFrame(() => this.resizeHandler(true));
     }
@@ -213,7 +226,7 @@ export default class Slider {
      * Go to next slide.
      * @param {number} [howManySlides=1] - How many items to slide forward.
      */
-    next(howManySlides: number = 1) {
+    next(howManySlides = 1) {
         // early return when there is nothing to slide
         if (this.slength <= this.perPage) {
             return;
@@ -240,7 +253,7 @@ export default class Slider {
      * Go to previous slide.
      * @param {number} [howManySlides=1] - How many items to slide backward.
      */
-    prev(howManySlides: number = 1) {
+    prev(howManySlides = 1) {
         // early return when there is nothing to slide
         if (this.slength <= this.perPage) {
             return;
@@ -278,9 +291,9 @@ export default class Slider {
     }
 
     get selector() {
-        const br_slider = document.getElementById("br-slider");
-        if(!br_slider) return null;
-        return br_slider;
+        const br_spine = document.getElementById("br-spine");
+        if(!br_spine) return null;
+        return br_spine;
     }
 
     private get offset() {
@@ -291,6 +304,7 @@ export default class Slider {
      * Moves sliders frame to position of currently active slide
      */
     slideToCurrent(enableTransition?: boolean, fast = true, changed = true) {
+        // console.log("stc", this.currentSlide);
         if (this.ttb) {
             const br_slider = this.selector;
             if(!br_slider) return;

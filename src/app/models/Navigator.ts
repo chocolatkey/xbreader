@@ -5,7 +5,7 @@ import Slider from "./Slider";
 import { Properties } from "@r2-shared-js/models/metadata-properties";
 export default class Navigator {
     private readonly ttb: boolean;
-    shift: boolean = true; // TODO getter
+    shift = true; // TODO getter
     private spreads: Link[][] = [];
     nLandscape: number; // TODO getter
 
@@ -32,8 +32,13 @@ export default class Navigator {
                 if(!item.Properties.Orientation) item.Properties.Orientation = item.Width > item.Height ? "landscape" : "portrait";
             }
             const isLandscape = item.Properties.Orientation === "landscape" ? true : false;
-            if(!item.Properties.Page || redo) item.Properties.Page = isLandscape ? "center" : ((((this.shift ? 0 : 1) + index - this.nLandscape) % 2) ? (publication.rtl ? "right" : "left") : (publication.rtl ? "left" : "right"));
-            if(isLandscape)
+            if(!item.Properties.Page || redo) item.Properties.Page = 
+                isLandscape ? // If a landscape image
+                    "center" : // Center it
+                    ((((this.shift ? 0 : 1) + index - this.nLandscape) % 2) ? 
+                        (publication.rtl ? "right" : "left") :
+                        (publication.rtl ? "left" : "right"));
+            if(isLandscape || item.findFlag("addBlank"))
                 this.nLandscape++;
         });
         if(redo)
@@ -49,13 +54,12 @@ export default class Navigator {
             const single = item[0];
 
             // If last was a true single, and this spread is a center page (that's not special), something's wrong
-            if(wasLastSingle && single.Properties.Page === "center")
-                if(single.findFlag("final")) {
-                    this.spreads[index - 1][0].setSpecial("addBlank", true);
+            if(wasLastSingle && single.Properties.Page === "center") {
+                this.spreads[index - 1][0].setSpecial("addBlank", true);
+                if(single.findFlag("final"))
                     this.nLandscape++;
-                } else
-                    this.shift = false;
-            
+            }
+
             // If this single page spread is an orphaned component of a double page spread (and it's not the first page)
             if(single.Properties.Orientation === "portrait" && single.Properties.Page !== "center" && single.findSpecial("number").Value > 1)
                 wasLastSingle = true;
@@ -84,13 +88,17 @@ export default class Navigator {
         if(currentSet.length > 0) this.spreads.push(currentSet);
     }
 
+    currentSpread(slider: Slider) {
+        return this.spreads[Math.floor(slider.currentSlide / slider.perPage)];
+    }
+
     getPageString(slider: Slider) {
         if(this.ttb) {
             if(!slider.selector) return "0%";
             return `${Math.floor((document.documentElement.scrollTop + document.body.scrollTop) / slider.selector.scrollHeight * 100)}%`;
         } else if (!slider.single && !slider.ttb) {
             let spreadString = "";
-            const spread = this.spreads[Math.floor(slider.currentSlide / slider.perPage)];
+            const spread = this.currentSpread(slider);
             if(!spread) {
                 console.error(`Went off the edge of the spine @${slider.currentSlide}`);
                 return "?";
@@ -105,8 +113,8 @@ export default class Navigator {
             });
             return spreadString;
         } else {
-            const spread = this.spreads[this.spreads.length - 1];
-            if(slider.currentSlide + 1 === slider.length && spread && spread.length && spread[0].findFlag("final"))
+            const last = this.spreads[this.spreads.length - 1];
+            if(slider.currentSlide + 1 === slider.length && last && last.length && last[0].findFlag("final"))
                 return t`END`;
             return slider.currentSlide + 1;
         }

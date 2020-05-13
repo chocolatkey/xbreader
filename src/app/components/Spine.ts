@@ -24,7 +24,7 @@ export default class Spine { // TODO turn into ClosureComponent
         const binder = attrs.binder;
         if(!slider)
             return null;
-        return m("div#br-slider", {
+        return m("div#br-spine", {
             style: slider.properties,
             ontouchstart: binder ? binder.touchstartHandler : null,
             ontouchend: binder ? binder.touchendHandler : null,

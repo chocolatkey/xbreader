@@ -198,7 +198,11 @@ div#br-book {
             @include hdpicursor(context-menu, 0, 5);
         }
     }
-    contain: paint;
+
+    div#br-spine {
+        // will-change: transform; "Will-change memory consumption is too high"
+        contain: content;
+    }
 }
 
 div#br-topbar, div#br-botbar {

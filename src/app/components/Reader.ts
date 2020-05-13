@@ -10,7 +10,6 @@ import sML from "../helpers/sMLstub";
 import Spine from "./Spine";
 import Page from "./Page";
 import Interface from "./Interface";
-import { checkRequestAnimationFrame } from "../helpers/platform";
 import Series from "../models/Series";
 import xbError from "../models/xbError";
 import { parseDirection, directionToString } from "xbreader/helpers/utils";
@@ -34,6 +33,7 @@ interface BookStyle {
     cursor: string;
     transform: string;
     transformOrigin: string;
+    background: string;
 }
 
 export default class Reader implements ClassComponent<ReaderAttrs> {
@@ -41,7 +41,6 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
     publication: Publication;
     guideHidden: boolean;
     guideHider: number;
-    resizer: number;
     series: Series;
     private readonly mobile: boolean;
     ui: Ui;
@@ -74,9 +73,6 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
 
         this.loadingStatus = t`Initializing...`;
         this.loadingFailed = false;
-
-        window.addEventListener("orientationchange", this.resizeHandler);
-        checkRequestAnimationFrame();
     }
 
     /**
@@ -86,15 +82,6 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
     updateStatus(message: string) {
         this.loadingStatus = message;
         m.redraw();
-    }
-
-    resizeHandler() {
-        clearTimeout(this.resizer);
-        this.resizer = window.setTimeout(() => {
-            m.redraw();
-            if(this.direction == XBReadingDirection.TTB && this.slider)
-                this.slider.slideToCurrent();
-        }, 50);
     }
 
     setTitle(title?: string) {
@@ -145,14 +132,18 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
                 this.direction = direction; // Right to left
                 this.hint = t`${this.hint} right-to-left`;
                 break;
-            case XBReadingDirection.TTB:
+            case XBReadingDirection.TTB: {
                 this.direction = direction; // Top to bottom
                 this.hint = t`Scroll down`;
                 if(!this.slider) {
-                // TTB-only publication!
+                    // TTB-only publication!
                     console.log("TTB lock");
                     this.slider.ttb = true;
                 }
+                // Coming from spreads
+                const p = this.slider.minViewingPage;
+                if(p != this.slider.currentSlide) this.slider.currentSlide = p;
+
                 this.slider.ttb = true;
                 this.slider.rtl = false;
                 this.slider.resizeHandler(true);
@@ -161,7 +152,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
                 // maybe settimeout?
                 this.binder.updateMovingParameters(this.direction);
                 return true;
-            default: {
+            } default: {
                 console.error("Invalid flow direction: " + direction);
                 const err = new xbError(9400, t`Invalid flow!`);
                 this.hint = err.message;
@@ -195,9 +186,6 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
             this.binder.destroy();
         if(this.slider)
             this.slider.destroy();
-        
-        // Remove reader listeners
-        window.removeEventListener("orientationchange", this.resizeHandler);
 
         // Destroy classes & objects
         this.binder = this.slider = this.publication = this.series = this.ui = null;
@@ -265,15 +253,22 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
             //"overflow-y": vnode.state.slider ? (vnode.state.slider.perPage == 1 ? "scroll" : "auto") : "auto", // TODO SMALLS SCREEN!
             cursor: null,
             transform: null,
-            transformOrigin: null
+            transformOrigin: null,
+            background: this.config.background
         };
 
         document.documentElement.style.overflow = sldr ? ((sldr.ttb || !sldr.spread) ? "auto" : "hidden") : "hidden";
 
         // Cursor
         const bnd = vnode.state.binder;
+        let bookClass = "normal";
         if(bnd) {
-            bookStyle.cursor = bnd.cursor;
+            const cursr = bnd.cursor;
+             // Only Windows doesn't have single-direction resize cursors. Firefox still blurs them in HighDPI
+            if(sML.OS.Windows && !(sML.UA.Firefox && window.devicePixelRatio > 1) && (cursr.endsWith("-resize") || cursr === "context-menu"))
+                bookClass += ` cursor__${bnd.cursor}`;
+            else
+                bookStyle.cursor = cursr;
         }
 
 
@@ -318,7 +313,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
                 m("div#br-book", {
                     style: bookStyle,
                     "aria-label": t`Book`,
-                    class: bnd ? (bnd.isPinching ? "pinching" : "normal") : "",
+                    class: bnd ? (bnd.isPinching ? "pinching" : bookClass) : "",
                     tabindex: -1, // Needed to be able to focus on this element (from peripherals)
                     oncontextmenu: (e: MouseEvent) => {
                         this.ui.toggle();

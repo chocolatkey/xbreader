@@ -109,7 +109,6 @@ export default class Config {
 
     private internalAnimateSettingIndex = -2;
     private internalBackgroundSettingIndex = -2;
-    private internalBackgroundValue: string = BACKGROUND_GREY;
 
     constructor(custom: XBConfig) {
         this.internalState = Config.makeConfig(custom);
@@ -176,27 +175,17 @@ export default class Config {
         return this.settings[this.internalAnimateSettingIndex].value === "off" ? false : true;
     }
 
-    private get backgroundValue() {
+    /**
+     * Get the current setting for the background color of the reader
+     * Setting index and value are cached, OK for vdom calculations
+     */
+    get background() {
         if(!this.settings) return BACKGROUND_GREY;
         if(this.internalBackgroundSettingIndex === -2) this.internalBackgroundSettingIndex = this.settings.findIndex(s => s.name === "background");
         if(this.internalBackgroundSettingIndex === -1) return BACKGROUND_GREY;
         const v = this.settings[this.internalBackgroundSettingIndex].value;
         if(v) return v;
         return BACKGROUND_GREY;
-    }
-
-
-    /**
-     * Get the current setting for the background color of the reader (and set it for the document)
-     * Setting index and value are cached, OK for vdom calculations
-     */
-    get background() {
-        const v = this.backgroundValue;
-        if(v !== this.internalBackgroundValue) {
-            this.internalBackgroundValue = v;
-            document.documentElement.style.background = v;
-        }
-        return v;
     }
 
     /*overrideDirection(direction: XBReadingDirection): XBReadingDirection {
