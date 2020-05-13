@@ -14,7 +14,8 @@ import Series from "../models/Series";
 import xbError from "../models/xbError";
 import { parseDirection, directionToString } from "xbreader/helpers/utils";
 import Config from "xbreader/models/Config";
-import { worker as workerPool } from "xbreader/helpers/lazyLoader";
+import { worker as workerPool, f as workerFunc } from "xbreader/helpers/lazyLoader";
+import WorkerPool from "xbreader/helpers/workerPool";
 
 export interface ReaderAttrs {
     readonly cid: string;
@@ -175,6 +176,11 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
         this.onremove();
         m.mount(this.config.state.mount, null); // Unmount XBReader
         workerPool.destroy(); // Terminate all Workers in the pool
+    }
+
+    oninit() {
+        if(workerPool.destroyed) // If the pool was previousy destroyed
+            workerPool.create(URL.createObjectURL(new Blob([`(${workerFunc})()`])));
     }
 
     /**

@@ -3,6 +3,8 @@ export default class WorkerPool {
     private readonly pool: Worker[] = [];
     private current = 0;
     private url: URL;
+    public destroyed = false;
+    private size: number;
 
     /**
      * Create a new WorkerPool
@@ -10,19 +12,31 @@ export default class WorkerPool {
      * @param size Pool size, defaults to *navigator.hardwareConcurrency*-1 or 1 if hardwareConcurrency is not available
      */
     constructor(url: string, size = (navigator.hardwareConcurrency ? navigator.hardwareConcurrency - 1 : 1)) {
+        this.size = size;
+        this.create(url);
+    }
+
+    /**
+     * Create the pool. Can be used to re-create it too
+     * @param url URL source for the Worker(s)
+     */
+    create(url: string) {
         this.url = new URL(url);
-        for (let i = 0; i < size; i++) {
-            this.pool.push(new Worker(url));    
+        for (let i = 0; i < this.size; i++) {
+            this.pool.push(new Worker(url));
         }
+        this.destroyed = false;
     }
 
     /**
      * Destroy all workers in the pool
      */
     destroy() {
-        this.pool.forEach(worker => worker.terminate());
+        while(this.pool.length > 0) // Remove workers from the pool...
+            this.pool.pop().terminate(); //  and terminate them!
         if(this.url.protocol === "blob:")
             URL.revokeObjectURL(this.url.href);
+        this.destroyed = true;
     }
 
     /**

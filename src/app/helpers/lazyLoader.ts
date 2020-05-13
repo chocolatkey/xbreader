@@ -21,7 +21,7 @@ type LoadableElement = HTMLImageElement | HTMLCanvasElement | HTMLIFrameElement;
 
 const offscreenCanvasSupported = typeof(OffscreenCanvas) === "undefined" ? false : true;
 const workerSupported = typeof(Worker) === "undefined" ? false : true;
-let f: Function;
+export let f: Function;
 export let worker: WorkerPool;
 if(workerSupported) {
     f = () => {
