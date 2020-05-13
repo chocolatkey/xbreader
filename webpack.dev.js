@@ -16,7 +16,8 @@ module.exports = {
         contentBase: path.join(__dirname, "bin"),
         compress: true,
         port: 8080,
-        noInfo: true
+        /* noInfo: true,
+        disableHostCheck: true, */
     },
     entry: {
         xbstyles: [
