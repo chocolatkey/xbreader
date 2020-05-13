@@ -1,6 +1,6 @@
 {
   "name": "xbreader",
-  "version": "0.31.7",
+  "version": "0.31.8",
   "description": "Fixed-layout publication reader for the web",
   "author": "Henry <chocolatkey@gmail.com>",
   "contributors": [
@@ -16,7 +16,7 @@
     "type": "git",
     "url": "https://github.com/chocolatkey/xbreader.git"
   },
-  "browser": "dist/xbreader-en.js",
+  "browser": "dist/xbreader.js",
   "scripts": {
     "start": "webpack-dev-server -d --config webpack.dev.js --watch",
     "build": "rm -rf dist && rm -rf stats && webpack -p --config webpack.prod.js && rm -rf dist/xbstyles-* dist/loader-*",
