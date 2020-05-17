@@ -175,6 +175,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
     destroy() {
         this.onremove();
         m.mount(this.config.state.mount, null); // Unmount XBReader
+        document.documentElement.style.removeProperty("overflow"); // TODO stop polluting the document in the first place
         workerPool.destroy(); // Terminate all Workers in the pool
     }
 
