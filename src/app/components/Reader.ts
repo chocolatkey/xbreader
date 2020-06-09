@@ -96,23 +96,23 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
     switchDirection(direction?: XBReadingDirection | string) {
         direction = parseDirection(direction);
         const pdir = this.publication.direction;
-        if(direction == null) {
-            if(!this.direction) {
+        if(direction === undefined) {
+            if(this.direction === undefined) {
                 console.error("Can't switch directions if one isn't already set!");
                 return false;
             }
-            if(pdir == XBReadingDirection.TTB) { // Should not be encountered
+            if(pdir === XBReadingDirection.TTB) { // Should not be encountered
                 console.error("Vertical publications cannot be switched to a horizontal layout!");
                 return false;
             }
-            if(this.direction == XBReadingDirection.TTB) {
+            if(this.direction === XBReadingDirection.TTB) {
                 this.switchDirection(pdir);
             } else {
                 this.switchDirection(XBReadingDirection.TTB);
             }
             return true;
         }
-        if(this.direction == direction) // Already that direction
+        if(this.direction === direction) // Already that direction
             return true;
         console.log("Setting direction: " + directionToString(direction));
         if(this.slider.zoomer) this.slider.zoomer.scale = 1;
@@ -257,7 +257,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
         const bookStyle: BookStyle = {
             overflow: "hidden",//vnode.state.slider ? (vnode.state.slider.ttb ? "auto" : "hidden") : "hidden",
             direction: sldr ? (vnode.state.slider.rtl ? "rtl" : "ltr") : "ltr",
-            //"overflow-y": vnode.state.slider ? (vnode.state.slider.perPage == 1 ? "scroll" : "auto") : "auto", // TODO SMALLS SCREEN!
+            //"overflow-y": vnode.state.slider ? (vnode.state.slider.perPage === 1 ? "scroll" : "auto") : "auto", // TODO SMALLS SCREEN!
             cursor: null,
             transform: null,
             transformOrigin: null,
