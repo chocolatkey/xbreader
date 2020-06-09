@@ -60,7 +60,7 @@ export default class Coordinator {
             Coord.X = Eve.pageX;
             Coord.Y = Eve.pageY;
         }
-        if((Eve.target as HTMLElement).ownerDocument.documentElement == this.HTML) {
+        if((Eve.target as HTMLElement).ownerDocument.documentElement === this.HTML) {
             Coord.X -= (this.HTML.scrollLeft + this.Body.scrollLeft);
             Coord.Y -= (this.HTML.scrollTop + this.Body.scrollTop);
         } else {
@@ -100,13 +100,13 @@ export default class Coordinator {
             Ratio: null,
             Target: null
         };
-        var Coord = this.getBibiEventCoord(Eve);
-        var FlipperWidth = 0.3; // TODO flipper-width
-        var Ratio = {
+        const Coord = this.getBibiEventCoord(Eve);
+        let FlipperWidth = 0.3; // TODO flipper-width
+        const Ratio = {
             X: Coord.X / window.innerWidth,
             Y: Coord.Y / window.innerHeight
         };
-        var BorderT, BorderB, BorderL, BorderR;
+        let BorderT, BorderB, BorderL, BorderR;
         if(FlipperWidth < 1) { // Ratio
             BorderL = BorderT =     FlipperWidth;
             BorderR = BorderB = 1 - FlipperWidth;

@@ -21,6 +21,7 @@ module.exports =  {
       "unix"
     ],
     "camelcase": "off",
+    "eqeqeq": "error",
     "@typescript-eslint/camelcase": ["off"],
     "@typescript-eslint/class-name-casing": ["off"],
     "no-empty": ["error", {"allowEmptyCatch": true}],

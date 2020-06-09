@@ -101,7 +101,7 @@ class sML {
         if((Obj as HTMLElement).tagName) {
             for(let i = 0; i < l; i++) { const ProSet = ProSets[i];
                 for(const Pro in ProSet) {
-                    if(Pro == "$1" || Pro == "style") continue;
+                    if(Pro === "$1" || Pro === "style") continue;
                     if(/^data-/.test(Pro)) (Obj as HTMLElement).setAttribute(Pro, ProSet[Pro]);
                     else                   (Obj as any)[Pro] = ProSet[Pro];
                 }

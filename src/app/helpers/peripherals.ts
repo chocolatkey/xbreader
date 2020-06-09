@@ -475,8 +475,8 @@ export default class Peripherals {
                 }
 
                 const sliderLength = this.slider.length - 1;
-                const atFirstSlide = Math.max(this.slider.currentSlide, 0) == 0;
-                const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) == sliderLength && !this.slider.series.next;
+                const atFirstSlide = Math.max(this.slider.currentSlide, 0) === 0;
+                const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) === sliderLength && !this.slider.series.next;
                 if (this.slider.ttb) { // Vertical controls
                     switch (this.mousePos.Division.Y) {
                         case VerticalThird.Bottom:
@@ -512,7 +512,7 @@ export default class Peripherals {
     }
 
     private changeCursor(newCursor: string) {
-        if (newCursor == this.currentCursor)
+        if (newCursor === this.currentCursor)
             return;
         this.currentCursor = newCursor;
     }
@@ -522,8 +522,8 @@ export default class Peripherals {
     }
 
     private updateKeyCodes(EventTypes: string[] | string, KeyCodesToUpdate: Record<string, any>) {
-        if (typeof (EventTypes as string[]).join != "function") EventTypes = [EventTypes as string];
-        if (typeof KeyCodesToUpdate == "function") KeyCodesToUpdate = KeyCodesToUpdate();
+        if (typeof (EventTypes as string[]).join !== "function") EventTypes = [EventTypes as string];
+        if (typeof KeyCodesToUpdate === "function") KeyCodesToUpdate = KeyCodesToUpdate();
         (EventTypes as string[]).forEach((EventType) => {
             this.KeyCodes[EventType] = sML.edit(this.KeyCodes[EventType], KeyCodesToUpdate);
         });
@@ -708,7 +708,7 @@ export default class Peripherals {
 
     private tryMoving(Eve: BibiKeyboardEvent) {
         if (!Eve.KeyName) return false;
-        var MovingParameter = this.MovingParameters[!Eve.shiftKey ? Eve.KeyName : Eve.KeyName.toUpperCase()];
+        const MovingParameter = this.MovingParameters[!Eve.shiftKey ? Eve.KeyName : Eve.KeyName.toUpperCase()];
         if (!MovingParameter) {
             if(this.ui.toggle(false)) m.redraw();
             return false;
@@ -733,7 +733,7 @@ export default class Peripherals {
 
     moveBy(MovingParameter: any) {
         // Move
-        if (typeof MovingParameter == "number") {
+        if (typeof MovingParameter === "number") {
             if (MovingParameter === 1) {
                 /* I don't think people like this behavior very much
                 const bbEle = document.getElementById("br-book");
@@ -758,7 +758,7 @@ export default class Peripherals {
             this.dblDisabler = window.setTimeout(() => {
                 this.disableDblClick = false;
             }, 1000);
-        } else if (typeof MovingParameter == "string") {
+        } else if (typeof MovingParameter === "string") {
             if (MovingParameter === "head") {
                 this.slider.goTo(0);
             } else if (MovingParameter === "foot") {
@@ -838,8 +838,6 @@ export default class Peripherals {
         }, 200); // Unfortunately adds lag to interface elements :(
     }
 
-    ontap(Eve: TouchEvent) {}
-
     onclick(Eve: MouseEvent) {
         this.evalPointer(Eve, !this.isDragging);
     }
@@ -867,9 +865,9 @@ export default class Peripherals {
     }
 
     onpointermove(Eve: BibiMouseEvent) {
-        let CC = this.coordinator.getBibiEventCoord(Eve),
+        const CC = this.coordinator.getBibiEventCoord(Eve),
             PC = this.PreviousCoord;
-        if (PC.X != CC.X || PC.Y != CC.Y) this.evalPointer(Eve, false); //E.dispatch("bibi:moved-pointer",   Eve);
+        if (PC.X !== CC.X || PC.Y !== CC.Y) this.evalPointer(Eve, false); //E.dispatch("bibi:moved-pointer",   Eve);
         //else console.log("stopped moving");//E.dispatch("bibi:stopped-pointer", Eve);
         this.PreviousCoord = CC;
         if(Eve.special)
@@ -890,7 +888,7 @@ export default class Peripherals {
             if(!cpage) return false;
             const cheight = cpage.children[0].clientHeight;
             if (Math.abs(document.documentElement.scrollTop + document.body.scrollTop - totalHeight) < (cheight * 0.6)) {
-                if (index != this.slider.currentSlide) {
+                if (index !== this.slider.currentSlide) {
                     this.slider.currentSlide = index;
                     if(!this.ui.mousing)
                         this.ui.toggle(false); // Hide UI when changing pages
@@ -904,7 +902,7 @@ export default class Peripherals {
     }
 
     onwheel(Eve: BibiWheelEvent) {
-        let CW: Wheel = {} as any as Wheel,
+        const CW: Wheel = {} as any as Wheel,
             PWs = this.PreviousWheels,
             PWl = PWs.length;
         if (Math.abs(Eve.deltaX) > Math.abs(Eve.deltaY)) { // Horizontal scrolling
@@ -922,12 +920,12 @@ export default class Peripherals {
         }
         if (!PWs[PWl - 1]) {
             CW.Accel = 1, CW.Wheeled = WheelState.Start;
-        } else if (CW.Distance != PWs[PWl - 1].Distance) {
+        } else if (CW.Distance !== PWs[PWl - 1].Distance) {
             CW.Accel = 1;
-            if (PWl >= 3 && PWs[PWl - 2].Distance != CW.Distance && PWs[PWl - 3].Distance != CW.Distance) CW.Wheeled = WheelState.Reverse;
+            if (PWl >= 3 && PWs[PWl - 2].Distance !== CW.Distance && PWs[PWl - 3].Distance !== CW.Distance) CW.Wheeled = WheelState.Reverse;
         } else if (CW.Delta > PWs[PWl - 1].Delta) {
             CW.Accel = 1;
-            if (PWl >= 3 && PWs[PWl - 1].Accel == -1 && PWs[PWl - 2].Accel == -1 && PWs[PWl - 3].Accel == -1) CW.Wheeled = WheelState.Serial;
+            if (PWl >= 3 && PWs[PWl - 1].Accel === -1 && PWs[PWl - 2].Accel === -1 && PWs[PWl - 3].Accel === -1) CW.Wheeled = WheelState.Serial;
         } else if (CW.Delta < PWs[PWl - 1].Delta) {
             CW.Accel = -1;
         } else {

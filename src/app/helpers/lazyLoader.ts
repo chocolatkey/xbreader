@@ -33,7 +33,7 @@ if(workerSupported) {
         const isQueued = (src: string) => locate(src) !== -1;
         const deqeue = (src: string) => {
             const i = locate(src);
-            if (i != -1)
+            if (i !== -1)
                 queued.splice(i, 1);
         };
         self.addEventListener("message", e => {

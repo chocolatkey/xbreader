@@ -64,7 +64,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
         else
             this.mobile = false;
         if(sML.UA.InternetExplorer) {
-            if(sML.UA.InternetExplorer == 10) {
+            if(sML.UA.InternetExplorer === 10) {
                 // No flex compatibility TODO
             } else if(sML.UA.InternetExplorer < 10) {
                 // Not supported TODO
@@ -143,7 +143,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
                 }
                 // Coming from spreads
                 const p = this.slider.minViewingPage;
-                if(p != this.slider.currentSlide) this.slider.currentSlide = p;
+                if(p !== this.slider.currentSlide) this.slider.currentSlide = p;
 
                 this.slider.ttb = true;
                 this.slider.rtl = false;

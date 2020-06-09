@@ -388,7 +388,7 @@ export default class Publication {
     }
 
     get isTtb() {
-        return this.direction == XBReadingDirection.TTB;
+        return this.direction === XBReadingDirection.TTB;
     }
 
     get series() {
@@ -406,7 +406,7 @@ export default class Publication {
     }
 
     get rtl() { // Right-to-left reading
-        return this.pmetadata.Direction == "rtl" ? true : false;
+        return this.pmetadata.Direction === "rtl" ? true : false;
     }
 
     get isReady() {

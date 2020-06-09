@@ -44,7 +44,7 @@ export default class Series {
     }
 
     get isSolo() {
-        return this.chapters.length == 0 || !this.exists;
+        return this.chapters.length === 0 || !this.exists;
     }
 
     private buildChapterList() {

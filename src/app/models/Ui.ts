@@ -2,13 +2,13 @@ import m from "mithril";
 
 export default class Ui {
     private readonly toggleCallback: Function;
-    isHidden: boolean = false;
-    menuShown: boolean = false;
-    settingsShown: boolean = false;
-    notifierShown: boolean = false;
+    isHidden = false;
+    menuShown = false;
+    settingsShown = false;
+    notifierShown = false;
     public notification: string;
     private notifierTimeout: number;
-    mousing: boolean = false;
+    mousing = false;
 
     constructor(toggleCallback: Function) {
         this.toggleCallback = toggleCallback;
@@ -25,16 +25,16 @@ export default class Ui {
     }
 
     toggleMenu(newState?: boolean) {
-        if (newState == null)
+        if (newState === undefined)
             this.menuShown = !this.menuShown;
-        else if (this.menuShown != newState)
+        else if (this.menuShown !== newState)
             this.menuShown = newState;
     }
 
     toggleSettings(newState?: boolean) {
-        if (newState == null)
+        if (newState === undefined)
             this.settingsShown = !this.settingsShown;
-        else if (this.settingsShown != newState)
+        else if (this.settingsShown !== newState)
             this.settingsShown = newState;
         else
             return;
@@ -44,9 +44,9 @@ export default class Ui {
     }
 
     toggle(newState?: boolean) {
-        if (newState == null)
+        if (newState === undefined)
             this.isHidden = !this.isHidden;
-        else if (!!this.isHidden == newState) {
+        else if (!!this.isHidden === newState) {
             this.isHidden = !newState;
         } else {
             return false;

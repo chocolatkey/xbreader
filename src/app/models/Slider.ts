@@ -81,7 +81,7 @@ export default class Slider {
 
         m.redraw();
         /*
-            if(this.direction == XBReadingDirection.TTB && this.slider)
+            if(this.direction === XBReadingDirection.TTB && this.slider)
                 this.slider.slideToCurrent();*/
     }
 
@@ -131,7 +131,7 @@ export default class Slider {
     }
 
     get portrait() {
-        if(this.orientationInternal == -1) {
+        if(this.orientationInternal === -1) {
             this.orientationInternal = window.innerHeight > window.innerWidth ? 1 : 0;
         }
         return this.orientationInternal === 1;
@@ -165,7 +165,7 @@ export default class Slider {
         if(this.single)
             return this.slength;
         const total = this.slength + this.nLandscape;
-        return (this.shift && (total % 2 == 0)) ? total + 1 : total;
+        return (this.shift && (total % 2 === 0)) ? total + 1 : total;
     }
 
     get slength() {

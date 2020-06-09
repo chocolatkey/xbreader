@@ -27,7 +27,7 @@ export default class Navigator {
             if(!redo) {
                 item.setSpecial("number", index + 1);
                 Publication.fixDeprecated(item, "mime", "type");
-                if(item.TypeLink.indexOf("image/") == 0)
+                if(item.TypeLink.indexOf("image/") === 0)
                     item.setSpecial("isImage", true);
                 if(!item.Properties.Orientation) item.Properties.Orientation = item.Width > item.Height ? "landscape" : "portrait";
             }
