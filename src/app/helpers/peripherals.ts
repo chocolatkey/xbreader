@@ -772,6 +772,11 @@ export default class Peripherals {
 
             // Zoom
             if (MovingParameter === "zoom-in") {
+                if(this.slider.zoomer.translate.X === 0 && this.slider.zoomer.translate.Y === 0)
+                    this.slider.zoomer.translate = {
+                        X: window.innerWidth / 2,
+                        Y: window.innerHeight / 2
+                    };
                 if (this.slider.zoomer.scale < MAX_SCALE)
                     this.slider.zoomer.scale += 0.5; // Gets slower as you zoom in more due to decreasing ratio impact
             } else if (MovingParameter === "zoom-out") {
