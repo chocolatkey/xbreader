@@ -74,6 +74,7 @@ export default class Peripherals {
     private pinch: PinchTracker;
     private mousePos: BibiEvent;
     private currentCursor: string;
+    ignoreScrollFlag = false;
 
     private MovingParameters: { [keyName: string]: string | number } = {
         "Space": 1,
@@ -886,9 +887,9 @@ export default class Peripherals {
         for (let index = 0; index < pages.length; index++) {
             const cpage = pages[index];
             if(!cpage) return false;
-            const cheight = cpage.children[0].clientHeight;
+            const cheight = cpage.children[0].clientHeight; // TODO this is a perf hog
             if (Math.abs(document.documentElement.scrollTop + document.body.scrollTop - totalHeight) < (cheight * 0.6)) {
-                if (index !== this.slider.currentSlide) {
+                if (index !== this.slider.currentSlide || this.slider.toon) {
                     this.slider.currentSlide = index;
                     if(!this.ui.mousing)
                         this.ui.toggle(false); // Hide UI when changing pages
@@ -950,6 +951,10 @@ export default class Peripherals {
     }
 
     onscroll(Eve: Event) {
+        if(this.ignoreScrollFlag) {
+            this.ignoreScrollFlag = false;
+            return false;
+        }
         this.processVScroll();
         if (!this.Scrolling) {
             this.Scrolling = true;

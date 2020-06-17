@@ -27,12 +27,16 @@ export default class Slider {
     private transform: string = null;
     private orientationInternal = -1; // Portrait = 1, Landscape = 0, Unknown = -1
     currentSlide = 0;
+    _fraction = 0;
+    ignoreScrollFlag = false;
+    br_spine: HTMLElement;
     rtl: boolean;
     ttb = false;
     spread: boolean;
     fit: boolean;
     guideHidden: boolean;
     binder: Peripherals;
+    innerHeightCached: number;
     width: number;
     height: number;
     zoomer: Zoomer = {
@@ -56,6 +60,7 @@ export default class Slider {
 
         this.rtl = this.publication.rtl;
         this.fit = config.fit;
+        this.innerHeightCached = window.innerHeight;
         this.updateProperties(true);
         this.resizeBoundHandler = this.resizeHandler.bind(this);
         window.addEventListener("resize", this.resizeBoundHandler);
@@ -72,6 +77,8 @@ export default class Slider {
         if (this.currentSlide + this.perPage > this.length) {
             this.currentSlide = this.length <= this.perPage ? 0 : this.length - 1;
         }
+
+        this.innerHeightCached = window.innerHeight;
 
         this.orientationInternal = -1;
 
@@ -132,7 +139,7 @@ export default class Slider {
 
     get portrait() {
         if(this.orientationInternal === -1) {
-            this.orientationInternal = window.innerHeight > window.innerWidth ? 1 : 0;
+            this.orientationInternal = this.innerHeightCached > window.innerWidth ? 1 : 0;
         }
         return this.orientationInternal === 1;
     }
@@ -195,7 +202,7 @@ export default class Slider {
             this.guideHidden = true;
         this.zoomer.scale = 1;
         m.redraw();
-        this.config.state.onPageChange(this.currentSlide + (this.single ? 1 : 0), this.direction, !this.single);
+        this.config.state.onPageChange(this.toon ? Math.round(this.percentage * 100) / 100 : (this.currentSlide + (this.single ? 1 : 0)), this.direction, !this.single);
     }
 
     onLastPage() {
@@ -234,6 +241,11 @@ export default class Slider {
             return;
         }
 
+        if(this.toon) { // Toon page down
+            this.binder.coordinator.HTML.scrollTop += this.innerHeightCached;
+            return;
+        }
+
         const beforeChange = this.currentSlide;
 
         this.currentSlide = Math.min(this.currentSlide + howManySlides, this.length - 1);
@@ -258,6 +270,11 @@ export default class Slider {
     prev(howManySlides = 1) {
         // early return when there is nothing to slide
         if (this.slength <= this.perPage) {
+            return;
+        }
+
+        if(this.toon) { // Toon page up
+            this.binder.coordinator.HTML.scrollTop -= this.innerHeightCached;
             return;
         }
 
@@ -293,13 +310,26 @@ export default class Slider {
     }
 
     get selector() {
-        const br_spine = document.getElementById("br-spine");
-        if(!br_spine) return null;
-        return br_spine;
+        if(this.br_spine) return this.br_spine;
+        this.br_spine = document.getElementById("br-spine");
+        if(!this.br_spine) return null;
+        return this.br_spine;
     }
 
     private get offset() {
         return (this.rtl ? 1 : -1) * this.currentSlide * (this.width / this.perPage);
+    }
+
+    get toon() {
+        return this.publication.isTtb;
+    }
+
+    get percentage() {
+        if(!this.toon || !this.selector) return 0;
+        const tot = this.binder.coordinator.HTML.scrollTop + this.binder.coordinator.Body.scrollTop;
+        const h = this.selector.getBoundingClientRect().height;
+        this._fraction = tot / h;
+        return tot / (h - this.innerHeightCached) * 100;
     }
 
     /**
@@ -308,21 +338,37 @@ export default class Slider {
     slideToCurrent(enableTransition?: boolean, fast = true, changed = true) {
         // console.log("stc", this.currentSlide);
         if (this.ttb) {
-            const br_slider = this.selector;
-            if(!br_slider) return;
-            const children = br_slider.children;
-            requestAnimationFrame(() => { // TODO nicer animation. Right now you still see a flash of the top
+            if(this.toon) { // Is a TTB publication
+                const prevFraction = this._fraction;
                 requestAnimationFrame(() => {
-                    if(this && children && children[this.currentSlide])
-                        children[this.currentSlide].children[0].scrollIntoView(true);
-                    m.redraw();
+                    requestAnimationFrame(() => {
+                        if(this?.binder?.coordinator) {
+                            // Ignore the scrolling if it's a result of slidetocurrent
+                            // The fraction check prevents this from messing up scroll detection at beginning
+                            if(prevFraction > 0) this.binder.ignoreScrollFlag = true;
+                            this.binder.coordinator.HTML.scrollTop = Math.round(prevFraction * this.selector.getBoundingClientRect().height);
+                        }
+                        this.percentage;
+                        m.redraw();
+                    });
                 });
-            });
+            } else { // Is not a TTB publication (but being read in TTB mode)
+                const br_slider = this.selector;
+                if(!br_slider) return;
+                const children = br_slider.children;
+                requestAnimationFrame(() => { // TODO nicer animation. Right now you still see a flash of the top
+                    requestAnimationFrame(() => {
+                        if(this && children && children[this.currentSlide])
+                            children[this.currentSlide].children[0].scrollIntoView(true);
+                        m.redraw();
+                    });
+                });
+            }
             return;
         }
         if(this.single && !this.ttb && changed) // Scroll back to top for next/prev page
             window.setTimeout(() => {
-                this && this.binder && this.binder.coordinator && this.binder.coordinator.HTML && this.binder.coordinator.HTML.scrollTo(0, 0);
+                this?.binder?.coordinator?.HTML?.scrollTo(0, 0);
             }, 100);
 
         this.updateDimensions();

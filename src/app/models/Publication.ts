@@ -12,6 +12,7 @@ import xbError from "./xbError";
 import Link from "./Link";
 import { parseDirection } from "xbreader/helpers/utils";
 import { XBReadingDirection } from "xbreader/components/Reader";
+import { MIN_TTB_WIDTH } from "xbreader/components/Page";
 
 import { LCP } from "@r2-lcp-js/parser/epub/lcp";
 import { JsonStringConverter } from "@r2-utils-js/_utils/ta-json-string-converter";
@@ -341,7 +342,7 @@ export default class Publication {
         });
     }
 
-    private keysInObj(keys: string[], obj: any) {
+    private keysInObj(keys: string[], obj: object) {
         let ok = true;
         keys.forEach((key) => {
             if(key in obj === false)
@@ -411,5 +412,28 @@ export default class Publication {
 
     get isReady() {
         return this.ready;
+    }
+
+    private smallToon = -1;
+
+    /**
+     * Check if the publication (assuming it's a toon) consists of image(s) that are too small to resize
+     */
+    get isSmallToon() {
+        if(this.smallToon !== -1) // Memoized, since used in render loop
+            return this.smallToon;
+
+        // Make sure publication is loaded, and is TTB
+        if(!this.isReady || !this.isTtb) return false; // TODO if not fixed layout
+
+        // Find the smallest width of an image in the spine
+        const smallestWidth = this.spine.filter(link => link.findFlag("isImage")).map(link => link.Width).reduce((prev, curr) => Math.min(prev, curr));
+
+        // If the width is not worth sizing up/down
+        if(smallestWidth <= MIN_TTB_WIDTH + 50)
+            this.smallToon = 1;
+        else
+            this.smallToon = 0;
+        return this.smallToon;
     }
 }

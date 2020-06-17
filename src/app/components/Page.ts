@@ -7,6 +7,8 @@ import Peripherals, { BibiMouseEvent } from "xbreader/helpers/peripherals";
 import { canDrawBitmap } from "../helpers/platform";
 export const MAX_FIT_WIDTH = 1400;
 export const MAX_FIT_HEIGHT = 1000;
+export const MAX_TTB_WIDTH = 1000;
+export const MIN_TTB_WIDTH = 750;
 
 export interface PageAttrs {
     readonly data: Link;
@@ -82,7 +84,7 @@ export default class Page implements ClassComponent<PageAttrs> {
         let spread = true;
         let free = false;
         let docWidth;
-        const docHeight = this.itemHeight = window.innerHeight; // TODO memoize window.innerHeight
+        const docHeight = this.itemHeight = slider.innerHeightCached;
         if (slider) {
             docWidth = slider.width;
             if (slider.single || slider.ttb || this.landscape)
@@ -114,10 +116,16 @@ export default class Page implements ClassComponent<PageAttrs> {
 
         const itemAttrs: InnerItemAttrs = {style: null};
         if (slider && (slider.ttb || slider.single)) { // Vertical (TTB) or forced single page
-            if(slider.publication.isTtb || (this.data.Height / this.data.Width) > 2) { // TTB publication or very tall image
+            if(slider.toon || (this.data.Height / this.data.Width) > 2) { // TTB publication or very tall image
                 if(this.data.Height > MAX_FIT_HEIGHT && !this.landscape && this.data.Width < docWidth) { // Too large to fit, compromise with maxFit
-                    this.itemHeight = "auto";
-                    this.itemWidth = MAX_FIT_HEIGHT;
+                    const preferredWidth = (slider.fit ? MIN_TTB_WIDTH : MAX_TTB_WIDTH);
+                    if(preferredWidth < this.data.Width) {
+                        this.itemHeight = preferredWidth / this.data.Width * this.data.Height;
+                        this.itemWidth = preferredWidth;
+                    } else {
+                        this.itemWidth = this.data.Width;
+                        this.itemHeight = this.data.Height;
+                    }
                 } else { // Maximum image width
                     this.itemWidth = docWidth;
                     this.itemHeight = docWidth / this.data.Width * this.data.Height;
@@ -143,8 +151,6 @@ export default class Page implements ClassComponent<PageAttrs> {
                 if(slider.ttb)
                     this.marginTop = vnode.attrs.index > 0 ? 10 : 0; // this.marginTop = this.loader.reloader ? this.data.Height : (vnode.attrs.index > 0 ? 10 : 0);
             }
-            
-            
             itemAttrs.style = `height: ${this.parseDimension(this.itemHeight)}; width: ${this.parseDimension(this.itemWidth)}; margin: ${this.marginTop}px auto 0 auto;`;
         } else { // Horizontal (LTR & RTL)
             if(this.data.findFlag("addBlank")) // If item is single with full width, position properly
@@ -180,10 +186,10 @@ export default class Page implements ClassComponent<PageAttrs> {
             }
             else {
                 innerItemAttrs.height = slider.height;
-                if(vnode.attrs.index === slider.currentSlide)
+                /*if(vnode.attrs.index === slider.currentSlide)
                     window.setTimeout(() => {
                         //document.documentElement.style.overflowY = "hidden";
-                    }, 50);
+                    }, 50);*/
                 innerItemAttrs.onload = (e: Event) => {
                     if(!(e.target as HTMLIFrameElement).src) // Not loaded with document, just empty
                         return;

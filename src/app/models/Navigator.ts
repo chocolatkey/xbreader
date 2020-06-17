@@ -95,7 +95,7 @@ export default class Navigator {
     getPageString(slider: Slider) {
         if(this.ttb) {
             if(!slider.selector) return "0%";
-            return `${Math.floor((document.documentElement.scrollTop + document.body.scrollTop) / slider.selector.scrollHeight * 100)}%`;
+            return `${Math.round(slider.percentage)}%`;
         } else if (!slider.single && !slider.ttb) {
             let spreadString = "";
             const spread = this.currentSpread(slider);

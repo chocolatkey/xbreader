@@ -24,7 +24,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
         e.redraw = false;
         if(publication.isTtb) {
             if(!slider.selector) return;
-            slider.binder.coordinator.HTML.scrollTo(0, slider.selector.scrollHeight * parseInt((e.target as HTMLInputElement).value) / 100);
+            slider.binder.coordinator.HTML.scrollTo(0, (slider.selector.getBoundingClientRect().height - window.innerHeight) * parseFloat((e.target as HTMLInputElement).value) / 100);
         } else
             slider.goTo(parseInt((e.target as HTMLInputElement).value));
     }
@@ -48,20 +48,21 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
         };
         if(publication.isTtb) {
             attrs.max = `${100}`;
-            attrs.value = `${(slider.binder.coordinator.HTML.scrollTop + document.body.scrollTop) / document.documentElement.scrollHeight * 100}`;
+            attrs.value = `${slider.percentage}`;
             attrs.step = "any";
         }
         return m("input.br-slider", attrs);
     }
 
     sliderSystem(slider: Slider, publication: Publication, embedded: boolean) {        
-        let items = [
+        const items = [
             this.slider(slider, publication)
         ];
 
         const currentPageIndicator = m("span.br-slider__pagenum", {
             title: t`Current Page`,
             onclick: () => {
+                if(slider.toon) return;
                 const newPage = parseInt(prompt(`${t`Input a page number`} (${1}-${publication.pmetadata.NumberOfPages})`, (slider.currentSlide + 1).toString())) - 1;
                 if(newPage !== (slider.currentSlide + 1) && newPage >= 0)
                     slider.goTo(newPage);
@@ -124,8 +125,9 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
             tweakButton = m("button#br-view__tweak", {
                 onclick: () => {
                     slider.fit = !slider.fit;
+                    if(publication.isTtb) slider.slideToCurrent(false, true);
                 },
-                title: slider.fit ? t`Fit to width` : t`Fit to height`
+                title: slider.fit ? (publication.isTtb ? t`Widen` : t`Fit to width`) : (publication.isTtb ? t`Narrow` : t`Fit to height`)
             }, [
                 m("i", {
                     class: slider.fit ? "br-i-wide" : "br-i-thin"
@@ -214,11 +216,10 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
             }, [
                 this.sliderSystem(slider, publication, brand.embedded),
                 m("div.br-botbar-controls", {
-                    class: slider.portrait ? "portrait" : "landscape",
-                    style: publication.isTtb ? "display: none;" : null
+                    class: slider.portrait ? "portrait" : "landscape"
                 }, [
-                    tweakButton,
-                    m("button#br-view__rvm", {
+                    (!publication.isTtb || !publication.isSmallToon) && tweakButton,
+                    !publication.isTtb && m("button#br-view__rvm", {
                         title: t`Toggle reading direction`,
                         onclick: () => {
                             const reader = vnode.attrs.reader;
