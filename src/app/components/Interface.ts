@@ -24,7 +24,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
         e.redraw = false;
         if(publication.isTtb) {
             if(!slider.selector) return;
-            slider.binder.coordinator.HTML.scrollTo(0, (slider.selector.getBoundingClientRect().height - window.innerHeight) * parseFloat((e.target as HTMLInputElement).value) / 100);
+            slider.binder.coordinator.HTML.scrollTo(0, (slider.selector.getBoundingClientRect().height - slider.innerHeightCached) * parseFloat((e.target as HTMLInputElement).value) / 100);
         } else
             slider.goTo(parseInt((e.target as HTMLInputElement).value));
     }
