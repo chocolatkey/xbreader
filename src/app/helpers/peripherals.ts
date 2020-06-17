@@ -448,6 +448,38 @@ export default class Peripherals {
         this.ui.mousing = true;
     }
 
+    private cursorHandler() {
+        const sliderLength = this.slider.length - 1;
+        const atFirstSlide = this.slider.toon ? this.slider.percentage === 0 : Math.max(this.slider.currentSlide, 0) === 0;
+        const atLastSlide = this.slider.toon ? this.slider.percentage > 99.9 : Math.min(this.slider.currentSlide, sliderLength) === sliderLength && !this.slider.series.next;
+        if (this.slider.ttb) { // Vertical controls
+            switch (this.mousePos.Division.Y) {
+                case VerticalThird.Bottom:
+                    this.changeCursor(atLastSlide ? "not-allowed" : "s-resize");
+                    break;
+                case VerticalThird.Top:
+                    this.changeCursor(atFirstSlide ? "not-allowed" : "n-resize");
+                    break;
+                case VerticalThird.Middle:
+                    this.changeCursor("context-menu");
+                    break;
+            }
+        } else { // Horizontal controls
+            const rtl = this.slider.rtl;
+            switch (this.mousePos.Division.X) {
+                case HorizontalThird.Left:
+                    this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed" : "w-resize");
+                    break;
+                case HorizontalThird.Right:
+                    this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed" : "e-resize");
+                    break;
+                case HorizontalThird.Center:
+                    this.changeCursor("context-menu");
+                    break;
+            }
+        }
+    }
+
     /**
      * mousemove event handler
      */
@@ -475,35 +507,7 @@ export default class Peripherals {
                     }, 500);
                 }
 
-                const sliderLength = this.slider.length - 1;
-                const atFirstSlide = Math.max(this.slider.currentSlide, 0) === 0;
-                const atLastSlide = Math.min(this.slider.currentSlide, sliderLength) === sliderLength && !this.slider.series.next;
-                if (this.slider.ttb) { // Vertical controls
-                    switch (this.mousePos.Division.Y) {
-                        case VerticalThird.Bottom:
-                            this.changeCursor(atLastSlide ? "not-allowed" : "s-resize");
-                            break;
-                        case VerticalThird.Top:
-                            this.changeCursor(atFirstSlide ? "not-allowed" : "n-resize");
-                            break;
-                        case VerticalThird.Middle:
-                            this.changeCursor("context-menu");
-                            break;
-                    }
-                } else { // Horizontal controls
-                    const rtl = this.slider.rtl;
-                    switch (this.mousePos.Division.X) {
-                        case HorizontalThird.Left:
-                            this.changeCursor((atFirstSlide && !rtl || atLastSlide && rtl) ? "not-allowed" : "w-resize");
-                            break;
-                        case HorizontalThird.Right:
-                            this.changeCursor((atFirstSlide && rtl || atLastSlide && !rtl) ? "not-allowed" : "e-resize");
-                            break;
-                        case HorizontalThird.Center:
-                            this.changeCursor("context-menu");
-                            break;
-                    }
-                }
+                this.cursorHandler();
             } else {
                 this.changeCursor(null);
                 this.ui.toggle(true);
@@ -805,6 +809,7 @@ export default class Peripherals {
                     m.redraw();
                     break;
             }
+            this.cursorHandler();
         } else { // Horizontal controls
             const next = this.slider.rtl ? HorizontalThird.Left : HorizontalThird.Right;
             const prev = this.slider.rtl ? HorizontalThird.Right : HorizontalThird.Left;
@@ -834,6 +839,7 @@ export default class Peripherals {
         this.dtimer = window.setTimeout(() => {
             if (!this.pdblclick) {
                 this.moveBy(MovingParameter);
+                this.cursorHandler();
             }
             this.pdblclick = false;
         }, 200); // Unfortunately adds lag to interface elements :(
