@@ -504,7 +504,7 @@ export default class Peripherals {
                             return;
                         this.ui.toggle(false);
                         m.redraw();
-                    }, 500);
+                    }, 250);
                 }
 
                 this.cursorHandler();
@@ -762,7 +762,7 @@ export default class Peripherals {
             clearTimeout(this.dblDisabler);
             this.dblDisabler = window.setTimeout(() => {
                 this.disableDblClick = false;
-            }, 1000);
+            }, 500);
         } else if (typeof MovingParameter === "string") {
             if (MovingParameter === "head") {
                 this.slider.goTo(0);
@@ -785,13 +785,12 @@ export default class Peripherals {
             } else if (MovingParameter === "zoom-reset") {
                 this.slider.zoomer.scale = 1;
             }
-            // TODO: change zoomer position to center when zooming with keyboard
-
         }
         if (MovingParameter === "menu")
             this.ui.toggle();
         else
             this.ui.toggle(false);
+
         m.redraw();
     }
 
@@ -800,9 +799,9 @@ export default class Peripherals {
     private evalPointer(event: MouseEvent, active: boolean) {
         if (!active)
             return;
-        const ev = this.coordinator.getBibiEvent(event);
+        this.mousePos = this.coordinator.getBibiEvent(event);
         if (this.slider.ttb) { // Vertical controls
-            switch (ev.Division.Y) {
+            switch (this.mousePos.Division.Y) {
                 case VerticalThird.Bottom:
                     this.moveBy(1);
                     break;
@@ -818,18 +817,21 @@ export default class Peripherals {
         } else { // Horizontal controls
             const next = this.slider.rtl ? HorizontalThird.Left : HorizontalThird.Right;
             const prev = this.slider.rtl ? HorizontalThird.Right : HorizontalThird.Left;
-            switch (ev.Division.X) {
+            switch (this.mousePos.Division.X) {
                 case next:
-                    this.delayedMoveBy(1);
+                    this.moveBy(1);
                     break;
                 case prev:
-                    this.delayedMoveBy(-1);
+                    this.moveBy(-1);
                     break;
                 case HorizontalThird.Center:
                     this.delayedToggle();
                     break;
             }
         }
+
+        // Update cursor
+        requestAnimationFrame(() => this.cursorHandler());
     }
 
     private delayedToggle() {
@@ -840,16 +842,6 @@ export default class Peripherals {
         this.pdblclick = false;
     }
 
-    private delayedMoveBy(MovingParameter: any) {
-        this.dtimer = window.setTimeout(() => {
-            if (!this.pdblclick) {
-                this.moveBy(MovingParameter);
-                this.cursorHandler();
-            }
-            this.pdblclick = false;
-        }, 200); // Unfortunately adds lag to interface elements :(
-    }
-
     onclick(Eve: MouseEvent) {
         this.evalPointer(Eve, !this.isDragging);
     }
@@ -857,6 +849,7 @@ export default class Peripherals {
     ondblclick(Eve: MouseEvent) {
         clearTimeout(this.dtimer);
         this.pdblclick = true;
+        this.dtimer = window.setTimeout(() => this.pdblclick = false, 200);
 
         this.ui.toggle(false);
         if (!this.slider.zoomer || this.disableDblClick)
@@ -958,10 +951,15 @@ export default class Peripherals {
         clearTimeout(this.onwheelTimer_stop);
         this.onwheelTimer_stop = window.setTimeout(() => {
             this.PreviousWheels = [];
+
+            // Update cursor
+            this.cursorHandler();
+            m.redraw();
         }, 192);
     }
 
     onscroll(Eve: Event) {
+        console.log("scroll");
         if(this.ignoreScrollFlag) {
             this.ignoreScrollFlag = false;
             return false;
@@ -974,6 +972,10 @@ export default class Peripherals {
         clearTimeout(this.Timer_onscrolled);
         this.Timer_onscrolled = window.setTimeout(() => {
             this.Scrolling = false;
+
+            // Update cursor
+            this.cursorHandler();
+            m.redraw();
         }, 123);
     }
 

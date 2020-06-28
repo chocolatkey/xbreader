@@ -60,7 +60,7 @@ export default class Coordinator {
             Coord.X = Eve.pageX;
             Coord.Y = Eve.pageY;
         }
-        if((Eve.target as HTMLElement).ownerDocument.documentElement === this.HTML) {
+        if(((Eve.target as HTMLElement).ownerDocument?.documentElement || (Eve.target as HTMLDocument).documentElement) === this.HTML) {
             Coord.X -= (this.HTML.scrollLeft + this.Body.scrollLeft);
             Coord.Y -= (this.HTML.scrollTop + this.Body.scrollTop);
         } else {
