@@ -959,7 +959,6 @@ export default class Peripherals {
     }
 
     onscroll(Eve: Event) {
-        console.log("scroll");
         if(this.ignoreScrollFlag) {
             this.ignoreScrollFlag = false;
             return false;
