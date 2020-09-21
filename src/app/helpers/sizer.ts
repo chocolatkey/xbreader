@@ -85,6 +85,12 @@ export function bestImage(item: Link): Link {
                 return curr;
         }
 
+        // Both have equal dimension, but different mimetype, pick WEBP since it tends to be more efficient when supported
+        if(cDim === pDim && curr.TypeLink !== prev.TypeLink && canWebP)
+            if(prev.TypeLink === "image/webp") return prev;
+            else if(curr.TypeLink === "image/webp") return curr;
+
+
         // Both are larger or smaller than ideal, pick the one closer to the ideal
         if((cDim >= dimension && pDim >= dimension) || (cDim <= dimension && pDim <= dimension))
             return closestResolution([prev, curr], dimension, width);
