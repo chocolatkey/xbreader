@@ -386,9 +386,9 @@ export default class LazyLoader {
     }
 
     prepare() {
-        const source = this.source;
         if(this.reloader) {
             if(this.canvas) {
+                this.source;
                 this.canvas.height = this.best.Height;
                 this.canvas.width = this.best.Width;
             }
@@ -400,6 +400,7 @@ export default class LazyLoader {
             this.draw(t`Loading...`);
         }
         if (!workerSupported) {
+            const source = this.source;
             this.preloader = document.createElement("img");
             (this.preloader as HTMLImageElement).onload = () => {
                 if (!this.preloader)
@@ -425,6 +426,7 @@ export default class LazyLoader {
             this.preloader = {
                 src: null
             };
+            const source = this.source;
             this.lazyWorker(source).then((params: any[]) => {
                 if (!this.preloader)
                     return;
