@@ -42,7 +42,7 @@ function gatherImages(item: Link): Link[] {
  * Select the best image to be loaded based on the current reading environment
  * @param item DiViNa manifest item
  */
-export function bestImage(item: Link): Link {
+export function bestImage(item: Link, toonMode = false): Link {
     if(!item) return null;
     if(!item.findFlag("isImage")) return item;
     const links = gatherImages(item);
@@ -50,9 +50,7 @@ export function bestImage(item: Link): Link {
 
     const ratio = window.devicePixelRatio || 1;
     let width = false; // Use width (not height) to determine best image
-    let toonMode = false;
 
-    // TODO override based on presentation hints for toon
     if((item.Height / item.Width) > 2) // Very tall image, most likely a toon image
         toonMode = true;
 

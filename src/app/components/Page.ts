@@ -75,7 +75,7 @@ export default class Page implements ClassComponent<PageAttrs> {
         if (vnode.attrs.blank)
             this.blank = true;
         else
-            this.loader = new SmartLoader(this.data, vnode.attrs.index, vnode.attrs.drawCallback, vnode.attrs.chooseCallback);
+            this.loader = new SmartLoader(this.data, vnode.attrs.slider.publication, vnode.attrs.index, vnode.attrs.drawCallback, vnode.attrs.chooseCallback);
     }
 
 

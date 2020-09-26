@@ -5,6 +5,7 @@ import WorkerPool from "./workerPool";
 import m from "mithril";
 import { canWebP, canDrawBitmap } from "./platform";
 import { bestImage } from "./sizer";
+import Publication from "../models/Publication";
 
 const HIGH_THRESHOLD = 5;
 const LOW_THRESHOLD = 3;
@@ -150,10 +151,12 @@ export default class LazyLoader {
     private preloader: HTMLImageElement | Record<string, any>;
     private drawT: number;
     private readonly chooser: Function;
+    private toonLogic = false; // Whether to use "toon logic" to make decisions when loading the image
 
-    constructor(itemData: Link, indx: number, drawCallback: Function, chooseCallback: Function) {
+    constructor(itemData: Link, publication: Publication, indx: number, drawCallback: Function, chooseCallback: Function) {
         this.best = itemData;
         this.href = itemData.Href;
+        this.toonLogic = publication.isTtb;
 
         this.data = itemData;
         this.index = indx;
@@ -174,7 +177,7 @@ export default class LazyLoader {
         let best: Link;
         if(this.chooser !== null) // Give custom func a chance to choose the best link
             best = this.chooser(this.data) as Link;
-        if(!best) best = bestImage(this.data);
+        if(!best) best = bestImage(this.data, this.toonLogic);
         if(best !== this.best) {
             this.best = best;
             this.href = best.Href;
