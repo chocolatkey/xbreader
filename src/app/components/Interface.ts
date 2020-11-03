@@ -33,7 +33,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
         const attrs = {
             type: "range",
             min: "0",
-            max: `${slider.length - (slider.shift ? 1 : 2)}`,//(slider.length % 2 ?  : slider.length),
+            max: `${slider.length - 1}`, //(slider.length % 2 ?  : slider.length), or (slider.shift ? 1 : 2)
             value: `${slider.currentSlide}`,
             step: `${slider.perPage}`,
             title: t`Select Page`,

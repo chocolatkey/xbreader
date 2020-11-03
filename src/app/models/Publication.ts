@@ -361,6 +361,7 @@ export default class Publication {
 
     private isValidManifest(manifest: any) { // TODO stricter
         Publication.fixDeprecated(manifest, "spine", "readingOrder");
+        manifest.readingOrder.forEach((item: any) => Publication.fixDeprecated(item, "mime", "type"));
         const requiredRootKeys = ["metadata", "links", "readingOrder"];
         if(!this.keysInObj(requiredRootKeys, manifest))
             return false;

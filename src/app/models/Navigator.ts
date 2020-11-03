@@ -26,9 +26,9 @@ export default class Navigator {
             item.Properties.Spread = item.Properties.Spread ? item.Properties.Spread : "landscape"; // TODO Maybe default to auto instead
             if(!redo) {
                 item.setSpecial("number", index + 1);
-                Publication.fixDeprecated(item, "mime", "type");
-                if(item.TypeLink.indexOf("image/") === 0)
-                    item.setSpecial("isImage", true);
+                item.setSpecial("isImage", true);
+                if(item.TypeLink?.indexOf("image/") !== 0)
+                    item.setSpecial("isImage", false);
                 if(!item.Properties.Orientation) item.Properties.Orientation = item.Width > item.Height ? "landscape" : "portrait";
             }
             const isLandscape = item.Properties.Orientation === "landscape" ? true : false;
@@ -52,6 +52,10 @@ export default class Navigator {
             if(item.length > 1)
                 return; // Only left with single-page "spreads"
             const single = item[0];
+
+            // First page is landscape/spread means no shift
+            if(index === 0 && (single.Properties.Orientation === "landscape" || (single.Properties.Orientation !== "portrait" && (single.Width > single.Height || single.Properties.Spread === "both"))))
+                this.shift = false;
 
             // If last was a true single, and this spread is a center page (that's not special), something's wrong
             if(wasLastSingle && single.Properties.Page === "center") {

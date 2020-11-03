@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { t } from "ttag";
 import Reader, { XBReadingDirection } from "../components/Reader";
 import Series from "./Series";
