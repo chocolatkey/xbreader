@@ -1,8 +1,11 @@
+import sML from "./sMLstub";
+
 export const language = () => {
     return navigator.language.split("-")[0];
 };
 
 const WebPChecker = () => {
+    if(sML.UA?.Firefox >= 65) return true; // Firefox doesn't support canvas detection method, do UA check instead
     const elem = document.createElement("canvas");
     if (elem.getContext && elem.getContext("2d"))
         // was able or not to get WebP representation
