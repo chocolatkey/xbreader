@@ -14,9 +14,9 @@ var supportedLanguages = [ // Languages supported for XBReader
 
 function getLanguage() {
     var naviLang = navigator.browserLanguage || navigator.language || navigator.userLanguage;
-    if(typeof naviLang != "string") return defaultLanguage;
+    if(typeof naviLang !== "string") return defaultLanguage;
     var clientLanguage = navigator.language.split("-")[0];
-    if(supportedLanguages.indexOf(clientLanguage) != -1)
+    if(supportedLanguages.indexOf(clientLanguage) !== -1)
         return clientLanguage;
     else
         return defaultLanguage;

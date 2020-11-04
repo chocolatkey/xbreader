@@ -4,7 +4,7 @@
  * This helper checks divina links of mimetype image/* for alternate versions
  * and selects the most appropriate one based on the browsing environment
  */
-import Link from "../models/Link";
+import Link from "xbreader/models/Link";
 import { Link as ReadiumLink } from "@r2-shared-js/models/publication-link";
 import { canWebP, networkType } from "./platform";
 import sML from "./sMLstub";

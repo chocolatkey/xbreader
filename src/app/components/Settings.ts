@@ -4,7 +4,7 @@ import m, {
     CVnode
 } from "mithril";
 import Ui from "xbreader/models/Ui";
-import Config from "../models/Config";
+import Config from "xbreader/models/Config";
 
 export interface SettingsAttrs {
     readonly config: Config;

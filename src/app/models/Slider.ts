@@ -4,7 +4,7 @@
 
 import { t } from "ttag";
 import m from "mithril";
-import sML from "../helpers/sMLstub";
+import sML from "xbreader/helpers/sMLstub";
 import Publication from "./Publication";
 import Navigator from "./Navigator";
 import Series from "./Series";

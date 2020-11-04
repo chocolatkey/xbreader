@@ -4,8 +4,7 @@
   "description": "Fixed-layout publication reader for the web",
   "author": "Henry <chocolatkey@gmail.com>",
   "contributors": [
-    "chocolatkey <chocolatkey@gmail.com> (https://chocolatkey.com)",
-    "dasZGFz <daszgfz@protonmail.com> (https://das.zgfz.me)"
+    "chocolatkey <chocolatkey@gmail.com> (https://chocolatkey.com)"
   ],
   "license": "MIT",
   "homepage": "https://github.com/chocolatkey/xbreader",

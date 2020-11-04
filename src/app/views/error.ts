@@ -1,7 +1,7 @@
 import { t } from "ttag";
 import m, { ClassComponent, CVnode } from "mithril";
-import { isNumeric, intVal } from "../helpers/utils";
-import Logo from "../partials/Logo";
+import { isNumeric, intVal } from "xbreader/helpers/utils";
+import Logo from "xbreader/partials/Logo";
 
 const errorMappings: { [code: number]: string } = {
     400: t`Your client issued a bad request.`,

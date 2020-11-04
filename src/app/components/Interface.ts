@@ -1,12 +1,12 @@
 import { t } from "ttag";
 import m, {ClassComponent, Vnode, Child} from "mithril";
-import Logo from "../partials/Logo";
+import Logo from "xbreader/partials/Logo";
 import Ui from "xbreader/models/Ui";
 import Slider from "xbreader/models/Slider";
 import Reader from "./Reader";
 import Publication from "xbreader/models/Publication";
 import Settings from "./Settings";
-import Config from '../models/Config';
+import Config from "xbreader/models/Config";
 
 export interface InterfaceAttrs {
     readonly model: Ui;

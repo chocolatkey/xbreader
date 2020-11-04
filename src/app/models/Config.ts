@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { t } from "ttag";
-import Reader, { XBReadingDirection } from "../components/Reader";
+import Reader from "xbreader/components/Reader";
 import Series from "./Series";
-import Link from "xbreader/models/Link";
-import Publication from "./Publication";
 
 const STORAGE_KEY = "xbconfig";
 const BACKGROUND_GREY = "#404040";

@@ -5,7 +5,7 @@ import WorkerPool from "./workerPool";
 import m from "mithril";
 import { canWebP, canDrawBitmap } from "./platform";
 import { bestImage } from "./sizer";
-import Publication from "../models/Publication";
+import Publication from "xbreader/models/Publication";
 
 const HIGH_THRESHOLD = 5;
 const LOW_THRESHOLD = 3;
