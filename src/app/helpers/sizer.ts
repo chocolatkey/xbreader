@@ -60,6 +60,9 @@ export function bestImage(item: Link, toonMode = false): Link {
         dimension = window.innerWidth * ratio;
     }
 
+    // Don't go above ultra on mobile, might not be possible anyway
+    if(sML.Mobile) dimension = Math.min(dimension, width ? WIDTH_ULTRA : HEIGHT_ULTRA);
+
     // Optional network type of device
     const nType = networkType();
     switch (nType) {
