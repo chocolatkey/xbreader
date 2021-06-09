@@ -1,3 +1,4 @@
+const MAX_POOL_SIZE = Math.max(1, Math.min(navigator.hardwareConcurrency ?? 1, 8) - 1);
 
 export default class WorkerPool {
     private readonly pool: Worker[] = [];
@@ -11,7 +12,7 @@ export default class WorkerPool {
      * @param url URL source for the Worker(s)
      * @param size Pool size, defaults to *navigator.hardwareConcurrency*-1 or 1 if hardwareConcurrency is not available
      */
-    constructor(url: string, size = (navigator.hardwareConcurrency ? navigator.hardwareConcurrency - 1 : 1)) {
+    constructor(url: string, size = MAX_POOL_SIZE) {
         this.size = size;
         this.create(url);
     }
