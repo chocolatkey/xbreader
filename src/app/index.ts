@@ -22,7 +22,7 @@ window.xbreader = (config: XBConfig) => {
                 return new readView(config);
             }
         },
-        "/:id/preview": {
+        "/:id.../preview": {
             onmatch: () => {
                 config.preview = true;
                 return new readView(config);
