@@ -17,16 +17,7 @@ window.xbreader = (config: XBConfig) => {
         "/error/:code": () => new errorView(config),
         "/error/:code/:message": () => new errorView(config),
         "/:id...": {
-            onmatch: () => {
-                config.preview = false;
-                return new readView(config);
-            }
-        },
-        "/:id.../preview": {
-            onmatch: () => {
-                config.preview = true;
-                return new readView(config);
-            }
+            onmatch: () => new readView(config)
         }
     });
 };
