@@ -30,7 +30,7 @@ export default class ReadView implements ClassComponent<ReadAttrs> {
 
     view({attrs}: Vnode<ReadAttrs, this>) {
         return [
-            m(Reader as any as Reader, {cid: attrs.id, /*nav: attrs.nav,*/ config: this.config})
+            m(Reader as any as Reader, {cid: attrs.id, config: this.config})
         ];
     }
 }

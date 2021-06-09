@@ -16,7 +16,7 @@ window.xbreader = (config: XBConfig) => {
     m.route(config.mount, "/error/404", {
         "/error/:code": () => new errorView(config),
         "/error/:code/:message": () => new errorView(config),
-        "/:id": {
+        "/:id...": {
             onmatch: () => {
                 config.preview = false;
                 return new readView(config);
@@ -25,12 +25,6 @@ window.xbreader = (config: XBConfig) => {
         "/:id/preview": {
             onmatch: () => {
                 config.preview = true;
-                return new readView(config);
-            }
-        },
-        "/:id/:nav": {
-            onmatch: () => {
-                config.preview = false;
                 return new readView(config);
             }
         }
