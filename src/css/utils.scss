@@ -36,3 +36,11 @@ html.no-js .jss, .hide {
         display: none !important;
     }
 }
+
+/* Turn off animations if specified systemwide */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
