@@ -18,7 +18,7 @@ export default class ReadView implements ClassComponent<ReadAttrs> {
 
     oninit({attrs}: Vnode<ReadAttrs, this>) { // Welcome
         if(attrs.id) {
-            this.cid = attrs.id;
+            this.cid = decodeURIComponent(attrs.id);
             const xRegex = /^[@-Za-z(-;=\\_!]+$/i;
             if(!xRegex.test(this.cid)) {
                 console.error("Invalid content ID");
@@ -30,7 +30,7 @@ export default class ReadView implements ClassComponent<ReadAttrs> {
 
     view({attrs}: Vnode<ReadAttrs, this>) {
         return [
-            m(Reader as any as Reader, {cid: attrs.id, config: this.config})
+            m(Reader as any as Reader, {cid: this.cid, config: this.config})
         ];
     }
 }
