@@ -2,19 +2,20 @@
 
 @font-face {
   font-family: '#{$icomoon-font-family}';
-  src:  url('#{$icomoon-font-path}/#{$icomoon-font-family}.eot?l05ndx');
-  src:  url('#{$icomoon-font-path}/#{$icomoon-font-family}.eot?l05ndx#iefix') format('embedded-opentype'),
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.ttf?l05ndx') format('truetype'),
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.woff?l05ndx') format('woff'),
-    url('#{$icomoon-font-path}/#{$icomoon-font-family}.svg?l05ndx##{$icomoon-font-family}') format('svg');
+  src:  url('#{$icomoon-font-path}/#{$icomoon-font-family}.eot?h0ib59');
+  src:  url('#{$icomoon-font-path}/#{$icomoon-font-family}.eot?h0ib59#iefix') format('embedded-opentype'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.ttf?h0ib59') format('truetype'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.woff?h0ib59') format('woff'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.svg?h0ib59##{$icomoon-font-family}') format('svg');
   font-weight: normal;
   font-style: normal;
+  font-display: block;
 }
 
 [class^="br-i-"], [class*=" br-i-"] {
   /* use !important to prevent issues with browser extensions that change fonts */
   font-family: '#{$icomoon-font-family}' !important;
-  speak: none;
+  speak: never;
   font-style: normal;
   font-weight: normal;
   font-variant: normal;
@@ -29,6 +30,36 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.br-i-single-wide {
+  &:before {
+    content: $br-i-single-wide; 
+  }
+}
+.br-i-single {
+  &:before {
+    content: $br-i-single; 
+  }
+}
+.br-i-spread-ltr {
+  &:before {
+    content: $br-i-spread-ltr; 
+  }
+}
+.br-i-spread-rtl {
+  &:before {
+    content: $br-i-spread-rtl; 
+  }
+}
+.br-i-thin {
+  &:before {
+    content: $br-i-thin; 
+  }
+}
+.br-i-wide {
+  &:before {
+    content: $br-i-wide; 
+  }
+}
 .br-i-arrow_back {
   &:before {
     content: $br-i-arrow_back; 
@@ -187,26 +218,6 @@
 .br-i-horizontal {
   &:before {
     content: $br-i-horizontal; 
-  }
-}
-.br-i-single {
-  &:before {
-    content: $br-i-single; 
-  }
-}
-.br-i-spread {
-  &:before {
-    content: $br-i-spread; 
-  }
-}
-.br-i-thin {
-  &:before {
-    content: $br-i-thin; 
-  }
-}
-.br-i-wide {
-  &:before {
-    content: $br-i-wide; 
   }
 }
 
