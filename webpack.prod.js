@@ -1,8 +1,7 @@
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const TtagWebpackPlugin = require("ttag-webpack-plugin");
+// const TtagWebpackPlugin = require("ttag-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries"); // Will be unecessary in Webpack 5, apparently
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 const WebpackBar = require("webpackbar");
 const TerserPlugin = require("terser-webpack-plugin");
@@ -15,35 +14,50 @@ Object.keys(stringifiedConstants).forEach((c) => {
 });
 
 module.exports = {
+    mode: "production",
+    output: {
+        environment: {
+            arrowFunction: false,
+            destructuring: false
+        }
+    },
     entry: {
-        xbstyles: [
-            "./src/css/styles.scss"
-        ],
-        xbreader: [
-            "./src/app/index.ts"
-        ],
-        loader: [
-            "./src/app/loader.js"
-        ]
+        xbstyles: "./src/css/styles.scss",
+        xbreader: "./src/app/index.ts",
+        loader: "./src/app/loader.js"
     },
     devtool: "source-map",
-    output: {
-        path: path.resolve(__dirname, "./dist"),
-        filename: "[name].js"
-    },
     module: {
         rules: [{
             test: /\.tsx?$/,
             exclude: /node_modules/,
-            loader: ["babel-loader", {loader: "ts-loader", options: {transpileOnly: true}}]
+            use: [
+                {loader: "babel-loader", options: {
+                    plugins: [
+                        "@babel/plugin-transform-runtime",
+                        /*["ttag", { // TODO this isn't working
+                            "resolve": {
+                                "translations": "default",
+                                "unresolved": "skip" // TODO warn
+                            }
+                        }]*/
+                    ]
+                }},
+                {loader: "ts-loader", options: {transpileOnly: true}}
+            ]
         }, {
             test: /\.js$/,
             exclude: /node_modules/,
-            loader: "babel-loader"
+            //loader: "babel-loader"
         }, {
             test: /\.(s*)css$/,
             use: [
-                MiniCssExtractPlugin.loader,
+                {
+                    loader: MiniCssExtractPlugin.loader,
+                    options: {
+                        publicPath: ""
+                    }
+                },
                 {
                     loader: "css-loader",
                     options: {
@@ -54,10 +68,12 @@ module.exports = {
                     loader: "sass-loader",
                     options: {
                         sourceMap: true,
-                        includePaths: [
-                            "./src/css",
-                            "./node_modules"
-                        ]
+                        sassOptions: {
+                            includePaths: [
+                                "./src/css",
+                                "./node_modules"
+                            ]
+                        }
                     }
                 }
             ]
@@ -79,27 +95,23 @@ module.exports = {
             "@r2-shared-js": "r2-shared-js/dist/es5/src",
             "@r2-streamer-js": "r2-streamer-js/dist/es5/src",
             "@r2-navigator-js": "r2-navigator-js/dist/es5/src",
-            "xbreader": path.resolve(__dirname, "src/app/"),
-            "ttag": "ttag/dist/mock"
+            "xbreader": path.resolve(__dirname, "src/app/")
+        },
+        fallback: {
+            "util": require.resolve("util/")
         }
     },
     target: "web",
-    node: {
-        Buffer: false, // Fixes inclusion of useless Buffer polyfill needed by ta-json-x. The buffer loader is NEVER used
-        process: false,
-        setImmediate: false,
-        global: false
-    },
     plugins: [
         new WebpackBar({
             name: "XBReader"
         }),
         new webpack.DefinePlugin(stringifiedConstants),
+        new webpack.DefinePlugin({
+            "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG)
+        }),
         new MiniCssExtractPlugin({
             filename: "[name].css"
-        }),
-        new FixStyleOnlyEntriesPlugin({
-            silent: true
         }),
         new HtmlWebpackPlugin({
             title: "XBReader",
@@ -127,7 +139,7 @@ module.exports = {
                 ua: consts.__GA_UA__
             }
         }),
-        new TtagWebpackPlugin({
+        /*new TtagWebpackPlugin({
             filename: "[name].js",
             chunkFilename: "[id].js",
             translations: {
@@ -135,7 +147,7 @@ module.exports = {
                 fr: path.resolve(__dirname, "i18n/fr.po"),
                 ja: path.resolve(__dirname, "i18n/ja.po")
             }
-        })
+        })*/
     ].concat(
         process.argv.includes("--analyze") 
             ? [new BundleAnalyzerPlugin({
@@ -147,17 +159,5 @@ module.exports = {
                 statsFilename: path.resolve(__dirname, "stats/xbreader.json")
             })]
             : [] 
-    ),
-    optimization: {
-        minimizer: [
-            new TerserPlugin({
-                sourceMap: true,
-                terserOptions: {
-                    output: {
-                        comments: false
-                    }
-                }
-            })
-        ]
-    }
+    )
 };

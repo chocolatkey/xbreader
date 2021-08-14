@@ -4,6 +4,7 @@
             "chrome": "44",
             "ie": "11"
         },
+        "exclude": ["web.url", "es.string.split"],
         "useBuiltIns": "usage",
         "corejs": { 
             "version": 3, 

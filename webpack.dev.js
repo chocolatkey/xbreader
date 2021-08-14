@@ -1,7 +1,6 @@
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries"); // Will be unecessary in Webpack 5, apparently
 const WebpackBar = require("webpackbar");
 const webpack = require("webpack");
 const consts = require("./consts");
@@ -12,26 +11,26 @@ Object.keys(stringifiedConstants).forEach((c) => {
 });
 
 module.exports = {
+    mode: "development",
     devServer: {
-        contentBase: path.join(__dirname, "bin"),
+        static: path.join(__dirname, "bin"),
         compress: true,
         port: 8080,
-        noInfo: true/*,
-        disableHostCheck: true, */
+        //hot: true,
+        //noInfo: true,
+        //disableHostCheck: true,
+    },
+    infrastructureLogging: {
+        level: "warn"
     },
     entry: {
-        xbstyles: [
-            "./src/css/styles.scss"
-        ],
-        xbreader: [
-            "./src/app/index.ts"
-        ],
-        loader: [
-            "./src/app/loader.js"
-        ]
+        xbstyles: "./src/css/styles.scss",
+        xbreader: "./src/app/index.ts",
+        loader: "./src/app/loader.js"
     },
     output: {
         path: path.resolve(__dirname, "./bin"),
+        publicPath: "/",
         filename: "[name].js"
     },
     module: {
@@ -63,10 +62,12 @@ module.exports = {
                     loader: "sass-loader",
                     options: {
                         sourceMap: true,
-                        includePaths: [
-                            "./src/css",
-                            "./node_modules"
-                        ]
+                        sassOptions: {
+                            includePaths: [
+                                "./src/css",
+                                "./node_modules"
+                            ]
+                        }
                     }
                 }
             ]
@@ -89,6 +90,9 @@ module.exports = {
             "@r2-streamer-js": "r2-streamer-js/dist/es5/src",
             "@r2-navigator-js": "r2-navigator-js/dist/es5/src",
             "xbreader": path.resolve(__dirname, "src/app/")
+        },
+        fallback: {
+            "util": require.resolve("util/")
         }
     },
     target: "web",
@@ -107,12 +111,13 @@ module.exports = {
                 ua: false
             }
         }),
-        new FixStyleOnlyEntriesPlugin({
-            silent: true
-        }),
         new MiniCssExtractPlugin({
             filename: "[name].css"
         }),
-        new webpack.DefinePlugin(stringifiedConstants)
+        new webpack.DefinePlugin(stringifiedConstants),
+        new webpack.DefinePlugin({
+            "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG)
+        }),
+        new webpack.HotModuleReplacementPlugin(),
     ]
 };
