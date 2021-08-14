@@ -3,17 +3,18 @@
  */
 
 import { t } from "ttag";
-import m, { CVnode, ChildArray, Child, Vnode } from "mithril";
+import m, { CVnode, ChildArray, Child, Vnode, ClassComponent } from "mithril";
 import Slider from "xbreader/models/Slider";
 import Peripherals from "xbreader/helpers/peripherals";
 import Page from "./Page";
+import ReflowablePage from "./ReflowablePage";
 
 export interface SpineAttrs {
     readonly slider: Slider;
     readonly binder: Peripherals;
 }
 
-export default class Spine { // TODO turn into ClosureComponent
+export default class Spine implements ClassComponent<SpineAttrs> {
 
     /*constructor({attrs}: CVnode<SpineAttrs>) {
         this.slider = attrs.model;
@@ -24,14 +25,17 @@ export default class Spine { // TODO turn into ClosureComponent
         const binder = attrs.binder;
         if(!slider)
             return null;
-        return m("div#br-spine", {
+        return m("div#br-spine.paginated", {
             style: slider.properties,
             ontouchstart: binder ? binder.touchstartHandler : null,
             ontouchend: binder ? binder.touchendHandler : null,
             onmouseup: binder ? binder.mouseupHandler : null,
             onmousedown: binder ? binder.mousedownHandler : null,
             "aria-label": t`Spine`
-        }, (children as ChildArray).map((page: Vnode<Page>) => {
+        }, (children as ChildArray).map((page: Vnode<Page|ReflowablePage>) => {
+            if(page.attrs.data.TypeLink.startsWith("text/") && !page.attrs.data.findFlag("final")) return m("div", {
+                key: "container@" + page.key
+            }, page);
             return m("div", {
                 style: slider.ttb ? {
                     display: "contents"

@@ -14,7 +14,6 @@ import { parseDirection } from "xbreader/helpers/utils";
 import { XBReadingDirection } from "xbreader/components/Reader";
 import { MIN_TTB_WIDTH } from "xbreader/components/Page";
 
-import { LCP } from "@r2-lcp-js/parser/epub/lcp";
 import { JsonStringConverter } from "@r2-utils-js/_utils/ta-json-string-converter";
 // https://github.com/edcarroll/ta-json
 import {
@@ -126,7 +125,7 @@ export default class Publication {
     // @JsonElementType(Link)
     // public Images!: Link[];
 
-    public LCP: LCP | undefined;
+    // public LCP: LCP | undefined;
 
     private Internal: IInternal[] | undefined;
 
@@ -389,8 +388,16 @@ export default class Publication {
         return uuidParts[uuidParts.length - 1];
     }
 
+    get isScrollable() {
+        return this.isTtb || this.reflowable;
+    }
+
     get isTtb() {
         return this.direction === XBReadingDirection.TTB;
+    }
+
+    get reflowable() {
+        return this.Metadata?.Rendition?.Layout === "reflowable";
     }
 
     get series() {

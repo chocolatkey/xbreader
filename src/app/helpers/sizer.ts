@@ -42,7 +42,7 @@ function gatherImages(item: Link): Link[] {
  * Select the best image to be loaded based on the current reading environment
  * @param item DiViNa manifest item
  */
-export function bestImage(item: Link, toonMode = false): Link {
+export function bestImage(item: Link, toonMode = false, lowok = false): Link {
     if(!item) return null;
     if(!item.findFlag("isImage")) return item;
     const links = gatherImages(item);
@@ -78,13 +78,14 @@ export function bestImage(item: Link, toonMode = false): Link {
         const cDim = getDimension(curr, width);
         const pDim = getDimension(prev, width);
 
-        if(!sML.Mobile && nType === 0 && !toonMode) { // If not mobile and on "best" network, try not to go under LOW
-            const lo = (width ? WIDTH_LOW : HEIGHT_LOW) + 25; // 25 accounts for slight aspect ratio variances
-            if(cDim < pDim && cDim <= lo)
-                return prev;
-            if(pDim < cDim && pDim <= lo)
-                return curr;
-        }
+        if(!lowok)
+            if(!sML.Mobile && nType === 0 && !toonMode) { // If not mobile and on "best" network, try not to go under LOW
+                const lo = (width ? WIDTH_LOW : HEIGHT_LOW) + 25; // 25 accounts for slight aspect ratio variances
+                if(cDim < pDim && cDim <= lo)
+                    return prev;
+                if(pDim < cDim && pDim <= lo)
+                    return curr;
+            }
 
         // Both have equal dimension, but different mimetype, pick WEBP since it tends to be more efficient when supported
         if(cDim === pDim && curr.TypeLink !== prev.TypeLink && canWebP)

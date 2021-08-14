@@ -26,6 +26,7 @@ export default class Slider {
     private readonly config: Config;
     private transform: string = null;
     private orientationInternal = -1; // Portrait = 1, Landscape = 0, Unknown = -1
+    public rlength = 0;
     currentSlide = 0;
     _fraction = 0;
     ignoreScrollFlag = false;
@@ -48,6 +49,7 @@ export default class Slider {
     };
     properties: Record<string, any>; // TODO CSS styles
     private readonly resizeBoundHandler: EventListenerOrEventListenerObject;
+    private PageChangeTimer: number;
 
     constructor(series: Series, publication: Publication, binder: Peripherals, config: Config) {
         this.navigator = publication.navi;
@@ -125,7 +127,7 @@ export default class Slider {
         }
     }
 
-    get threshold() {
+    get threshold(): number {
         return 50;
     }
 
@@ -133,18 +135,18 @@ export default class Slider {
         return "ease-out";
     }
 
-    get perPage() {
-        return this.spread && !this.portrait && !this.ttb ? 2 : 1;
+    get perPage(): number {
+        return (this.spread && !this.portrait && !this.ttb) ? 2 : 1;
     }
 
-    get portrait() {
+    get portrait(): boolean {
         if(this.orientationInternal === -1) {
             this.orientationInternal = this.innerHeightCached > window.innerWidth ? 1 : 0;
         }
         return this.orientationInternal === 1;
     }
 
-    get single() {
+    get single(): boolean {
         return !this.spread || this.portrait || this.ttb;
     }
 
@@ -153,13 +155,13 @@ export default class Slider {
     }
 
     get viewingPage() {
-        if(this.single || this.ttb) return this.currentSlide;
+        if(this.single || this.ttb || this.reflowable) return this.currentSlide;
         const spread = this.navigator.currentSpread(this);
         return spread && this.publication.Spine.indexOf(spread[spread.length-1]) || this.currentSlide;
     }
 
     get minViewingPage() {
-        if(this.single || this.ttb) return this.currentSlide;
+        if(this.single || this.ttb || this.reflowable) return this.currentSlide;
         const spread = this.navigator.currentSpread(this);
         return spread && this.publication.Spine.indexOf(spread[0]) || this.currentSlide;
     }
@@ -169,13 +171,14 @@ export default class Slider {
     }
 
     get length() {
-        if(this.single)
+        if(this.single || this.reflowable)
             return this.slength;
         const total = this.slength + this.nLandscape;
         return (this.shift && (total % 2 === 0)) ? total + 1 : total;
     }
 
     get slength() {
+        if(this.reflowable) return this.rlength * this.perPage - this.perPage;
         return this.publication.spine.length;
     }
 
@@ -197,24 +200,40 @@ export default class Slider {
         requestAnimationFrame(() => this.resizeHandler(true));
     }
 
+    outsidePageNumber() {
+        return this.toonflowable ?
+            Math.round(this.percentage * 100) / 100 :
+            (
+                (!this.single && !this.ttb && !this.reflowable) ?
+                this.navigator.currentSpread(this)[0].findSpecial("number").Value ?? (this.currentSlide + (this.single ? 1 : 0)) :
+                this.currentSlide + (this.single ? 1 : 0)
+            );
+    }
+
     onChange() {
         if(this.binder)
             this.guideHidden = true;
         this.zoomer.scale = 1;
         m.redraw();
-        this.config.state.onPageChange(this.toon ? Math.round(this.percentage * 100) / 100 : (this.currentSlide + (this.single ? 1 : 0)), this.direction, !this.single);
+
+        clearTimeout(this.PageChangeTimer);
+        this.PageChangeTimer = window.setTimeout(
+            () => this.config.state.onPageChange(this.outsidePageNumber(), this.direction, !this.single),
+            100 // Rate-limit change states, because it can get very spammy on toonflowable scrolls
+        );
     }
 
     onLastPage() {
-        if(this.config.state.onLastPage(this.series)) {
+        if(this.config.state.onLastPage(this.series, this.outsidePageNumber())) {
             const next = this.series.next;
-            
+
             if(!next) { // No more chapters left
                 this.bounce(this.rtl);
                 return;
             }
             // Go to next chapter
-            m.route.set("/:id", { id: next.uuid }, { replace: false });
+            this.series.current = next;
+            m.route.set("/:id...", { id: next.uuid }, { replace: false });
         }
     }
 
@@ -237,11 +256,11 @@ export default class Slider {
      */
     next(howManySlides = 1) {
         // early return when there is nothing to slide
-        if (this.slength <= this.perPage) {
+        if (this.slength <= this.perPage && !this.reflowable) {
             return;
         }
 
-        if(this.toon) { // Toon page down
+        if(this.toonflowable && this.ttb) { // Toon page down
             this.binder.coordinator.HTML.scrollTop += this.innerHeightCached;
             return;
         }
@@ -269,11 +288,11 @@ export default class Slider {
      */
     prev(howManySlides = 1) {
         // early return when there is nothing to slide
-        if (this.slength <= this.perPage) {
+        if (this.slength <= this.perPage && !this.reflowable) {
             return;
         }
 
-        if(this.toon) { // Toon page up
+        if(this.toonflowable && this.ttb) { // Toon page up
             this.binder.coordinator.HTML.scrollTop -= this.innerHeightCached;
             return;
         }
@@ -297,7 +316,7 @@ export default class Slider {
      * @param {number} index - Item index to slide to.
      */
     goTo(index: number) {
-        if (this.slength <= this.perPage)
+        if (this.slength <= this.perPage && !this.reflowable)
             return;
         if (index % 2 && !this.single) // Prevent getting out of track
             index++;
@@ -324,12 +343,26 @@ export default class Slider {
         return this.publication.isTtb;
     }
 
-    get percentage() {
-        if(!this.toon || !this.selector) return 0;
-        const tot = this.binder.coordinator.HTML.scrollTop + this.binder.coordinator.Body.scrollTop;
-        const h = this.selector.getBoundingClientRect().height;
-        this._fraction = tot / h;
-        return tot / (h - this.innerHeightCached) * 100;
+    get reflowable() {
+        return this.publication.reflowable;
+    }
+
+    get toonflowable() {
+        return this.publication.isScrollable;
+    }
+
+    get percentage(): number {
+        if(!this.toonflowable || !this.selector) return 0;
+        if(this.ttb) {
+            if(!this.binder.coordinator) return 0;
+            const tot = this.binder.coordinator.HTML.scrollTop + this.binder.coordinator.Body.scrollTop;
+            const h = this.selector.getBoundingClientRect().height;
+            this._fraction = tot / h;
+            return tot / (h - this.innerHeightCached) * 100;
+        } else if(this.reflowable) { // Reflowable
+            return this.currentSlide / (this.length - 1) * 100;
+        }
+        return 0;
     }
 
     /**
@@ -338,7 +371,7 @@ export default class Slider {
     slideToCurrent(enableTransition?: boolean, fast = true, changed = true) {
         // console.log("stc", this.currentSlide);
         if (this.ttb) {
-            if(this.toon) { // Is a TTB publication
+            if(this.toonflowable) { // Is a TTB publication
                 const prevFraction = this._fraction;
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {

@@ -1,44 +1,53 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { t } from "ttag";
 import Reader from "xbreader/components/Reader";
+import { canDrawBitmap } from "xbreader/helpers/platform";
+import LazyLoader, { drawerFunction } from "xbreader/helpers/lazyLoader";
 import Series from "./Series";
 
+export enum XBOptionType {
+    Radio,
+    Dropdown,
+    Spinner,
+    SpinnerPercentage
+}
+
+export enum XBOptionTypeSpinnerOptions {
+    MIN,
+    MAX,
+    STEP
+}
+
+const DEFAULT_LINE_HEIGHT = 1.3;
+const DEFAULT_FONT_SIZE = 1.0;
+const DEFAULT_TEXT_ALIGN = "start";
+const FALLBACK_FONT_FAMILY = "Roboto, sans-serif";
+
 const STORAGE_KEY = "xbconfig";
-const BACKGROUND_GREY = "#404040";
+const BACKGROUND_GREY = "#303030";
 const DEFAULT_SETTINGS: XBSetting[] = [
     {
-        title: t`↔ Layout`,
-        description: t`Override the reading format of spreads in horizontal reading`,
-        name: "spread",
-        value: "spread",
+        title: t`Theme`,
+        name: "background",
+        value: "#303030",
+        reflowable: false,
+        type: XBOptionType.Radio,
         options: [
             {
-                label: t`Spread`,
-                description: t`When appropriate, show two pages at a time like a book`,
-                value: "spread"
+                label: t`White`,
+                value: "#fff"
             },
             {
-                label: t`Single Page`,
-                description: t`Only show one page at a time`,
-                value: "single"
-            }
-        ]
-    },
-    {
-        title: t`↕ Page Fit`,
-        description: t`Override the fit of pages in vertical or single page reading`,
-        name: "vfit",
-        value: "width",
-        options: [
-            {
-                label: t`Fit Width`,
-                description: t`Fit page to width of screen, but don't go overboard`,
-                value: "width"
+                label: t`Sepia`,
+                value: "#faf4e8"
             },
             {
-                label: t`Fit Height`,
-                description: t`Fit page to height of screen`,
-                value: "height"
+                label: t`Gray`,
+                value: "#303030"
+            },
+            {
+                label: t`Black`,
+                value: "#000"
             }
         ]
     },
@@ -46,6 +55,8 @@ const DEFAULT_SETTINGS: XBSetting[] = [
         title: t`Animations`,
         name: "animations",
         value: "on",
+        reflowable: false,
+        type: XBOptionType.Radio,
         options: [
             {
                 label: t`On`,
@@ -58,24 +69,106 @@ const DEFAULT_SETTINGS: XBSetting[] = [
         ]
     },
     {
-        title: t`Background`,
-        name: "background",
-        value: "#404040",
+        title: t`Font`,
+        name: "font",
+        value: "Crimson Text",
+        reflowable: true,
+        type: XBOptionType.Dropdown,
         options: [
             {
-                label: t`Gray`,
-                value: "#404040"
+                label: "Crimson Text",
+                value: "\"Crimson Text\", serif"
             },
             {
-                label: t`Black`,
-                value: "#000"
+                label: "Literata",
+                value: "Literata, serif"
             },
             {
-                label: t`White`,
-                value: "#fff"
+                label: "Vollkorn",
+                value: "Vollkorn, serif"
+            },
+            {
+                label: "Roboto",
+                value: FALLBACK_FONT_FAMILY
+            },
+            {
+                label: "Lato",
+                value: "Lato, sans-serif"
+            },
+            {
+                label: "Arbutus Slab",
+                value: "\"Arbutus Slab\", serif"
+            },
+            {
+                label: "Noto Sans",
+                value: "\"Noto Sans\", \"Noto Sans JP\", sans-serif"
+            },
+            {
+                label: "Andika",
+                value: "Andika, sans-serif"
             }
         ]
-    }/*,
+    },
+    {
+        title: t`Font Size`,
+        name: "size",
+        value: 1.1,
+        reflowable: true,
+        type: XBOptionType.SpinnerPercentage,
+        options: [
+            {
+                label: XBOptionTypeSpinnerOptions.MIN,
+                value: 0.4
+            },
+            {
+                label: XBOptionTypeSpinnerOptions.MAX,
+                value: 5.0
+            },
+            {
+                label: XBOptionTypeSpinnerOptions.STEP,
+                value: 0.1
+            }
+        ]
+    },
+    {
+        title: t`Line Spacing`,
+        name: "spacing",
+        reflowable: true,
+        value: DEFAULT_LINE_HEIGHT,
+        type: XBOptionType.Spinner,
+        options: [
+            {
+                label: XBOptionTypeSpinnerOptions.MIN,
+                value: 0.8
+            },
+            {
+                label: XBOptionTypeSpinnerOptions.MAX,
+                value: 4.0
+            },
+            {
+                label: XBOptionTypeSpinnerOptions.STEP,
+                value: 0.1
+            }
+        ]
+    },
+    {
+        title: t`Alignment`,
+        name: "alignment",
+        reflowable: true,
+        value: DEFAULT_TEXT_ALIGN,
+        type: XBOptionType.Radio,
+        options: [
+            {
+                label: t`Start`,
+                value: "start"
+            },
+            {
+                label: t`Justify`,
+                value: "justify"
+            }
+        ]
+    }
+    /*,
     {
         title: "Direction",
         description: "Override the reading direction with one you prefer (vertical content will always be vertical)",
@@ -101,6 +194,19 @@ const DEFAULT_SETTINGS: XBSetting[] = [
     }*/
 ];
 
+export interface RenderConfig {
+    bitmap: boolean;
+    onDraw: drawerFunction;
+    lok: boolean;
+}
+
+const BG_TO_FG = new Map<string, string>([
+    ["#fff", "#000"],
+    ["#faf4e8", "#000"],
+    ["#303030", "#fff"],
+    ["#000", "#fff"]
+]);
+
 export default class Config {
 
     private readonly internalState: XBConfig;
@@ -115,9 +221,7 @@ export default class Config {
     }
 
     private initializeSettings() {
-        this.settings = DEFAULT_SETTINGS;
-        if(this.state.additionalSettings.length > 0)
-            this.settings.concat(this.state.additionalSettings);
+        this.resetSettings();
         const savedSettings = this.loadSettings();
         if(savedSettings)
             for (const key in savedSettings) {
@@ -125,13 +229,11 @@ export default class Config {
                 if(!relatedSetting) continue;
                 relatedSetting.value = savedSettings[key];
             }
-        else 
-            this.settings = DEFAULT_SETTINGS;
     }
 
     private loadSettings(): Record<string, string> {
         if(typeof this.state.onSettingsLoad === "function")
-            return this.state.onSettingsLoad(__VERSION__);
+            if(!this.state.onSettingsLoad(__VERSION__)) return;
         try {
             const v = window.localStorage.getItem(STORAGE_KEY);
             if(!v) return null;
@@ -148,11 +250,12 @@ export default class Config {
 
     public saveSettings(): boolean {
         try {
-            const exportedSettings: Record<string, string> = {};
+            const exportedSettings: Record<string, string | number> = {};
             this.settings.forEach(setting => exportedSettings[setting.name] = setting.value);
+            let storeLocal = true;
             if(typeof this.state.onSettingsSave === "function")
-                this.state.onSettingsSave(exportedSettings);
-            else {
+                storeLocal = this.state.onSettingsSave(exportedSettings);
+            if(storeLocal) {
                 window.localStorage.setItem(STORAGE_KEY, JSON.stringify(exportedSettings));
                 window.localStorage.setItem(STORAGE_KEY + ".version", __VERSION__);
             }
@@ -163,11 +266,17 @@ export default class Config {
         return true;
     }
 
+    public resetSettings(): void {
+        this.settings = DEFAULT_SETTINGS.map(a => ({...a}));
+        if(this.state.additionalSettings.length > 0)
+            this.settings.concat(this.state.additionalSettings);
+    }
+
     /**
      * Get the config value for enabling animations for reader elements
      * Setting index is cached, OK for vdom calculations
      */
-    get animate() {
+    get animate(): boolean {
         if(!this.settings) return true;
         if(this.internalAnimateSettingIndex === -2) this.internalAnimateSettingIndex = this.settings.findIndex(s => s.name === "animations");
         if(this.internalAnimateSettingIndex === -1) return true;
@@ -178,13 +287,19 @@ export default class Config {
      * Get the current setting for the background color of the reader
      * Setting index and value are cached, OK for vdom calculations
      */
-    get background() {
+    get background(): string {
         if(!this.settings) return BACKGROUND_GREY;
         if(this.internalBackgroundSettingIndex === -2) this.internalBackgroundSettingIndex = this.settings.findIndex(s => s.name === "background");
         if(this.internalBackgroundSettingIndex === -1) return BACKGROUND_GREY;
         const v = this.settings[this.internalBackgroundSettingIndex].value;
-        if(v) return v;
+        if(v) return v as string;
         return BACKGROUND_GREY;
+    }
+
+    get foreground(): string {
+        const fg = BG_TO_FG.get(this.background);
+        if(fg === "") return "#fff";
+        return fg;
     }
 
     /*overrideDirection(direction: XBReadingDirection): XBReadingDirection {
@@ -206,7 +321,7 @@ export default class Config {
      * Get the prefered page fitting setting for vertical reading
      * Setting index NOT cached, don't use in vdom calculation
      */
-    get fit() {
+    get fit(): boolean {
         if(!this.settings) return false;
         const setting = this.settings.find(s => s.name === "vfit");
         if(setting === undefined) return false;
@@ -222,7 +337,7 @@ export default class Config {
      * Get the preferred spread view option for horizontal reading
      * Setting index NOT cached, don't use in vdom calculation
      */
-    get spread() { // TODO implement 3-way!!!
+    get spread(): boolean { // TODO implement 3-way!!!
         if(!this.settings) return true;
         const setting = this.settings.find(s => s.name === "spread");
         if(setting === undefined) return true;
@@ -234,7 +349,44 @@ export default class Config {
         }
     }
 
-    get state() {
+    /// Reflowable Settings ///
+
+    /**
+     * Get the preferred CSS font size fraction (1.0 == 100%)
+     */
+    get size(): number {
+        if(!this.settings) return DEFAULT_FONT_SIZE;
+        const setting = this.settings.find(s => s.name === "size");
+        if(setting === undefined) return DEFAULT_FONT_SIZE;
+        const s = parseFloat(setting.value as string);
+        return s ? s : DEFAULT_FONT_SIZE;
+    }
+
+    get height(): number {
+        if(!this.settings) return DEFAULT_LINE_HEIGHT;
+        const setting = this.settings.find(s => s.name === "spacing");
+        if(setting === undefined) return DEFAULT_LINE_HEIGHT;
+        const s = parseFloat(setting.value as string);
+        return s ? s : DEFAULT_LINE_HEIGHT;
+    }
+
+    get align(): string {
+        if(!this.settings) return DEFAULT_TEXT_ALIGN;
+        const setting = this.settings.find(s => s.name === "alignment");
+        if(setting === undefined) return DEFAULT_TEXT_ALIGN;
+        return (setting.value as string) ?? DEFAULT_TEXT_ALIGN;
+    }
+
+    get font(): string {
+        if(!this.settings) return FALLBACK_FONT_FAMILY;
+        const setting = this.settings.find(s => s.name === "font");
+        if(setting === undefined) return FALLBACK_FONT_FAMILY;
+        return (setting.value as string) ?? FALLBACK_FONT_FAMILY;
+    }
+
+    /// End of Reflowable Settings ///
+
+    get state(): XBConfig {
         return this.internalState;
     }
 
@@ -242,10 +394,11 @@ export default class Config {
         return Object.assign({
             prefix: null,
             mount: document.body,
-            preview: false,
+            // preview: false,
             brand: {
                 name: null,
                 logo: null,
+                titled: true,
                 embedded: false // Whether to show interface meant for embedding in apps
             },
             tabs: [{ // Tabs on right side of top bar
@@ -266,14 +419,20 @@ export default class Config {
             onBeforeReady: (reader: Reader) => {}, // Right before final preparations are carried out
             onReady: (reader: Reader) => {}, // When redrawing has finished
             onPageChange: (pnum: number, direction: string, isSpread: boolean) => {}, // When page is changed
-            onLastPage: (series: Series) => true, // When trying to go further after the last page. If returns true, auto-advance
+            onLastPage: (series: Series, pnum: number) => true, // When trying to go further after the last page. If returns true, auto-advance
             onToggleInterface: () => {}, // When interface is shown/hidden
 
-            onSource: null, // (data: object): object When you want to overrride the logic choosing the appropriate link object or inject/modify links
-            onDraw: null, // (loader: any, source: any) => {} When images are protected, this function provides DRM and/or custom drawing capabilities
+            onSource: null, // (data: Link): Link When you want to overrride the logic choosing the appropriate link object or inject/modify links
+            onError: null, // (TODO)
+            render: {
+                bitmap: canDrawBitmap,
+                onDraw: null, // (loader: any, source: any) => {} When necessary, this function provides DRM and/or custom drawing capabilities
+                lok: false
+            } as RenderConfig,
 
             // Settings provider - only need to implement for global settings
             // Could be localstorage, cookie, a server backend, whatever. Up to the developer. If not specified, is localstorage object
+            // If save/load returns true, settings are still saved in localstorage
             onSettingsSave: null, // Save settings object
             onSettingsLoad: null // Load settings object
         }, config);

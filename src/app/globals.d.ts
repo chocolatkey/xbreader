@@ -13,11 +13,13 @@ interface XBTab {
     title: string;
     href: string;
     icon: string;
+    target?: string;
 }
 
 interface XBBrand {
     name: string;
     logo: string;
+    titled: boolean;
     embedded: boolean;
 }
 
@@ -36,17 +38,26 @@ interface XBVolume {
 }
 
 interface XBOption {
-    label: string;
+    label: string | number;
     description?: string;
-    value: string;
+    value: string | number;
 }
 
 interface XBSetting {
     title: string;
     description?: string;
+    reflowable: boolean; // TODO better way of separating the settings, maybe an array?
     name: string;
-    value: string;
+    value: string | number;
+    type: number;
     options: XBOption[];
+}
+
+interface XBRenderConfig {
+    bitmap: boolean;
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    onDraw: Function;
+    lok: boolean;
 }
 
 interface XBConfig {
@@ -57,10 +68,10 @@ interface XBConfig {
     prefix: string;
     mount: HTMLElement;
     guideHidden: boolean;
-    preview: boolean;
+    // preview: boolean;
     link: string;
     series: XBVolume[];
-    loader(identifier: string): object; // TODO Object -> WebPub
+    loader(identifier: string): Record<string, unknown>; // TODO Object -> WebPub
 
     // Reader callbacks
     onMount(reader: any): void;
@@ -69,16 +80,17 @@ interface XBConfig {
     onBeforeReady(reader: any): void;
     onReady(reader: any): void;
     onPageChange(pnum: number, direction: string, isSpread: boolean): void;
-    onLastPage(series: any): boolean; // TODO Series type
+    onLastPage(series: any, pnum: number): boolean; // TODO Series type
     onToggleInterface(): void;
 
     // Page callbacks
-    onSource(data: object): object;
-    onDraw(loader: any, source: any): void;
+    onSource(link: unknown): unknown;
+    onError(link: unknown): unknown; // TODO add reader or something
+    render: XBRenderConfig;
 
     // Settings
     additionalSettings: XBSetting[];
-    onSettingsSave(settings: Record<string, string>): boolean;
+    onSettingsSave(settings: Record<string, string | number>): boolean;
     onSettingsLoad(version: string): Record<string, string>;
 }
 

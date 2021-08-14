@@ -1,4 +1,4 @@
-const MAX_POOL_SIZE = Math.max(1, Math.min(navigator.hardwareConcurrency ?? 1, 8) - 1);
+const MAX_POOL_SIZE = Math.max(1, Math.min(navigator.hardwareConcurrency ?? 1, 4) - 1);
 
 export default class WorkerPool {
     private readonly pool: Worker[] = [];
@@ -67,10 +67,21 @@ export default class WorkerPool {
      * Mimicks Worker API by posting a message to the *current* target worker in the pool, and then increments the *current* target to the next worker in the pool
      * @param message Data to pass to the Worker
      * @param transfer Optional Transferable for the Worker
+     * @param specificworker Optional Transferable for the Worker
+     * @returns {number} The worker the message was posted to
      */
-    postMessage(message: any, transfer?: Transferable[]) {
-        this.currentWorker.postMessage(message, transfer);
-        this.current = (this.current + 1) % this.pool.length;
+    postMessage(message: unknown, transfer: Transferable[] = [], specificworker=-1): number {
+        if(specificworker < -1) return -1;
+        if(specificworker > -1) {
+            // Safari doesn't like postMessage with second val = null
+            transfer ? this.pool[specificworker].postMessage(message, transfer) : this.pool[specificworker].postMessage(message);
+            return specificworker;
+        } else {
+            transfer ? this.currentWorker.postMessage(message, transfer) : this.currentWorker.postMessage(message);
+            const oldCurrent = this.current;
+            this.current = (this.current + 1) % this.pool.length;
+            return oldCurrent;
+        }
     }
 
 

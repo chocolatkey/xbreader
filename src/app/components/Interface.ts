@@ -7,6 +7,7 @@ import Reader from "./Reader";
 import Publication from "xbreader/models/Publication";
 import Settings from "./Settings";
 import Config from "xbreader/models/Config";
+import Dialog from "./Dialog";
 
 export interface InterfaceAttrs {
     readonly model: Ui;
@@ -22,9 +23,12 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
 
     sliderMove(e: MithrilEvent, slider: Slider, publication: Publication) {
         e.redraw = false;
-        if(publication.isTtb) {
+        if(publication.isTtb || publication.reflowable) {
             if(!slider.selector) return;
-            slider.binder.coordinator.HTML.scrollTo(0, (slider.selector.getBoundingClientRect().height - slider.innerHeightCached) * parseFloat((e.target as HTMLInputElement).value) / 100);
+            if(slider.ttb || publication.isTtb)
+                slider.binder.coordinator.HTML.scrollTo(0, (slider.selector.getBoundingClientRect().height - slider.innerHeightCached) * parseFloat((e.target as HTMLInputElement).value) / 100);
+            else
+                slider.goTo(Math.round(parseFloat((e.target as HTMLInputElement).value) / 100 * slider.length));
         } else
             slider.goTo(parseInt((e.target as HTMLInputElement).value));
     }
@@ -38,15 +42,17 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
             step: `${slider.perPage}`,
             title: t`Select Page`,
             onchange: (e: MithrilEvent) => { // Activates when slider is released (mouse let go). Needed for IE compatibility
+                slider.binder.ui.mousing = false;
                 this.sliderMove(e, slider, publication);
                 (e.target as HTMLInputElement).blur();
             },
             oninput: (e: MithrilEvent) => { // Triggered on slider value changed (while dragging it!), works in evergreen browsers
+                slider.binder.ui.mousing = true;
                 this.sliderMove(e, slider, publication);
             },
             dir: publication.rtl ? "rtl" : "ltr"
         };
-        if(publication.isTtb) {
+        if(publication.isTtb || publication.reflowable) {
             attrs.max = `${100}`;
             attrs.value = `${slider.percentage}`;
             attrs.step = "any";
@@ -73,22 +79,24 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
         }, publication.pmetadata.NumberOfPages);
 
         if(publication.rtl) {
-            items.unshift(pageAmountIndicator);
+            if(!publication.reflowable)
+                items.unshift(pageAmountIndicator);
             items.push(currentPageIndicator);
         } else {
             items.unshift(currentPageIndicator);
-            if(!publication.isTtb)
+            if(!publication.isTtb && !publication.reflowable)
                 items.push(pageAmountIndicator);
         }
 
         const sseries = publication.findSpecial("series") && publication.findSpecial("series").Value;
         if(sseries && sseries.next && !embedded) { // Has a next chapter
             const nextLink =
-                m(`span.br-slider__${publication.rtl ? "lgo" : "rgo"}`, { // Leftmost slider control
+                m(`span.br-slider__${publication.rtl ? "lgo" : "rgo"}.next`, { // Leftmost slider control
                     title: t`Go to the next chapter`
                 }, m(m.route.Link, {
                     href: "/" + sseries.next.uuid,
-                    options: {replace: false}
+                    options: {replace: false},
+                    onclick: () => slider.series.current = sseries.next
                 }, t`Next` as Child));
             if(publication.rtl)
                 items.unshift(nextLink);
@@ -97,11 +105,12 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
         }
         if(sseries && sseries.prev && !embedded) {
             const prevLink = // Has a previous chapter
-                m(`span.br-slider__${publication.rtl ? "rgo" : "lgo"}`, {
+                m(`span.br-slider__${publication.rtl ? "rgo" : "lgo"}.prev`, {
                     title: t`Go to the previous chapter`
                 }, m(m.route.Link, {
                     href: "/" + sseries.prev.uuid,
-                    options: {replace: false}
+                    options: {replace: false},
+                    onclick: () => slider.series.current = sseries.prev
                 }, t`Prev` as Child));
             if(publication.rtl)
                 items.push(prevLink);
@@ -125,9 +134,9 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
             tweakButton = m("button#br-view__tweak", {
                 onclick: () => {
                     slider.fit = !slider.fit;
-                    if(publication.isTtb) slider.slideToCurrent(false, true);
+                    if(publication.isScrollable) slider.slideToCurrent(false, true);
                 },
-                title: slider.fit ? (publication.isTtb ? t`Widen` : t`Fit to width`) : (publication.isTtb ? t`Narrow` : t`Fit to height`)
+                title: slider.fit ? (publication.isScrollable ? t`Widen` : t`Fit to width`) : (publication.isScrollable ? t`Narrow` : t`Fit to height`)
             }, [
                 m("i", {
                     class: slider.fit ? "br-i-wide" : "br-i-thin"
@@ -142,7 +151,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                 "aria-label": slider.single ? t`Spread view` : t`Single page view`
             }, [
                 m("i", {
-                    class: slider.single ? "br-i-spread" : "br-i-single",
+                    class: slider.single ? (slider.rtl ? "br-i-spread-rtl" : "br-i-spread-ltr") : "br-i-single",
                     "aria-hidden": "true"
                 })
             ]);
@@ -153,7 +162,8 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
         tabConfig.forEach(tab => {
             tabs.push(m("a.br-tab", {
                 title: tab.title,
-                href: tab.href
+                href: tab.href,
+                target: tab.target ?? (tab.href.startsWith("javascript:") ? "_self" : "_parent")
             }, [
                 m(`i.br-i-${tab.icon}`, {
                     "aria-hidden": "true"
@@ -181,7 +191,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
             }, [
                 m("div.br-topbar__row", [
                     m("section.br-toolbar__section.br-toolbar__section--align-start", {
-                        class: brand.embedded ? "embedded" : "",
+                        class: brand.embedded || !brand.logo ? "embedded" : "",
                         "aria-label": t`Logo`
                     }, [
                         m(Logo, brand)
@@ -189,7 +199,8 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                     m("section.br-toolbar__tsection", {"aria-label": t`Title`}, [
                         series.exists ? (brand.embedded ? m("span.br-toolbar__ellipsis", series.firstSeries.Name as Child) : [m("a.br-toolbar__ellipsis", {
                             href: series.firstSeries.Identifier,
-                            title: t`Series`
+                            title: t`Series`,
+                            target: "_parent"
                         }, series.firstSeries.Name as Child),
                         m("span.spacer", "›")]) : null,
                         brand.embedded ? m("span#br-chapter", publication.pmetadata.Title as Child) : vnode.attrs.reader.series.selector
@@ -215,7 +226,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                 "aria-label": t`Bottom bar`
             }, [
                 this.sliderSystem(slider, publication, brand.embedded),
-                m("div.br-botbar-controls", {
+                (!publication.isTtb && !publication.isSmallToon) && m("div.br-botbar-controls", {
                     class: slider.portrait ? "portrait" : "landscape"
                 }, [
                     (!publication.isTtb || !publication.isSmallToon) && tweakButton,
@@ -239,7 +250,15 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
         if(ui.settingsShown)
             retval.push(m(Settings, {
                 config,
-                ui
+                ui,
+                slider
+            }));
+
+        if(ui.dialogShown)
+            retval.push(m(Dialog, {
+                config,
+                ui,
+                slider
             }));
         return retval;
     }

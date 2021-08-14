@@ -4,8 +4,10 @@ import Coordinator, { Point, BibiEvent, VerticalThird, HorizontalThird } from ".
 import Reader, { XBReadingDirection } from "xbreader/components/Reader";
 import Slider from "xbreader/models/Slider";
 import Ui from "xbreader/models/Ui";
+import { BeforeDeserialized } from "ta-json-x";
 
 const MAX_SCALE = 6; // 6x zoom
+const SCROLL_COOLDOWN = 200; // Faster would be 25
 
 export enum WheelState {
     None,
@@ -52,7 +54,7 @@ export interface BibiMouseEvent extends MouseEvent {
 
 export default class Peripherals {
     private readonly slider: Slider;
-    private readonly ui: Ui;
+    public readonly ui: Ui;
     private readonly reader: Reader;
     private PreviousWheels: Wheel[] = [];
     private PreviousCoord: Point = {X: 0, Y: 0};
@@ -196,10 +198,18 @@ export default class Peripherals {
             return;
         e.stopPropagation();
         const p = e.data.split(":"); // xbr:<action>:<data>
+        if(p.length > 3) {
+            p[2] = p.slice(2, p.length).join(":");
+            p.splice(3, p.length - 3);
+        }
         const v = p[2]; // Data
         switch (p[1]) { // Action
             case "move": {
                 this.moveBy(isNaN(v as any) ? v : parseInt(v));
+                break;
+            }
+            case "next": {
+                this.slider.onLastPage();
                 break;
             }
             case "goto": {
@@ -209,6 +219,13 @@ export default class Peripherals {
             case "settings": {
                 this.reader.ui.toggleSettings();
                 m.redraw();
+                break;
+            }
+            case "popup": {
+                if(v === "false" || v === "0")
+                    this.reader.ui.toggleDialog(false);
+                else
+                    this.reader.ui.toggleDialog(true, (new URL(v).toString()));
                 break;
             }
             // TODO more
@@ -340,9 +357,9 @@ export default class Peripherals {
         if ((Math.abs(this.drag.startY - e.touches[0].pageY) + Math.abs(this.drag.startX - e.touches[0].pageX)) > 5 && this.pointerDown)
             this.isDragging = true;
 
-        const currentDistance = this.coordinator.getTouchDistance(e);
-        if(this.isPinching && currentDistance) {          
-            this.pinch.touchN++;  
+        const currentDistance = this.coordinator?.getTouchDistance(e);
+        if(this.isPinching && currentDistance) {
+            this.pinch.touchN++;
             if(this.pinch.touchN < 4) return;
             let newScale = currentDistance / this.pinch.startDistance * this.slider.zoomer.scale;
             if(newScale >= MAX_SCALE)
@@ -449,9 +466,10 @@ export default class Peripherals {
     }
 
     private cursorHandler() {
+        if(!this.mousePos) return;
         const sliderLength = this.slider.length - 1;
-        const atFirstSlide = this.slider.toon ? this.slider.percentage === 0 : Math.max(this.slider.currentSlide, 0) === 0;
-        const atLastSlide = this.slider.toon ? this.slider.percentage > 99.9 : Math.min(this.slider.currentSlide, sliderLength) === sliderLength && !this.slider.series.next;
+        const atFirstSlide = this.slider.toonflowable ? this.slider.percentage === 0 : Math.max(this.slider.currentSlide, 0) === 0;
+        const atLastSlide = this.slider.toonflowable ? this.slider.percentage > 99.9 : Math.min(this.slider.currentSlide, sliderLength) === sliderLength && !this.slider.series.next;
         if (this.slider.ttb) { // Vertical controls
             switch (this.mousePos.Division.Y) {
                 case VerticalThird.Bottom:
@@ -581,16 +599,16 @@ export default class Peripherals {
             case XBReadingDirection.TTB:
                 return sML.edit(this.MovingParameters, {
                     "Up Arrow": 0, // -1
-                    "Right Arrow": 0,
+                    "Right Arrow": this.slider.rtl ? -1 : 1,
                     "Down Arrow": 0, // 1
-                    "Left Arrow": 0,
+                    "Left Arrow": this.slider.rtl ? 1 : -1,
                     "W": -1,
                     "D": 0,
                     "S": 1,
                     "A": 0,
                     "UP ARROW": "head",
-                    "RIGHT ARROW": "",
-                    "DOWN ARROW": "foot",
+                    "RIGHT ARROW": this.slider.rtl ? "head" : "foot",
+                    "DOWN ARROW": this.slider.rtl ? "foot" : "head",
                     "LEFT ARROW": "",
                     "Plus": 0,
                     "Minus": 0,
@@ -764,26 +782,33 @@ export default class Peripherals {
                 this.disableDblClick = false;
             }, 500);
         } else if (typeof MovingParameter === "string") {
-            if (MovingParameter === "head") {
-                this.slider.goTo(0);
-            } else if (MovingParameter === "foot") {
-                this.slider.goTo(this.slider.length);
-            }
-
-            // Zoom
-            if (MovingParameter === "zoom-in") {
-                if(this.slider.zoomer.scale === 1)
+            switch (MovingParameter) {
+                case "head":
+                    this.slider.goTo(0);
+                    break;
+                case "foot":
+                    this.slider.goTo(this.slider.length);
+                    break;
+                case "zoom-in": {
+                    if(this.slider.zoomer.scale === 1)
                     this.slider.zoomer.translate = {
                         X: window.innerWidth / 2,
                         Y: window.innerHeight / 2
                     };
-                if (this.slider.zoomer.scale < MAX_SCALE)
-                    this.slider.zoomer.scale += 0.5; // Gets slower as you zoom in more due to decreasing ratio impact
-            } else if (MovingParameter === "zoom-out") {
-                if (this.slider.zoomer.scale > 1)
-                    this.slider.zoomer.scale -= 0.5;
-            } else if (MovingParameter === "zoom-reset") {
-                this.slider.zoomer.scale = 1;
+                    if (this.slider.zoomer.scale < MAX_SCALE)
+                        this.slider.zoomer.scale += 0.5; // Gets slower as you zoom in more due to decreasing ratio impact
+                    break;
+                }
+                case "zoom-out": {
+                    if(this.slider.zoomer.scale > 1)
+                        this.slider.zoomer.scale -= 0.5;
+                    break;
+                }
+                case "zoom-reset":
+                    this.slider.zoomer.scale = 1;
+                    break;
+                default:
+                    console.log("Unknown MovingParameter");
             }
         }
         if (MovingParameter === "menu")
@@ -939,7 +964,7 @@ export default class Peripherals {
         if (CW.Wheeled !== WheelState.None) {
             Eve.BibiSwiperWheel = CW;
             clearTimeout(this.Timer_cooldown);
-            this.Timer_cooldown = window.setTimeout(() => this.onwheeled_hot = false, 300);
+            this.Timer_cooldown = window.setTimeout(() => this.onwheeled_hot = false, SCROLL_COOLDOWN);
             if (!this.onwheeled_hot && !this.processVScroll()) {
                 // Eve.preventDefault(); Causes console error
                 this.onwheeled_hot = true;
@@ -963,7 +988,8 @@ export default class Peripherals {
             this.ignoreScrollFlag = false;
             return false;
         }
-        this.processVScroll();
+        if(!this.slider.reflowable) this.processVScroll();
+        else if(!this.ui.settingsShown) this.slider.onChange();
         if (!this.Scrolling) {
             this.Scrolling = true;
         }

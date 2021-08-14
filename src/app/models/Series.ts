@@ -1,16 +1,17 @@
 import { t } from "ttag";
-import m, { Vnode, Child } from "mithril";
+import m, { Vnode, Child, Children } from "mithril";
 import Publication from "./Publication";
 import { Contributor } from "@r2-shared-js/models/metadata-contributor";
 
 export default class Series {
     private readonly publication: Publication;
     private readonly metadata: Contributor[];
-    private readonly chapters: XBChapter[];
+    private readonly chapters: XBChapter[] | null;
+    private readonly volumes: XBVolume[] | null;
     private autoSelect: string = null;
-    volumes: XBVolume[];
 
     constructor(publication: Publication, series: XBVolume[]) {
+        if(!publication) return;
         this.publication = publication;
         const pvols = publication.findSpecial("volumes");
         this.volumes = series ? series : (pvols ? pvols.Value : []);
@@ -40,11 +41,11 @@ export default class Series {
      * Has a series been passed to XBReader
      */
     get exists() {
-        return this.volumes.length > 0 || this.firstSeries !== null;
+        return this.volumes?.length > 0 || this.firstSeries !== null;
     }
 
     get isSolo() {
-        return this.chapters.length === 0 || !this.exists;
+        return this.chapters?.length === 0 || !this.exists;
     }
 
     private buildChapterList() {
@@ -68,7 +69,7 @@ export default class Series {
     /**
      * Get the current chapter's UUID
      */
-    get current() {
+    get current(): XBChapter {
         for (let i = 0; i < this.chapters.length; i++) {
             const currChapter = this.chapters[i];
             if(this.isSelected(currChapter))
@@ -79,6 +80,25 @@ export default class Series {
             }
         }
         return null;
+    }
+
+    set current(newChapter: XBChapter) {
+        this.autoSelect = null;
+        this.chapters?.forEach(chapter => {
+            if(chapter.selected)
+                chapter.selected = false;
+            if(chapter.uuid === newChapter.uuid)
+                chapter.selected = true;
+        });
+        this.volumes?.forEach(volume => {
+            volume.chapters?.forEach(chapter => {
+                if(chapter.selected)
+                    chapter.selected = false;
+                if(chapter.uuid === newChapter.uuid)
+                    chapter.selected = true;
+            });
+        });
+        this.setRelations();
     }
 
     /**
@@ -106,7 +126,7 @@ export default class Series {
     /**
      * Create an HTML select element with the series' volumes and chapters
      */
-    get selector() {
+    get selector(): Children {
         if(this.isSolo)
             if(this.publication.pmetadata.Title)
                 return m("span.br-toolbar__ellipsis#br-chapter", {
@@ -115,19 +135,27 @@ export default class Series {
             else
                 return null;
 
-        return m("select#br-chapter", {
+        let selectedVolumeName = null;
+        const select = m("select#br-chapter", {
             title: t`Chapter selection`, // TODO somehow incorporate the subtitle
             onchange: (e: Event) => {
                 const st = e.target as HTMLSelectElement;
-                m.route.set("/:id", { id: (st[st.selectedIndex] as HTMLOptionElement).value }, { replace: false });
+                const sv = decodeURI((st[st.selectedIndex] as HTMLOptionElement).value);
+                if(sv === this.current?.uuid) return;
+                m.route.set("/:id...", { id: sv }, { replace: false });
+                this.current = this.chapters.find(c => c.uuid === sv);
             }
         }, this.volumes.map(volume => {
-            const chaptersOptions: Vnode<any, any>[] = [];
+            const chaptersOptions: Vnode[] = [];
             volume.chapters.forEach(chapter => {
+                const isSel = this.isSelected(chapter);
+                if(isSel && volume.title && volume.title.trim()) selectedVolumeName = m("span#br-chapter__volume", {
+                    // onhover: () => console.log("hover") // TODO?
+                }, volume.title);
                 chaptersOptions.push(m("option", {
                     value: chapter.uuid,
-                    selected: this.isSelected(chapter)
-                }, chapter.title as Child));
+                    selected: isSel
+                }, chapter.title));
             });
             if(volume.title)
                 return m("optgroup", {
@@ -137,5 +165,12 @@ export default class Series {
                 return chaptersOptions;
             
         }));
+        return m("span#br-chapter__group", [
+            selectedVolumeName ? [
+                selectedVolumeName,
+                m("span.spacer", "›")
+            ] : null,
+            select
+        ]);
     }
 }

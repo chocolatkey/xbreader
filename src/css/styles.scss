@@ -78,7 +78,7 @@ a {
     }
 }
 
-:not(.material-icons) {
+body {
     font-family: Roboto, "游ゴシック", YuGothic, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
 }
 
@@ -153,7 +153,7 @@ div#br-main {
 .page-blank {
     max-height: 100%;
     max-width: 100%;
-    margin: 0 auto;
+    //margin: 0 auto;
     display: block;
     //height: auto;
     direction: ltr;
@@ -163,6 +163,9 @@ img.page-img {
     display: none;
     &[src] {
         display: block;
+        // image-rendering: -webkit-optimize-contrast; This looks sooo bad in Safari when you rescale
+        image-rendering: smooth;
+        image-rendering: high-quality;
     }
 }
 
@@ -198,11 +201,11 @@ div#br-book {
             @include hdpicursor(context-menu, 0, 5);
         }
     }
+}
 
-    div#br-spine {
-        // will-change: transform; "Will-change memory consumption is too high"
-        contain: content;
-    }
+div#br-spine.paginated {
+    // will-change: transform; "Will-change memory consumption is too high"
+    contain: content;
 }
 
 div#br-topbar, div#br-botbar {
@@ -284,4 +287,5 @@ div#br-topbar, div#br-botbar {
 @import "./components/spinner.scss";
 @import "./components/guide.scss";
 @import "./components/dialog.scss";
+@import "./components/section.scss";
 @import "./error.scss";

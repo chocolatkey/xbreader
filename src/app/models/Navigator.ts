@@ -3,6 +3,7 @@ import Publication from "./Publication";
 import Link from "./Link";
 import Slider from "./Slider";
 import { Properties } from "@r2-shared-js/models/metadata-properties";
+
 export default class Navigator {
     private readonly ttb: boolean;
     shift = true; // TODO getter
@@ -11,6 +12,9 @@ export default class Navigator {
 
     constructor(publication: Publication) {
         this.ttb = publication.isTtb;
+
+        if(publication.reflowable)
+            this.shift = false;
 
         this.index(publication);
         this.testShift(publication);
@@ -22,6 +26,10 @@ export default class Navigator {
         publication.spine.forEach((item, index) => {
             if (!/^(?:[a-z]+:)?\/\//i.test(item.Href)) // convert URL relative to manifest to absolute URL
                 item.Href = new URL(item.Href, publication.url).href;
+            item.Alternate?.forEach(lnk => {
+                if (!/^(?:[a-z]+:)?\/\//i.test(lnk.Href))
+                    lnk.Href = new URL(lnk.Href, publication.url).href;
+            });
             if(!item.Properties)  item.Properties = new Properties();
             item.Properties.Spread = item.Properties.Spread ? item.Properties.Spread : "landscape"; // TODO Maybe default to auto instead
             if(!redo) {
@@ -32,7 +40,7 @@ export default class Navigator {
                 if(!item.Properties.Orientation) item.Properties.Orientation = item.Width > item.Height ? "landscape" : "portrait";
             }
             const isLandscape = item.Properties.Orientation === "landscape" ? true : false;
-            if(!item.Properties.Page || redo) item.Properties.Page = 
+            if(!item.TypeLink?.startsWith("text/") && (!item.Properties.Page || redo)) item.Properties.Page = 
                 isLandscape ? // If a landscape image
                     "center" : // Center it
                     ((((this.shift ? 0 : 1) + index - this.nLandscape) % 2) ? 
@@ -92,15 +100,15 @@ export default class Navigator {
         if(currentSet.length > 0) this.spreads.push(currentSet);
     }
 
-    currentSpread(slider: Slider) {
+    currentSpread(slider: Slider): Link[] {
         return this.spreads[Math.floor(slider.currentSlide / slider.perPage)];
     }
 
-    getPageString(slider: Slider) {
-        if(this.ttb) {
+    getPageString(slider: Slider): string | number {
+        if(this.ttb || slider.reflowable) {
             if(!slider.selector) return "0%";
             return `${Math.round(slider.percentage)}%`;
-        } else if (!slider.single && !slider.ttb) {
+        } else if (!slider.single && !slider.ttb && !slider.reflowable) {
             let spreadString = "";
             const spread = this.currentSpread(slider);
             if(!spread) {

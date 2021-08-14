@@ -5,6 +5,8 @@ export default class Ui {
     isHidden = false;
     menuShown = false;
     settingsShown = false;
+    dialogShown = false;
+    dialogSrc = "about:blank";
     notifierShown = false;
     public notification: string;
     private notifierTimeout: number;
@@ -43,6 +45,11 @@ export default class Ui {
             this.toggleMenu(false);
     }
 
+    toggleDialog(newState?: boolean, src?: string) {
+        this.dialogShown = newState;
+        if(src) this.dialogSrc = src;
+    }
+
     toggle(newState?: boolean) {
         if (newState === undefined)
             this.isHidden = !this.isHidden;
@@ -53,6 +60,7 @@ export default class Ui {
         }
         if(this.isHidden) {
             this.toggleSettings(false);
+            this.toggleDialog(false);
             this.toggleMenu(false);
         }
         if(this.toggleCallback)

@@ -8,13 +8,15 @@ import Slider from "xbreader/models/Slider";
 import Peripherals from "xbreader/helpers/peripherals";
 import sML from "xbreader/helpers/sMLstub";
 import Spine from "./Spine";
+import ReflowableSpine from "./ReflowableSpine";
 import Page from "./Page";
 import Interface from "./Interface";
 import Series from "xbreader/models/Series";
 import xbError from "xbreader/models/xbError";
 import { parseDirection, directionToString } from "xbreader/helpers/utils";
-import Config from "xbreader/models/Config";
-import { worker as workerPool, f as workerFunc } from "xbreader/helpers/lazyLoader";
+import Config, { RenderConfig } from "xbreader/models/Config";
+import { worker as workerPool, f as workerFunc, chooserFunction } from "xbreader/helpers/lazyLoader";
+import Loader from "../partials/Loader";
 
 export interface ReaderAttrs {
     readonly cid: string;
@@ -34,6 +36,7 @@ interface BookStyle {
     transform: string;
     transformOrigin: string;
     background: string;
+    color: string;
 }
 
 export default class Reader implements ClassComponent<ReaderAttrs> {
@@ -85,6 +88,7 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
     }
 
     setTitle(title?: string) {
+        if(!this.config.state.brand.titled) return;
         const bn = this.config.state.brand.name;
         if(bn)
             document.title = title ? `${title} - ${bn}` : title;
@@ -175,11 +179,11 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
         this.onremove();
         m.mount(this.config.state.mount, null); // Unmount XBReader
         document.documentElement.style.removeProperty("overflow"); // TODO stop polluting the document in the first place
-        workerPool.destroy(); // Terminate all Workers in the pool
+        workerPool?.destroy(); // Terminate all Workers in the pool
     }
 
     oninit() {
-        if(workerPool.destroyed) // If the pool was previousy destroyed
+        if(workerPool?.destroyed) // If the pool was previousy destroyed
             workerPool.create(URL.createObjectURL(new Blob([`(${workerFunc})()`])));
     }
 
@@ -213,6 +217,11 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
         this.setTitle(t`Loading...`);
         this.publication.smartLoad(manifestPointer).then(() => {
             this.config.state.onPublicationLoad(this);
+            if(!this.publication) {
+                // Happens if you quickly change to another publication while this one is still loading
+                console.warn("Publication loaded, but no longer exists");
+                return;
+            }
             this.series = new Series(this.publication, this.config.state.series);
             this.series.setRelations();
             this.slider = new Slider(this.series, this.publication, this.binder, this.config);
@@ -233,10 +242,10 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
             this.config.state.onReady(this);
             console.log("Reader component created");
         }).catch((error: xbError | Error) => {
-            console.error(error);
             if(typeof (error as xbError).export === "function") {
                 (error as xbError).go();
             } else {
+                console.error(error);
                 const encodedMessage = encodeURIComponent(window.btoa(error.message ? error.message : error.toString()));
                 m.route.set("/error/:code/:message", { code: (error as xbError).code ? (error as xbError).code : 9500, message: encodedMessage }, { replace: true });
             }
@@ -248,10 +257,9 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
         const sldr = vnode.state.slider;
         //console.log("VIEWR", vnode.state.publication, vnode.state.publication.ready);
         if(!(vnode.state.publication && vnode.state.publication.ready))
-            return m("div.br-loader__container", [
-                m("div.spinner#br-loader__spinner"),
-                m("span#br-loader__message", vnode.state.loadingStatus)
-            ]);
+            return m(Loader, {
+                status: vnode.state.loadingStatus
+            });
         // Additional
         const bookStyle: BookStyle = {
             overflow: "hidden",//vnode.state.slider ? (vnode.state.slider.ttb ? "auto" : "hidden") : "hidden",
@@ -260,8 +268,12 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
             cursor: null,
             transform: null,
             transformOrigin: null,
-            background: this.config.background
+            background: this.config.background,
+            color: this.config.foreground
         };
+        (sldr.reflowable && !sldr.ttb) && Object.assign(bookStyle, {
+            height: "100%"
+        });
 
         document.documentElement.style.overflow = sldr ? ((sldr.ttb || !sldr.spread) ? "auto" : "hidden") : "hidden";
 
@@ -289,21 +301,6 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
             }
         }
 
-        const pages = vnode.state.publication.Spine.map((page, index) => {
-            return m(Page, {
-                data: page,
-                key: page.Href,
-                isImage: page.findFlag("isImage"),
-                index: index,
-                slider: sldr,
-                drawCallback: this.config.state.onDraw,
-                chooseCallback: this.config.state.onSource,
-                binder: bnd,
-                blank: false
-            });
-            //return items;
-        });
-
         // Rendering
         const rend = [
             m("div.br__notifier", {
@@ -312,7 +309,8 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
             m("div#br-main", {
                 style: {
                     visibility: vnode.state.publication.isReady ? "visible" : "hidden",
-                    background: this.config.background
+                    background: this.config.background,
+                    color: this.config.foreground
                 },
                 "aria-label": t`Content`
             }, [
@@ -337,10 +335,25 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
                     onmousedown: bnd ? bnd.mtimerUpdater : null,
                     onmousemove: bnd ? bnd.mousemoveHandler : null,
                     ontouchmove: bnd ? bnd.touchmoveHandler : null
-                }, m(Spine, {
+                }, sldr.reflowable ? m(ReflowableSpine, {
+                    slider: sldr,
+                    binder: bnd,
+                    config: this.config,
+                    spine: vnode.state.publication.Spine
+                }) : m(Spine, {
                     slider: sldr,
                     binder: bnd
-                }, pages))
+                }, vnode.state.publication.Spine.map((page, index) => m(Page, {
+                    data: page,
+                    key: page.Href,
+                    isImage: page.findFlag("isImage"),
+                    index: index,
+                    slider: sldr,
+                    renderConfig: this.config.state.render as RenderConfig,
+                    chooseCallback: this.config.state.onSource as chooserFunction,
+                    binder: bnd,
+                    blank: false
+                }))))
             ]),
             m("div.br-guide", {
                 class: "br-guide__" + directionToString(this.direction) + ((vnode.state.guideHidden || !vnode.state.publication.isReady) ? " hide" : ""),

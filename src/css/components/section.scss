@@ -1,0 +1,193 @@
+@keyframes shine-lines {
+    0% {
+        background-position: 0;
+    }
+    100% {
+        background-position: 500px;
+    }
+}
+
+div.br-skeleton {
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+
+    div {
+        width: calc(100% - var(--xb-margin));
+        height: calc(100% - var(--xb-margin));
+        border-radius: 7px;
+        background-image: linear-gradient(90deg, rgba(221, 221, 221, 0.5) 0px, transparent 50%, rgba(221, 221, 221, 0.5) 100%);
+        background-size: 500px;
+        animation: shine-lines 3s infinite linear;
+        align-self: center;
+
+        &.half {
+            width: calc(50% - var(--xb-margin));
+        }
+    }
+}
+
+div#br-spine.reflowable {
+    will-change: transform; // Warning "Will-change memory consumption is too high"
+    min-height: 0;
+    max-height: 100%;
+    overflow-x: visible;
+    overflow-wrap: break-word;
+    column-fill: auto;
+}
+
+.br-section {
+    font-weight: normal;
+    letter-spacing: 0;
+    orphans: 1;
+    widows: 1;
+    word-spacing: 0;
+    word-wrap: break-word;
+    user-select: none;
+
+    letter-spacing: 0;
+    break-after: column;
+    -webkit-column-break-after: column;
+    width: 100%;
+
+    // Variables
+    font-family: var(--xb-font-family);
+    font-size: var(--xb-font-size);
+    line-height: var(--xb-line-height);
+    text-align: var(--xb-text-align);
+
+    blockquote {
+        margin-top: 1em;
+        margin-bottom: 1em;
+        margin-left: 1em;
+        margin-right: 1em;
+    }
+
+    blockquote p {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    li {
+        font-size: 1em;
+    }
+
+    li p {
+        text-indent: 0em;
+    }
+
+    ul {
+        margin-top: 1em;
+        margin-bottom: 1em;
+    }
+
+    ol {
+        margin-top: 1em;
+        margin-bottom: 1em;
+        text-align: left;
+    }
+
+    h1 {
+        font-size: 1.55em;
+        margin-top: 2em;
+        margin-bottom: 1em;
+        line-height: 1.2em;
+        text-indent: 20pt;
+    }
+
+    h2 {
+        font-size: 1.15em;
+        margin-top: 1.5em;
+        margin-bottom: .5em;
+        line-height: 1.2em;
+        text-indent: 20pt;
+    }
+
+    table {
+        margin-top: 1.5em;
+        margin-bottom: 1.5em;
+        font-size: 0.9em;
+        border-collapse: collapse;
+    }
+
+    tr td {
+        vertical-align: top;
+        padding: 0.2em;
+    }
+
+    sup {
+        vertical-align: super;
+        font-size: 0.9em;
+        line-height: 100% !important;
+    }
+
+    sub {
+        vertical-align: sub;
+        font-size: 0.9em;
+        line-height: 100% !important;
+    }
+
+    img {
+        max-height: calc(100vh - var(--xb-margin) * 2);
+        max-width: 100%;
+        width: initial;
+        display: block;
+        margin: 0px auto;
+    }
+
+    h1,
+    h2,
+    h3 {
+        page-break-after: avoid;
+        text-align: center;
+    }
+
+    hr {
+        margin-top: 0.2em;
+        margin-bottom: 0.2em;
+        border-top: 1px solid var(--xb-color);
+        width: 100%;
+        page-break-after: always;
+    }
+
+    p {
+        display: block;
+        margin-top: 0em;
+        margin-bottom: 0em;
+        margin-left: 0em;
+        margin-right: 0em;
+        text-indent: 20pt;
+    }
+
+    p.noindent {
+        text-indent: 0;
+    }
+
+    p.centerp {
+        text-align: center;
+    }
+
+    p.signature {
+        text-align: right;
+    }
+
+    p.diamond {
+        text-align: center;
+        margin-top: 1em;
+        margin-bottom: 1em;
+    }
+
+    p.section-marking {
+        margin-top: 1em;
+        margin-bottom: 1em;
+    }
+
+    p.section-marking img {
+        height: 1em;
+    }
+
+    p.section-break {
+        margin-top: 1em;
+    }
+}

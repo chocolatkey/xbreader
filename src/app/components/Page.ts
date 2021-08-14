@@ -1,8 +1,9 @@
 import { t } from "ttag";
 import m, {ClassComponent, Vnode} from "mithril";
-import SmartLoader from "xbreader/helpers/lazyLoader";
+import SmartLoader, { chooserFunction, drawerFunction } from "xbreader/helpers/lazyLoader";
 import Link from "xbreader/models/Link";
 import Slider from "xbreader/models/Slider";
+import { RenderConfig } from "xbreader/models/Config";
 import Peripherals, { BibiMouseEvent } from "xbreader/helpers/peripherals";
 import { canDrawBitmap } from "xbreader/helpers/platform";
 export const MAX_FIT_WIDTH = 1400;
@@ -16,8 +17,8 @@ export interface PageAttrs {
     readonly blank: boolean;
     readonly index: number;
     readonly slider: Slider;
-    readonly drawCallback: Function;
-    readonly chooseCallback: Function;
+    readonly renderConfig: RenderConfig;
+    readonly chooseCallback: chooserFunction;
     readonly binder: Peripherals;
 }
 
@@ -45,10 +46,11 @@ export default class Page implements ClassComponent<PageAttrs> {
             return val + "px";
     }
 
-    get styles() {            
+    get styles() {
+        // Note: width used to be ${this.parseDimension(this.itemWidth)}, but that causes gaps in between spread pages
         return `\
         height: ${this.parseDimension(this.itemHeight)};\
-        width: ${this.parseDimension(this.itemWidth)};\
+        width: auto;\
         float: ${this.float};\
         margin-left: ${this.marginLeft}px;\
         margin-right: ${this.marginRight}px;\
@@ -75,7 +77,11 @@ export default class Page implements ClassComponent<PageAttrs> {
         if (vnode.attrs.blank)
             this.blank = true;
         else
-            this.loader = new SmartLoader(this.data, vnode.attrs.slider.publication, vnode.attrs.index, vnode.attrs.drawCallback, vnode.attrs.chooseCallback);
+            this.loader = new SmartLoader(this.data, vnode.attrs.slider.publication, vnode.attrs.index, vnode.attrs.renderConfig, vnode.attrs.chooseCallback);
+    }
+
+    onremove() {
+        this.loader.destroy();
     }
 
 
@@ -177,12 +183,13 @@ export default class Page implements ClassComponent<PageAttrs> {
                 draggable: false,
                 "aria-label": this.data.Title ? this.data.Title : t`Page ${pageNumber}`
             };
-            const indeterminateHeight = vnode.attrs.drawCallback || canDrawBitmap;
             if(vnode.attrs.isImage) {
+                const willDraw = this.loader.drawer || vnode.attrs.renderConfig.onDraw;
                 innerItemAttrs.role = "img";
-                if(indeterminateHeight)
+                if(willDraw)
                     innerItemAttrs.height = innerItemAttrs.width = 0;
-                innerItemIs = m(((indeterminateHeight ? "canvas" : "img") + ".page-img.noget.noselect"), innerItemAttrs);
+                else innerItemAttrs.decoding = "async";
+                innerItemIs = m(((willDraw ? "canvas" : "img") + ".page-img.noget.noselect"), innerItemAttrs);
             }
             else {
                 innerItemAttrs.height = slider.height;
@@ -194,6 +201,7 @@ export default class Page implements ClassComponent<PageAttrs> {
                     if(!(e.target as HTMLIFrameElement).src) // Not loaded with document, just empty
                         return;
                     const tx = (e.target as HTMLIFrameElement).contentDocument;
+                    if(!tx) return;
                     vnode.attrs.binder.observe(tx);
                     tx.addEventListener("pointermove", (e: MithrilEvent) => {
                         e.special = true;

@@ -3,9 +3,11 @@ import Link from "xbreader/models/Link";
 import { CVnodeDOM } from "mithril";
 import WorkerPool from "./workerPool";
 import m from "mithril";
-import { canWebP, canDrawBitmap } from "./platform";
+import { canDrawBitmap, canWebP } from "./platform";
 import { bestImage } from "./sizer";
 import Publication from "xbreader/models/Publication";
+import { RenderConfig } from "../models/Config";
+import sML from "./sMLstub";
 
 const HIGH_THRESHOLD = 5;
 const LOW_THRESHOLD = 3;
@@ -22,7 +24,7 @@ type LoadableElement = HTMLImageElement | HTMLCanvasElement | HTMLIFrameElement;
 
 const offscreenCanvasSupported = typeof(OffscreenCanvas) === "undefined" ? false : true;
 const workerSupported = typeof(Worker) === "undefined" ? false : true;
-export let f: Function;
+export let f: ()=> void;
 export let worker: WorkerPool;
 if(workerSupported) {
     f = () => {
@@ -90,25 +92,43 @@ if(workerSupported) {
                             return;
                         if(xhr.status && xhr.status < 400) {
                             if(e.data.bitmap && ("createImageBitmap" in self)) { // ImageBitmap supported
-                                createImageBitmap(xhr.response as Blob).then((bitmap) => {
-                                    if(e.data.needRaw) {
-                                        let url: string;
-                                        if (e.data.needRaw === true)
-                                            url = URL.createObjectURL(xhr.response);
-                                        else if(Array.isArray(e.data.needRaw)) {
-                                            const dat = (e.data.needRaw) as number[];
-                                            if(dat.length === 1)
-                                                url = URL.createObjectURL(((xhr.response) as Blob).slice(dat[0]));
-                                            else if(dat.length === 2)
-                                                url = URL.createObjectURL(((xhr.response) as Blob).slice(dat[0], dat[1]));
-                                        }
-                                        ctx.postMessage({ src, bitmap, url }, [bitmap]);
-                                    } else
-                                        ctx.postMessage({ src, bitmap }, [bitmap]);
-                                });
+                                try {
+                                    createImageBitmap(xhr.response as Blob).then((bitmap: ImageBitmap) => {
+                                        if(e.data.needRaw) {
+                                            let url: string;
+                                            if (e.data.needRaw === true)
+                                                url = URL.createObjectURL(xhr.response);
+                                            else if(Array.isArray(e.data.needRaw)) {
+                                                const dat = (e.data.needRaw) as number[];
+                                                if(dat.length === 1)
+                                                    url = URL.createObjectURL(((xhr.response) as Blob).slice(dat[0]));
+                                                else if(dat.length === 2)
+                                                    url = URL.createObjectURL(((xhr.response) as Blob).slice(dat[0], dat[1]));
+                                            }
+                                            ctx.postMessage({ src, bitmap, url }, [bitmap]);
+                                        } else
+                                            ctx.postMessage({ src, bitmap }, [bitmap]);
+                                    });
+                                } catch (error) {
+                                    // Handle DOMException: The ImageBitmap could not be allocated.
+                                    ctx.postMessage({ src, error: `Failed to load item ${src}: ${error}` });
+                                }
                             } else {
                                 const url = URL.createObjectURL(xhr.response);
-                                ctx.postMessage({ src, url });
+                                if(e.data.needRaw) {
+                                    let durl: string;
+                                    if (e.data.needRaw === true)
+                                        durl = url; // NOOP
+                                    else if(Array.isArray(e.data.needRaw)) {
+                                        const dat = (e.data.needRaw) as number[];
+                                        if(dat.length === 1)
+                                            durl = URL.createObjectURL(((xhr.response) as Blob).slice(dat[0]));
+                                        else if(dat.length === 2)
+                                            durl = URL.createObjectURL(((xhr.response) as Blob).slice(dat[0], dat[1]));
+                                    }
+                                    ctx.postMessage({ src, url, durl });
+                                } else
+                                    ctx.postMessage({ src, url });
                             }
                         } else {
                             // Warning: Do *not* send the error as an Error object, FF can't clone it!
@@ -132,40 +152,52 @@ if(workerSupported) {
     };
 
     // WorkerPool pretends to be a Worker by implementing all essential worker functions
-    worker = new WorkerPool(URL.createObjectURL(new Blob([`(${f})()`])));
+    worker = new WorkerPool(URL.createObjectURL(new Blob([`(${f})()`], {
+        type: "application/javascript"
+    })));
 }
+
+export type drawerFunction = (loader: LazyLoader, source: ImageBitmap | string, blob?: string)=> void;
+export type chooserFunction = (link: Link)=> Link;
 
 export default class LazyLoader {
     private best: Link;
     private href: string;
     private readonly data: Link;
+    private readonly noblob: boolean;
     private index: number;
     private loaded = false;
     public reloader = true;
     private already = false;
     private blob: string = null;
-    private readonly drawer: Function;
+    public readonly drawer: drawerFunction;
+    public readonly canDrawBitmap: boolean;
     private canvas: HTMLCanvasElement;
     private element: LoadableElement;
     private highTime: number;
     private preloader: HTMLImageElement | Record<string, any>;
     private drawT: number;
-    private readonly chooser: Function;
+    private readonly chooser?: chooserFunction;
     private toonLogic = false; // Whether to use "toon logic" to make decisions when loading the image
+    private specificWorker = -2;
+    private lowOK: boolean;
 
-    constructor(itemData: Link, publication: Publication, indx: number, drawCallback: Function, chooseCallback: Function) {
+    constructor(itemData: Link, publication: Publication, indx: number, renderConfig: RenderConfig, chooseCallback: chooserFunction) {
         this.best = itemData;
         this.href = itemData.Href;
         this.toonLogic = publication.isTtb;
+        this.lowOK = !!renderConfig.lok;
+        this.noblob = itemData.findFlag("noblob");
 
         this.data = itemData;
         this.index = indx;
-        this.drawer = canDrawBitmap ? LazyLoader.drawBitmap : null;
         this.chooser = chooseCallback ? chooseCallback : null;
 
-        if(drawCallback) {
-            this.drawer = drawCallback;
-        } else if(itemData.Height && itemData.Width) {
+        this.drawer = (canDrawBitmap && workerSupported && !this.toonLogic) ? LazyLoader.drawBitmap : null;
+        this.canDrawBitmap = renderConfig.bitmap;
+        if(renderConfig.onDraw) {
+            this.drawer = renderConfig.onDraw;
+        } else if(itemData.Height && itemData.Width && (!renderConfig.bitmap || !this.drawer)) {
             this.canvas = document.createElement("canvas");
         }
 
@@ -176,8 +208,8 @@ export default class LazyLoader {
     get source() {
         let best: Link;
         if(this.chooser !== null) // Give custom func a chance to choose the best link
-            best = this.chooser(this.data) as Link;
-        if(!best) best = bestImage(this.data, this.toonLogic);
+            best = this.chooser(this.data);
+        if(!best) best = bestImage(this.data, this.toonLogic, this.lowOK);
         if(best !== this.best) {
             this.best = best;
             this.href = best.Href;
@@ -187,7 +219,7 @@ export default class LazyLoader {
 
     provoke(imageItem: CVnodeDOM<LoadableElement>, currentIndex: number) {
         this.element = imageItem.dom as LoadableElement;
-        if(this.drawer && this.data.findFlag("isImage"))
+        if(this.element instanceof HTMLCanvasElement && this.data.findFlag("isImage"))
             this.canvas = this.element as HTMLCanvasElement; // C
         const diff = Math.abs(this.index - currentIndex); // Distance of this page from current page
         clearTimeout(this.highTime);
@@ -215,7 +247,7 @@ export default class LazyLoader {
                 if(this.data.findFlag("isImage"))
                     (this.element as HTMLImageElement).src = BLANK_IMAGE;
                 else
-                    (this.element as HTMLIFrameElement).src = BLANK_PAGE;                
+                    (this.element as HTMLIFrameElement).src = BLANK_PAGE;
             }
             this.loaded = false;
             this.reloader = true;
@@ -223,11 +255,17 @@ export default class LazyLoader {
         // If still loading image but moved away from it in the meantime
         } else if (this.preloader && !this.loaded) {
             if(workerSupported)
-                worker.postMessage({src: this.href, mode: "CANCEL"});
+                worker.postMessage({src: this.href, mode: "CANCEL"}, null, this.specificWorker);
             else
                 (this.preloader as HTMLImageElement).src = ""; // Cancels currently loading image
             this.preloader = null; // Reset the preloader
         }
+    }
+
+    destroy(): void {
+        if(this.canvas) this.canvas.height = this.canvas.width = 0;
+        if (!this.loaded && workerSupported) worker.postMessage({src: this.href, mode: "CANCEL"}, [], this.specificWorker);
+        if(this.blob && this.blob !== "empty") URL.revokeObjectURL(this.blob);
     }
 
     private toBlob(type?: string, quality?: number) {
@@ -235,6 +273,7 @@ export default class LazyLoader {
             return;
         if(HTMLCanvasElement.prototype.toBlob) {
             this.canvas.toBlob((blob) => {
+                if(!blob) return;
                 this.blob = URL.createObjectURL(blob);
                 if(!this.loaded)
                     (this.element as HTMLImageElement).src = this.blob;
@@ -255,11 +294,11 @@ export default class LazyLoader {
         }
     }
 
-    private draw(element: HTMLElement | string) {
+    private draw(element: HTMLElement | string, mel = false) {
         cancelAnimationFrame(this.drawT);
         this.drawT = requestAnimationFrame(() => {
-            const cd = this.canvas;
-            if (!cd)
+            const cd = mel ? this.element as HTMLCanvasElement : this.canvas;
+            if (!cd || cd instanceof HTMLImageElement)
                 return;
             let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
             let tempCanvas: HTMLCanvasElement | OffscreenCanvas;
@@ -267,7 +306,7 @@ export default class LazyLoader {
 
             try {
                 // We *have* to initialize the context for the first time as a bitmaprenderer if we want to use the same context in the future
-                if(canDrawBitmap)
+                if(this.canDrawBitmap)
                     dctx = cd.getContext("bitmaprenderer") as ImageBitmapRenderingContext;
 
                 // Fall back to 2d
@@ -282,52 +321,60 @@ export default class LazyLoader {
                         tempCanvas.width = cd.width;
                         tempCanvas.height = cd.height;
                     }
-                    // Do NOT add {desynchronized: true} here! https://bugs.chromium.org/p/chromium/issues/detail?id=1072214#c14
-                    ctx = tempCanvas.getContext("2d") as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+                    // https://bugs.chromium.org/p/chromium/issues/detail?id=1072214#c14
+                    ctx = tempCanvas.getContext("2d", (!sML.UA.Chrome || sML.UA.Chrome) >= 83 ? { desynchronized: true } : null) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
                 }
-            } catch (error) {}
-
-            if(ctx && !this.loaded) {
-                ctx.clearRect(0, 0, cd.width, cd.height);
-                if (element instanceof HTMLImageElement) {
-                    ctx.drawImage(element, 0, 0, cd.width, cd.height);
-                } else {
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    ctx.fillStyle = "grey";
-    
-                    ctx.font = "normal bold 150px sans-serif";
-                    ctx.fillText(element as string, cd.width / 2, cd.height / 2);
-    
-                    ctx.font = "normal 20px sans-serif";
-                    const fn = this.href.split("/");
-                    const fnnq = fn[fn.length - 1].split("?")[0];
-                    const infoString = `${__NAME__} ${__VERSION__} → ${fnnq}`;
-                    ctx.fillText(infoString, cd.width / 2, cd.height - 20);
+            } catch (error) { console.error(error); }
+            if(ctx)
+                if(!this.loaded || mel) {
+                    ctx.clearRect(0, 0, cd.width, cd.height);
+                    if (element instanceof HTMLImageElement) {
+                        ctx.drawImage(element, 0, 0, cd.width, cd.height);
+                    } else {
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        ctx.fillStyle = "grey";
+        
+                        ctx.font = "normal bold 150px sans-serif";
+                        ctx.fillText(element as string, cd.width / 2, cd.height / 2);
+        
+                        ctx.font = "normal 20px sans-serif";
+                        const fn = this.href.split("/");
+                        const fnnq = fn[fn.length - 1].split("?")[0];
+                        const infoString = `${__NAME__} ${__VERSION__} → ${fnnq}`;
+                        ctx.fillText(infoString, cd.width / 2, cd.height - 20);
+                    }
+                    if(dctx && (!this.loaded || mel)) { // Needs to be transferred to the real canvas
+                        createImageBitmap(tempCanvas).then((ib: ImageBitmap) => {
+                            if(!this.loaded || mel)
+                                dctx.transferFromImageBitmap(ib);
+                            ib.close();
+                            tempCanvas.width = tempCanvas.height = 0;
+                            tempCanvas = null;
+                            this.drawAsSoon(mel);
+                        });
+                        return;
+                    }
+                } else if(tempCanvas) {
+                    tempCanvas.width = tempCanvas.height = 0;
+                    tempCanvas = null;
                 }
-                if(dctx && !this.loaded) { // Needs to be transferred to the real canvas
-                    createImageBitmap(tempCanvas).then((ib: ImageBitmap) => {
-                        if(!this.loaded)
-                            dctx.transferFromImageBitmap(ib);
-                        ib.close();
-                        tempCanvas.width = tempCanvas.height = 0;
-                        tempCanvas = null;
-                        this.drawAsSoon();
-                    });
-                    return;
-                }
-            } else {
-                // console.warn("No canvas context!", ctx, dctx, element, cd);
-            }
-            this.drawAsSoon();
+            this.drawAsSoon(mel);
         });
     }
 
     private drawAsSoon(first = false) {
         if(this.element && !first) {
             if(this.loaded) {
-                if(!workerSupported && !this.drawer) // C
-                    (this.element as HTMLImageElement).src = (this.preloader as HTMLImageElement).src;
+                if(!workerSupported && !this.drawer) { // C
+                    if(this.element instanceof HTMLImageElement)
+                        (this.element as HTMLImageElement).src = (this.preloader as HTMLImageElement).src;
+                    else { // Worker not supported, but using canvas/bitmap. Rare case
+                        this.element.height = this.best.Height;
+                        this.element.width = this.best.Width;
+                        this.draw(this.preloader as HTMLImageElement, true);
+                    }
+                }
                 if(this.blob)
                     URL.revokeObjectURL(this.blob);
                 return;
@@ -338,16 +385,16 @@ export default class LazyLoader {
                 this.toBlob();
             }
         }
-        requestAnimationFrame(this.drawAsSoon.bind(this));
+        requestAnimationFrame(() => this.drawAsSoon());
     }
 
     static drawBitmap(loader: LazyLoader, source: ImageBitmap, blob?: string) {
         const c = loader.canvas;
-        c.height = loader.best.Height;
-        c.width = loader.best.Width;
+        c.height = source.height;
+        c.width = source.width;
         let ctx: CanvasRenderingContext2D | ImageBitmapRenderingContext = c.getContext("bitmaprenderer", { alpha: false }) as ImageBitmapRenderingContext;
         if(!ctx) {
-            ctx = c.getContext("2d", {desynchronized: true}) as CanvasRenderingContext2D;
+            ctx = c.getContext("2d", {desynchronized: true, alpha: false}) as CanvasRenderingContext2D;
             if(ctx)
                 ctx.drawImage(source, 0, 0);
             else
@@ -382,9 +429,9 @@ export default class LazyLoader {
             }
             worker.addEventListener("message", handler);
             if(this.data.findFlag("isImage") && !this.data.Properties.Encrypted)
-                worker.postMessage({src, mode: "FETCH", modernImage: canWebP, bitmap: this.drawer ? true : false, needRaw: this.data.findSpecial("rawRange") ? this.data.findSpecial("rawRange").Value : false});
+                this.specificWorker = worker.postMessage({src, mode: "FETCH", modernImage: canWebP, bitmap: this.drawer ? true : false, needRaw: this.data.findSpecial("rawRange") ? this.data.findSpecial("rawRange").Value : false});
             else
-                worker.postMessage({src, mode: "FETCH", type: this.data.TypeLink});
+                this.specificWorker = worker.postMessage({src, mode: "FETCH", type: this.data.TypeLink});
         });
     }
 
@@ -402,10 +449,16 @@ export default class LazyLoader {
         if (!this.loaded && !this.already) {
             this.draw(t`Loading...`);
         }
-        if (!workerSupported) {
+        if(this.noblob) {
+            this.preloader = {
+                src: this.source
+            };
+            this.loaded = true;
+            (this.element as HTMLIFrameElement).src = this.source;
+        } else if (!workerSupported) {
             const source = this.source;
             this.preloader = document.createElement("img");
-            (this.preloader as HTMLImageElement).onload = () => {
+            (this.preloader as LoadableElement).onload = () => {
                 if (!this.preloader)
                     return;
                 if(this.drawer)
@@ -415,24 +468,27 @@ export default class LazyLoader {
                     requestAnimationFrame(() => this.drawAsSoon());
                 }
             };
-            (this.preloader as HTMLImageElement).onerror = () => {
+            (this.preloader as LoadableElement).onerror = (e) => {
                 window.setTimeout(() => {
                     if(!this.loaded && this.preloader) {
-                        console.error("Error loading page " + source);
+                        console.error("Error loading page " + source, e);
                         this.blob = null;
                         this.draw(t`Error!`);
                     }
                 }, 1000);
             };
-            (this.preloader as HTMLImageElement).src = source;
+            (this.preloader as HTMLIFrameElement).src = source;
         } else {
             this.preloader = {
                 src: null
             };
             const source = this.source;
             this.lazyWorker(source).then((params: any[]) => {
-                if (!this.preloader)
+                if (!this.preloader) {
+                    if(params.length > 0 && (params[0] instanceof ImageBitmap))
+                        try { params[0].close(); } catch (error) { console.warn("Failed closing bitmap:", error); }
                     return;
+                }
                 if(this.drawer)
                     this.drawer(this, params[0] as string, params.length > 1 ? params[1] as string : undefined);
                 else {
