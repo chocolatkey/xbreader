@@ -23,7 +23,9 @@ export default {
         }
         if(!attrs.name || !attrs.logo)
             return null;
-        return m("a.logo[href=/]", [
+        return m("a.logo[href=/]", {
+            target: "_parent"
+        }, [
             m(`img[src=${attrs.logo}]`, {"title": attrs.name})
         ]);
     }
