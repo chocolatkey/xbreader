@@ -3,7 +3,7 @@ import sML from "./sMLstub";
 import Coordinator, { Point, BibiEvent, VerticalThird, HorizontalThird } from "./coordinator";
 import Reader, { XBReadingDirection } from "xbreader/components/Reader";
 import Slider from "xbreader/models/Slider";
-import Ui from "xbreader/models/Ui";
+import Ui, { DialogData } from "xbreader/models/Ui";
 import { BeforeDeserialized } from "ta-json-x";
 
 const MAX_SCALE = 6; // 6x zoom
@@ -222,10 +222,13 @@ export default class Peripherals {
                 break;
             }
             case "popup": {
-                if(v === "false" || v === "0")
+                if(v === "false" || v === "0" || v === "no")
                     this.reader.ui.toggleDialog(false);
-                else
-                    this.reader.ui.toggleDialog(true, (new URL(v).toString()));
+                else {
+                    const data = JSON.parse(v) as DialogData;
+                    if(!data.src) return;
+                    this.reader.ui.toggleDialog(true, data);
+                }
                 break;
             }
             // TODO more

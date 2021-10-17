@@ -1,12 +1,26 @@
 import m from "mithril";
 
+export interface DialogData {
+    src: string;
+    minWidth: number;
+    minHeight: number;
+    maxWidth: number;
+    maxHeight: number;
+}
+
 export default class Ui {
     private readonly toggleCallback: Function;
     isHidden = false;
     menuShown = false;
     settingsShown = false;
     dialogShown = false;
-    dialogSrc = "about:blank";
+    dialogData = {
+        src: "about:blank",
+        minWidth: 350,
+        minHeight: 350,
+        maxWidth: 0,
+        maxHeight: 0
+    } as DialogData;
     notifierShown = false;
     public notification: string;
     private notifierTimeout: number;
@@ -45,9 +59,9 @@ export default class Ui {
             this.toggleMenu(false);
     }
 
-    toggleDialog(newState?: boolean, src?: string) {
+    toggleDialog(newState?: boolean, data?: DialogData) {
         this.dialogShown = newState;
-        if(src) this.dialogSrc = src;
+        if(data) this.dialogData = data;
     }
 
     toggle(newState?: boolean) {

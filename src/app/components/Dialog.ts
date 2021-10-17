@@ -15,6 +15,11 @@ export interface DialogAttrs {
 
 export default class Dialog implements ClassComponent<DialogAttrs> {
     view({attrs}: CVnode<DialogAttrs>) {
+        const iframeStyle = (attrs.ui.dialogData.minWidth > 0 ? `min-width: ${attrs.ui.dialogData.minWidth};` : "") +
+        (attrs.ui.dialogData.maxWidth > 0 ? `max-width: ${attrs.ui.dialogData.maxWidth};` : "") +
+        (attrs.ui.dialogData.minHeight > 0 ? `min-height: ${attrs.ui.dialogData.minHeight};` : "") +
+        (attrs.ui.dialogData.maxHeight > 0 ? `max-height: ${attrs.ui.dialogData.maxHeight};` : "");
+        console.log("IFS", iframeStyle);
         return m("div.br-dialog__container", {
             onclick: (e: UIEvent) => {
                 if((e.target as HTMLElement).className !== "br-dialog__container")
@@ -24,8 +29,9 @@ export default class Dialog implements ClassComponent<DialogAttrs> {
             }
         }, m("div.br-dialog.nopad", [
             m("iframe", {
+                style: iframeStyle,
                 scrolling: "no",
-                src: attrs.ui.dialogSrc
+                src: attrs.ui.dialogData.src
             })
         ]));
     }
