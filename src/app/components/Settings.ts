@@ -30,6 +30,8 @@ export default class Settings implements ClassComponent<SettingsAttrs> {
             m("form.br-form", attrs.config.settings.map((setting) => {
                 if(!attrs.slider.reflowable && setting.reflowable) return null;
                 switch (setting.type) {
+                    case XBOptionType.Hidden:
+                        return null;
                     case XBOptionType.Radio:
                         return m("div.br-form__input", [
                             m("div.br-form__input-label" + (setting.description ? ".br-help" : ""), {

@@ -6,6 +6,7 @@ import LazyLoader, { drawerFunction } from "xbreader/helpers/lazyLoader";
 import Series from "./Series";
 
 export enum XBOptionType {
+    Hidden,
     Radio,
     Dropdown,
     Spinner,
@@ -165,6 +166,23 @@ const DEFAULT_SETTINGS: XBSetting[] = [
             {
                 label: t`Justify`,
                 value: "justify"
+            }
+        ]
+    },
+    {
+        title: t`Spread`,
+        name: "spread",
+        reflowable: false,
+        value: "spread",
+        type: XBOptionType.Hidden,
+        options: [
+            {
+                label: t`Spread`,
+                value: "spread"
+            },
+            {
+                label: t`Single`,
+                value: "single"
             }
         ]
     }
