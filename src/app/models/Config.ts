@@ -248,6 +248,10 @@ export default class Config {
         return null;
     }
 
+    public setSetting(key: string, value: string | number): void {
+        this.settings.find(s => s.name === key).value = value;
+    }
+
     public saveSettings(): boolean {
         try {
             const exportedSettings: Record<string, string | number> = {};

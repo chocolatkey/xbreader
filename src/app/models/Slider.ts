@@ -197,6 +197,10 @@ export default class Slider {
             if(this.currentSlide > 1) this.currentSlide = this.minViewingPage;
             this.spread = false;
         }
+
+        this.config.setSetting("spread", this.spread ? "spread" : "single");
+        this.config.saveSettings();
+
         requestAnimationFrame(() => this.resizeHandler(true));
     }
 

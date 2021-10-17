@@ -47,7 +47,7 @@ export default class Settings implements ClassComponent<SettingsAttrs> {
                                         tabindex: setting.value === option.value ? "0" : "-1",
                                         id: "xbsetting-" + setting.name + "-" + oval(option),
                                         onchange: (e: MithrilEvent) => {
-                                            attrs.config.settings.find(s => s.name === setting.name).value = option.value;
+                                            attrs.config.setSetting(setting.name, option.value);
                                             if(attrs.config.saveSettings())
                                                 attrs.ui.notify(t`Settings saved!`);
                                             else
