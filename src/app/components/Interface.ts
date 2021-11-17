@@ -226,7 +226,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                 "aria-label": t`Bottom bar`
             }, [
                 this.sliderSystem(slider, publication, brand.embedded),
-                (!publication.isTtb && !publication.isSmallToon) && m("div.br-botbar-controls", {
+                !publication.isSmallToon && m("div.br-botbar-controls", {
                     class: slider.portrait ? "portrait" : "landscape"
                 }, [
                     (!publication.isTtb || !publication.isSmallToon) && tweakButton,
