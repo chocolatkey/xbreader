@@ -520,6 +520,9 @@ export default class Peripherals {
                     this.ui.mousing = true;
                     this.ui.toggle(true);
                 } else {
+                    // Can't explain why, but if the timeout below this line is set on Safari, it triggers the infamous Safari touch delay.
+                    // This line prevents it from being set by skipping it on mobile touches because it's not necessary anyway.
+                    if(!e.movementX && !e.movementY && sML.Mobile) return;
                     this.mtimer = window.setTimeout(() => {
                         if(this.mousePosOut || this.ui.mousing)
                             return;
