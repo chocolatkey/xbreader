@@ -25,7 +25,7 @@ export default class Spine implements ClassComponent<SpineAttrs> {
         const binder = attrs.binder;
         if(!slider)
             return null;
-        return m("div#br-spine.paginated", {
+        return m("div#br-spine.paginated" + (slider.single ? ".single" : ".double"), {
             style: slider.properties,
             ontouchstart: binder ? binder.touchstartHandler : null,
             ontouchend: binder ? binder.touchendHandler : null,

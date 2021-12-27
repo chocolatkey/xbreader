@@ -110,7 +110,7 @@ export default class ReflowableSpine implements ClassComponent<ReflowableSpineAt
             margin: DEFAULT_MARGIN
         });
 
-        return m("div#br-spine.reflowable", {
+        return m("div#br-spine.reflowable" + (slider.single ? ".single" : ".double"), {
             style: slider.ttb ? slider.properties : Object.assign(slider.properties, { // LTR/RTL
                 height: `calc(100% - ${margin*2}px)`, // height: `${slider.height}px`,
                 marginTop: `${margin}px`,
@@ -123,7 +123,7 @@ export default class ReflowableSpine implements ClassComponent<ReflowableSpineAt
             }),
             onupdate: (vnode) => {
                 slider.rlength = Math.max(1, Math.ceil(vnode.dom.scrollWidth / (vnode.dom as HTMLElement).offsetWidth));
-            },  
+            },
             ontouchstart: binder ? binder.touchstartHandler : null,
             ontouchend: binder ? binder.touchendHandler : null,
             onmouseup: binder ? binder.mouseupHandler : null,
