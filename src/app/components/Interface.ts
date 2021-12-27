@@ -120,18 +120,9 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
         return m("div.br-botbar-container", items);
     }
 
-    view(vnode: Vnode<InterfaceAttrs, this>) {
-        const ui = vnode.attrs.model;
-        const brand = vnode.attrs.reader.config.state.brand;
-        const tabConfig = vnode.attrs.reader.config.state.tabs;
-        const slider = vnode.attrs.slider;
-        const publication = vnode.attrs.reader.publication;
-        const series = vnode.attrs.reader.series;
-        const config = vnode.attrs.config;
-
-        let tweakButton: Vnode;
-        if (slider.ttb) // Vertical tweaking
-            tweakButton = m("button#br-view__tweak", {
+    private tweakButton(publication: Publication, slider: Slider): Vnode {
+        return slider.ttb ? // Vertical tweaking
+            m("button#br-view__tweak", {
                 onclick: () => {
                     slider.fit = !slider.fit;
                     if(publication.isScrollable) slider.slideToCurrent(false, true);
@@ -141,9 +132,9 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                 m("i", {
                     class: slider.fit ? "br-i-wide" : "br-i-thin"
                 })
-            ]);
-        else // Horizontal tweaking
-            tweakButton = m("button#br-view__tweak", {
+            ])
+        : // Horizontal tweaking
+            m("button#br-view__tweak", {
                 onclick: () => {
                     slider.toggleSpread();
                 },
@@ -155,6 +146,16 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                     "aria-hidden": "true"
                 })
             ]);
+    }
+
+    view(vnode: Vnode<InterfaceAttrs, this>) {
+        const ui = vnode.attrs.model;
+        const brand = vnode.attrs.reader.config.state.brand;
+        const tabConfig = vnode.attrs.reader.config.state.tabs;
+        const slider = vnode.attrs.slider;
+        const publication = vnode.attrs.reader.publication;
+        const series = vnode.attrs.reader.series;
+        const config = vnode.attrs.config;
 
         const tabs: Vnode[] = [];
         const tabBar = [];
@@ -229,7 +230,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                 !publication.isSmallToon && m("div.br-botbar-controls", {
                     class: slider.portrait ? "portrait" : "landscape"
                 }, [
-                    (!publication.isTtb || !publication.isSmallToon) && tweakButton,
+                    (!publication.isTtb || !publication.isSmallToon) && this.tweakButton(publication, slider),
                     !publication.isTtb && m("button#br-view__rvm", {
                         title: t`Toggle reading direction`,
                         onclick: () => {
