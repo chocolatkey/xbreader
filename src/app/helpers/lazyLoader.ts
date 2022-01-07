@@ -271,27 +271,12 @@ export default class LazyLoader {
     private toBlob(type?: string, quality?: number) {
         if(this.loaded)
             return;
-        if(HTMLCanvasElement.prototype.toBlob) {
-            this.canvas.toBlob((blob) => {
-                if(!blob) return;
-                this.blob = URL.createObjectURL(blob);
-                if(!this.loaded)
-                    (this.element as HTMLImageElement).src = this.blob;
-            });
-        } else {
-            // eslint-disable-next-line no-var
-            var binStr = atob(this.canvas.toDataURL(type, quality).split(",")[1]),
-                len = binStr.length,
-                arr = new Uint8Array(len);
-
-            // eslint-disable-next-line no-var
-            for (var i = 0; i < len; i++)
-                arr[i] = binStr.charCodeAt(i);
-
-            this.blob = URL.createObjectURL(new Blob([arr], {
-                type: type || "image/png"
-            }));
-        }
+        this.canvas.toBlob((blob) => {
+            if(!blob) return;
+            this.blob = URL.createObjectURL(blob);
+            if(!this.loaded)
+                (this.element as HTMLImageElement).src = this.blob;
+        });
     }
 
     private draw(element: HTMLElement | string, mel = false) {
@@ -453,8 +438,8 @@ export default class LazyLoader {
             this.preloader = {
                 src: this.source
             };
-            this.loaded = true;
             (this.element as HTMLIFrameElement).src = this.source;
+            this.loaded = true;
         } else if (!workerSupported) {
             const source = this.source;
             this.preloader = document.createElement("img");
