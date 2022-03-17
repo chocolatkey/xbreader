@@ -231,6 +231,10 @@ export default class Peripherals {
                 }
                 break;
             }
+            case "toast": {
+                this.reader.ui.notify(v);
+                break;
+            }
             // TODO more
             default:
                 break;
