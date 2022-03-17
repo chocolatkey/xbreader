@@ -19,6 +19,10 @@ export interface Zoomer {
     };
 }
 
+// Reflowable consts
+export const DEFAULT_MARGIN = 40; // TODO adjustable
+export const MAX_MARGIN_WIDTH = 750;
+
 export default class Slider {
     private readonly navigator: Navigator;
     readonly series: Series;
@@ -107,6 +111,12 @@ export default class Slider {
         this.height = document.documentElement.clientHeight;
     }
 
+    get reflowableMargin() {
+        return (this.fit && this.ttb)
+            ? (this.width > (DEFAULT_MARGIN*2 + MAX_MARGIN_WIDTH) ? ((this.width - MAX_MARGIN_WIDTH) / 2 + DEFAULT_MARGIN) : DEFAULT_MARGIN)
+            : DEFAULT_MARGIN;
+    }
+
     updateProperties(animate: boolean, fast = true) {
         let margin = "0";
         this.updateDimensions();
@@ -124,6 +134,18 @@ export default class Slider {
                 width: `${(this.width / this.perPage) * this.length}px`,
                 transform: this.transform
             };
+        }
+
+        if(this.reflowable && !this.ttb) {
+            const margin = this.reflowableMargin;
+            this.properties.height = `calc(100% - ${margin*2}px)`, // height: `${slider.height}px`,
+            this.properties.marginTop = `${margin}px`;
+            this.properties.marginBottom = `${margin}px`;
+            this.properties.columnGap = `${margin*2}px`;
+            this.properties.columns = `${(this.width - this.perPage * margin * 2) / this.perPage}px ${this.perPage}`;
+            this.properties.paddingLeft = `${margin}px`;
+            this.properties.paddingRight = `${margin}px`;
+            this.properties.width = "auto";
         }
     }
 

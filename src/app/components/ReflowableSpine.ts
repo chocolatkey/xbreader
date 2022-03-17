@@ -1,6 +1,6 @@
 import { t } from "ttag";
 import m, { CVnode, ChildArray, Child, Vnode, ClassComponent } from "mithril";
-import Slider from "xbreader/models/Slider";
+import Slider, { DEFAULT_MARGIN } from "xbreader/models/Slider";
 import Peripherals from "xbreader/helpers/peripherals";
 import { chooserFunction, worker } from "xbreader/helpers/lazyLoader";
 import Page from "./Page";
@@ -97,11 +97,6 @@ export default class ReflowableSpine implements ClassComponent<ReflowableSpineAt
     view({attrs}: CVnode<ReflowableSpineAttrs>) {
         const slider = attrs.slider;
         const binder = attrs.binder;
-        const DEFAULT_MARGIN = 40; // TODO adjustable
-        const MAX_MARGIN_WIDTH = 750;
-        const margin = (slider.fit && slider.ttb)
-            ? (slider.width > (DEFAULT_MARGIN*2 + MAX_MARGIN_WIDTH) ? ((slider.width - MAX_MARGIN_WIDTH) / 2 + DEFAULT_MARGIN) : DEFAULT_MARGIN)
-            : DEFAULT_MARGIN;
         if(!slider)
             return null;
 
@@ -109,18 +104,11 @@ export default class ReflowableSpine implements ClassComponent<ReflowableSpineAt
             perPage: slider.perPage,
             margin: DEFAULT_MARGIN
         });
+        const margin = slider.reflowableMargin;
 
         return m("div#br-spine.reflowable" + (slider.single ? ".single" : ".double"), {
-            style: slider.ttb ? slider.properties : Object.assign(slider.properties, { // LTR/RTL
-                height: `calc(100% - ${margin*2}px)`, // height: `${slider.height}px`,
-                marginTop: `${margin}px`,
-                marginBottom: `${margin}px`,
-                columnGap: `${margin*2}px`,
-                columns: `${(slider.width - slider.perPage * margin * 2) / slider.perPage}px ${slider.perPage}`,
-                paddingLeft: `${margin}px`,
-                paddingRight: `${margin}px`,
-                width: "auto"
-            }),
+            style: slider.properties,
+            key: `reflowable-spine-${slider.perPage}`,
             onupdate: (vnode) => {
                 slider.rlength = Math.max(1, Math.ceil(vnode.dom.scrollWidth / (vnode.dom as HTMLElement).offsetWidth));
             },
