@@ -14,6 +14,7 @@ interface XBTab {
     href: string;
     icon: string;
     target?: string;
+    prefix: boolean;
 }
 
 interface XBBrand {

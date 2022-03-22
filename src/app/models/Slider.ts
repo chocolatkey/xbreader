@@ -65,7 +65,7 @@ export default class Slider {
         this.spread = config.spread;
 
         this.rtl = this.publication.rtl;
-        this.fit = config.fit;
+        this._firstfit = this.fit = config.fit;
         this.innerHeightCached = window.innerHeight;
         this.updateProperties(true);
         this.resizeBoundHandler = this.resizeHandler.bind(this);
@@ -112,7 +112,7 @@ export default class Slider {
     }
 
     get reflowableMargin() {
-        return (this.fit && this.ttb)
+        return ((this.fit && this.ttb) || (this.single && this.fit))
             ? (this.width > (DEFAULT_MARGIN*2 + MAX_MARGIN_WIDTH) ? ((this.width - MAX_MARGIN_WIDTH) / 2 + DEFAULT_MARGIN) : DEFAULT_MARGIN)
             : DEFAULT_MARGIN;
     }
@@ -138,9 +138,9 @@ export default class Slider {
 
         if(this.reflowable && !this.ttb) {
             const margin = this.reflowableMargin;
-            this.properties.height = `calc(100% - ${margin*2}px)`, // height: `${slider.height}px`,
-            this.properties.marginTop = `${margin}px`;
-            this.properties.marginBottom = `${margin}px`;
+            this.properties.height = `calc(100% - ${DEFAULT_MARGIN*2}px)`, // height: `${slider.height}px`,
+            this.properties.marginTop = `${DEFAULT_MARGIN}px`;
+            this.properties.marginBottom = `${DEFAULT_MARGIN}px`;
             this.properties.columnGap = `${margin*2}px`;
             this.properties.columns = `${(this.width - this.perPage * margin * 2) / this.perPage}px ${this.perPage}`;
             this.properties.paddingLeft = `${margin}px`;
@@ -208,8 +208,24 @@ export default class Slider {
         return this.ttb ? "ttb" : (this.rtl ? "rtl" : "ltr");
     }
 
+    toggleFit() {
+        this.fit = !this.fit;
+        if(this.publication.isScrollable && this.ttb) this.slideToCurrent(false, true);
+        this.config.setSetting("fit", this.fit ? "thin" : "wide");
+        this.config.saveSettings();
+    }
+
+    public _firstfit: boolean;
     toggleSpread() {
         if (this.single) {
+            if(this.reflowable) {
+                if(this.fit === this._firstfit) {
+                    this.toggleFit();
+                    requestAnimationFrame(() => this.resizeHandler(true));
+                    return;
+                }
+                this.toggleFit();
+            }
             this.spread = true;
             this.currentSlide++;
             if (this.currentSlide % 2) // Prevent getting out of track
@@ -217,6 +233,7 @@ export default class Slider {
             // console.log("single -> spread", this.currentSlide, this.minViewingPage);
         } else {
             if(this.currentSlide > 1) this.currentSlide = this.minViewingPage;
+            this._firstfit = this.fit;
             this.spread = false;
         }
 

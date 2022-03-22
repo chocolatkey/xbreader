@@ -4,6 +4,7 @@ import Reader from "xbreader/components/Reader";
 import { canDrawBitmap } from "xbreader/helpers/platform";
 import LazyLoader, { drawerFunction } from "xbreader/helpers/lazyLoader";
 import Series from "./Series";
+import Link from "./Link";
 
 export enum XBOptionType {
     Hidden,
@@ -185,6 +186,23 @@ const DEFAULT_SETTINGS: XBSetting[] = [
                 value: "single"
             }
         ]
+    },
+    {
+        title: t`Fit`,
+        name: "fit",
+        reflowable: false,
+        value: "wide",
+        type: XBOptionType.Hidden,
+        options: [
+            {
+                label: t`Wide`,
+                value: "wide"
+            },
+            {
+                label: t`Thin`,
+                value: "thin"
+            }
+        ]
     }
     /*,
     {
@@ -340,17 +358,17 @@ export default class Config {
     }*/
 
     /**
-     * Get the prefered page fitting setting for vertical reading
+     * Get the prefered page fitting setting for vertical reading or reflowable single page reading
      * Setting index NOT cached, don't use in vdom calculation
      */
     get fit(): boolean {
         if(!this.settings) return false;
-        const setting = this.settings.find(s => s.name === "vfit");
+        const setting = this.settings.find(s => s.name === "fit");
         if(setting === undefined) return false;
         switch (setting.value) {
-            case "height":
+            case "thin":
                 return true;
-            default: // Includes "width"
+            default: // Includes "wide"
                 return false;
         }
     }
@@ -359,7 +377,7 @@ export default class Config {
      * Get the preferred spread view option for horizontal reading
      * Setting index NOT cached, don't use in vdom calculation
      */
-    get spread(): boolean { // TODO implement 3-way!!!
+    get spread(): boolean {
         if(!this.settings) return true;
         const setting = this.settings.find(s => s.name === "spread");
         if(setting === undefined) return true;
@@ -423,10 +441,16 @@ export default class Config {
                 titled: true,
                 embedded: false // Whether to show interface meant for embedding in apps
             },
-            tabs: [{ // Tabs on right side of top bar
+            tabs: [{ // Tabs on the top bar
                 title: "Settings",
                 href: "javascript:window.postMessage('xbr:settings', '*')",
-                icon: "cog"
+                icon: "cog",
+                prefix: true
+            }, { // Tabs on the top bar
+                title: "Settings",
+                href: "javascript:window.postMessage('xbr:settings', '*')",
+                icon: "cog",
+                prefix: false
             }],
             additionalSettings: [],
             guideHidden: false, // Skip showing the reading direction guide
@@ -444,7 +468,8 @@ export default class Config {
             onLastPage: (series: Series, pnum: number) => true, // When trying to go further after the last page. If returns true, auto-advance
             onToggleInterface: () => {}, // When interface is shown/hidden
 
-            onSource: null, // (data: Link): Link When you want to overrride the logic choosing the appropriate link object or inject/modify links
+            onSource: (link: Link) => false, // Link When you want to overrride the logic choosing the appropriate link object or inject/modify links
+            onDrew: null,
             onError: null, // (TODO)
             render: {
                 bitmap: canDrawBitmap,

@@ -1,6 +1,6 @@
 import { t } from "ttag";
 import m, {ClassComponent, Vnode, Child} from "mithril";
-import Logo from "xbreader/partials/Logo";
+import Logo, { LogoAttrs } from "xbreader/partials/Logo";
 import Ui from "xbreader/models/Ui";
 import Slider from "xbreader/models/Slider";
 import Reader from "./Reader";
@@ -121,11 +121,12 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
     }
 
     private tweakButton(publication: Publication, slider: Slider): Vnode {
+        const horState = slider.single ? ((slider.reflowable && slider.fit === slider._firstfit) ? (slider.fit ? "single-wide" : "single") : (slider.rtl ? "spread-rtl" : "spread-ltr")) : ((slider.reflowable && !slider.fit) ? "single-wide" : "single");
         return slider.ttb ? // Vertical tweaking
             m("button#br-view__tweak", {
+                key: "vertical-tweaks",
                 onclick: () => {
-                    slider.fit = !slider.fit;
-                    if(publication.isScrollable) slider.slideToCurrent(false, true);
+                    slider.toggleFit();
                 },
                 title: slider.fit ? (publication.isScrollable ? t`Widen` : t`Fit to width`) : (publication.isScrollable ? t`Narrow` : t`Fit to height`)
             }, [
@@ -135,14 +136,15 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
             ])
         : // Horizontal tweaking
             m("button#br-view__tweak", {
+                key: "horizontal-tweaks",
                 onclick: () => {
                     slider.toggleSpread();
                 },
-                title: slider.single ? t`Spread view` : t`Single page view`,
-                "aria-label": slider.single ? t`Spread view` : t`Single page view`
+                title: (horState === "spread-ltr" || horState === "spread-rtl") ? t`Spread view` : (horState === "single" ? t`Single page view` : t`Wide single page view`),
+                "aria-label": (horState === "spread-ltr" || horState === "spread-rtl") ? t`Spread view` : (horState === "single" ? t`Single page view` : t`Wide single page view`)
             }, [
                 m("i", {
-                    class: slider.single ? (slider.rtl ? "br-i-spread-rtl" : "br-i-spread-ltr") : "br-i-single",
+                    class: `br-i-${horState}`,
                     "aria-hidden": "true"
                 })
             ]);
@@ -157,21 +159,27 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
         const series = vnode.attrs.reader.series;
         const config = vnode.attrs.config;
 
-        const tabs: Vnode[] = [];
+        const postTabs: Vnode[] = tabConfig.filter(t => !t.prefix).map(tab => m("a.br-tab", {
+            title: tab.title,
+            href: tab.href,
+            target: tab.target ?? (tab.href.startsWith("javascript:") ? "_self" : "_parent")
+        }, [
+            m(`i.br-i-${tab.icon}`, {
+                "aria-hidden": "true"
+            })
+        ]));
+        const preTabs: Vnode[] = tabConfig.filter(t => t.prefix).map(tab => m("a.br-tab", {
+            title: tab.title,
+            href: tab.href,
+            target: tab.target ?? (tab.href.startsWith("javascript:") ? "_self" : "_parent")
+        }, [
+            m(`i.br-i-${tab.icon}`, {
+                "aria-hidden": "true"
+            })
+        ]));
         const tabBar = [];
         const tabToggle = [];
-        tabConfig.forEach(tab => {
-            tabs.push(m("a.br-tab", {
-                title: tab.title,
-                href: tab.href,
-                target: tab.target ?? (tab.href.startsWith("javascript:") ? "_self" : "_parent")
-            }, [
-                m(`i.br-i-${tab.icon}`, {
-                    "aria-hidden": "true"
-                })
-            ]));
-        });
-        if(tabs.length > 0) { // Tabs exist, show tab functionality
+        if(postTabs.length > 0) { // Tabs exist, show tab functionality
             tabToggle.push(m("button.br-tab.br-cmenu__toggle", {
                 title: t`Menu`,
                 onclick: () => {
@@ -182,8 +190,12 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                     "aria-hidden": "true"
                 })
             ]));
-            tabBar.push(m("nav.br-tab-bar", tabs));
+            tabBar.push(m("nav.br-tab-bar", postTabs));
         }
+        const startSection = [
+            m(Logo, brand)
+        ];
+        if(preTabs.length > 0) startSection.unshift(m("nav.br-tab-bar", preTabs));
         const barClass = (ui.isHidden ? "hidden" : "shown") + (config.animate ? " animate" : "");
         const retval = [
             m("div.noselect#br-topbar", {
@@ -194,9 +206,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                     m("section.br-toolbar__section.br-toolbar__section--align-start", {
                         class: brand.embedded || !brand.logo ? "embedded" : "",
                         "aria-label": t`Logo`
-                    }, [
-                        m(Logo, brand)
-                    ]),
+                    }, startSection),
                     m("section.br-toolbar__tsection", {"aria-label": t`Title`}, [
                         series.exists ? (brand.embedded ? m("span.br-toolbar__ellipsis", series.firstSeries.Name as Child) : [m("a.br-toolbar__ellipsis", {
                             href: series.firstSeries.Identifier,
@@ -232,6 +242,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                 }, [
                     (!publication.isTtb || !publication.isSmallToon) && this.tweakButton(publication, slider),
                     !publication.isTtb && m("button#br-view__rvm", {
+                        key: "reading-direction",
                         title: t`Toggle reading direction`,
                         onclick: () => {
                             const reader = vnode.attrs.reader;
