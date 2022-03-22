@@ -446,11 +446,6 @@ export default class Config {
                 href: "javascript:window.postMessage('xbr:settings', '*')",
                 icon: "cog",
                 prefix: true
-            }, { // Tabs on the top bar
-                title: "Settings",
-                href: "javascript:window.postMessage('xbr:settings', '*')",
-                icon: "cog",
-                prefix: false
             }],
             additionalSettings: [],
             guideHidden: false, // Skip showing the reading direction guide
