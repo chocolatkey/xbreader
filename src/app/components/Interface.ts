@@ -240,8 +240,8 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                 !publication.isSmallToon && m("div.br-botbar-controls", {
                     class: slider.portrait ? "portrait" : "landscape"
                 }, [
-                    (!publication.isTtb || !publication.isSmallToon) && this.tweakButton(publication, slider),
-                    !publication.isTtb && m("button#br-view__rvm", {
+                    (!publication.isTtb || !publication.isSmallToon) ? this.tweakButton(publication, slider) : m.fragment({key: "no-tweak-button"}, []),
+                    !publication.isTtb ? m("button#br-view__rvm", {
                         key: "reading-direction",
                         title: t`Toggle reading direction`,
                         onclick: () => {
@@ -254,7 +254,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                             "aria-hidden": "true",
                             class: slider.ttb ? "br-i-horizontal" : "br-i-vertical"
                         })
-                    ])
+                    ]) : m.fragment({key: "no-reading-direction-button"}, [])
                 ])
             ])
         ];
