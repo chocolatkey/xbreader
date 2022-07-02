@@ -22,6 +22,7 @@ interface XBBrand {
     logo: string;
     titled: boolean;
     embedded: boolean;
+    href: string;
 }
 
 interface XBChapter {

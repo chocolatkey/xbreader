@@ -57,7 +57,7 @@ export default class ErrorView implements ClassComponent<ErrorAttrs> {
         const paddedErrorCode = new String(this.errorCode).padStart(4, "0");
         return [
             m("div.br-error__container", [
-                (this.config.brand && this.config.brand.embedded) ? m("div.br__notifier", m(Logo, this.config.brand)) : null,
+                (this.config.brand && this.config.brand.embedded) ? m("div.br__notifier", m(Logo, {brand: this.config.brand})) : null,
                 m("h1", t`Error ${paddedErrorCode}`),
                 m("p", this.errorMessage),
                 m("span", `${__NAME__} ${__VERSION__}`)

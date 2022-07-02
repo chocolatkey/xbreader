@@ -193,7 +193,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
             tabBar.push(m("nav.br-tab-bar", postTabs));
         }
         const startSection = [
-            m(Logo, brand)
+            m(Logo, {brand: brand})
         ];
         if(preTabs.length > 0) startSection.unshift(m("nav.br-tab-bar", preTabs));
         const barClass = (ui.isHidden ? "hidden" : "shown") + (config.animate ? " animate" : "");
