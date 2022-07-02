@@ -9,7 +9,7 @@ import { canDrawBitmap } from "xbreader/helpers/platform";
 export const MAX_FIT_WIDTH = 1400;
 export const MAX_FIT_HEIGHT = 1000;
 export const MAX_TTB_WIDTH = 1000;
-export const MIN_TTB_WIDTH = 750;
+export const MIN_TTB_WIDTH = 720;
 
 export interface PageAttrs {
     readonly data: Link;
@@ -123,8 +123,9 @@ export default class Page implements ClassComponent<PageAttrs> {
         const itemAttrs: InnerItemAttrs = {style: null};
         if (slider && (slider.ttb || slider.single)) { // Vertical (TTB) or forced single page
             if(slider.toon || (this.data.Height / this.data.Width) > 2) { // TTB publication or very tall image
-                if(this.data.Height > MAX_FIT_HEIGHT && !(this.landscape && !slider.toon) && this.data.Width < docWidth) { // Too large to fit, compromise with maxFit
-                    const preferredWidth = (slider.fit ? MIN_TTB_WIDTH : MAX_TTB_WIDTH);
+                // ... && this.data.Width < docWidth
+                if((this.data.Height > MAX_FIT_HEIGHT || this.data.Width > MAX_FIT_WIDTH) && !(this.landscape && !slider.toon)) { // Too large to fit, compromise with maxFit
+                    const preferredWidth = Math.min(docWidth, (slider.fit ? MIN_TTB_WIDTH : MAX_TTB_WIDTH));
                     if(preferredWidth < this.data.Width) {
                         this.itemHeight = preferredWidth / this.data.Width * this.data.Height;
                         this.itemWidth = preferredWidth;
