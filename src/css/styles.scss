@@ -149,14 +149,22 @@ div#br-main {
     padding-top: 0;
 }
 
+
+
 .page-img,
 .page-blank {
     max-height: 100%;
     max-width: 100%;
-    margin: 0 auto;
     display: block;
     //height: auto;
     direction: ltr;
+}
+
+div#br-spine.fixed.single {
+    .page-img,
+    .page-blank {
+        margin: 0 auto;
+    }
 }
 
 img.page-img {
@@ -203,9 +211,13 @@ div#br-book {
     }
 }
 
-div#br-spine.paginated {
+div#br-spine.fixed {
     // will-change: transform; "Will-change memory consumption is too high"
     contain: content;
+
+    & .item {
+        // contain: paint; // Disabled for now because causes gaps between TTB images
+    }
 }
 
 div#br-topbar, div#br-botbar {
