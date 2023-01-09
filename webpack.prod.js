@@ -78,13 +78,13 @@ module.exports = {
                 }
             ]
         },
-        {
+        /*{
             test: /\.(jpg|webp|ico|tiff|bmp|png|woff|woff2|eot|ttf|svg)$/,
             loader: "file-loader",
             options: {
                 name: "[name]-[hash].[ext]"
             }
-        }]
+        }*/]
     },
     resolve: {
         extensions: [ ".tsx", ".ts", ".js", ".jsx" ],

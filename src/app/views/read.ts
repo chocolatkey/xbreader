@@ -4,7 +4,6 @@ import Reader from "xbreader/components/Reader";
 
 export interface ReadAttrs {
     readonly id: string;
-    readonly nav: string;
 }
 
 export default class ReadView implements ClassComponent<ReadAttrs> {
@@ -28,9 +27,7 @@ export default class ReadView implements ClassComponent<ReadAttrs> {
         }
     }
 
-    view({attrs}: Vnode<ReadAttrs, this>) {
-        return [
-            m(Reader as any as Reader, {cid: this.cid, config: this.config})
-        ];
+    view() {
+        return m(Reader, {cid: this.cid, config: this.config});
     }
 }

@@ -1,7 +1,5 @@
-/*eslint no-unused-vars: "off", @typescript-eslint/no-unused-vars: "off" */
-
 import { t } from "ttag";
-import m, {ClassComponent, Vnode} from "mithril";
+import m, { ClassComponent, Vnode, VnodeDOM } from "mithril";
 import Publication from "xbreader/models/Publication";
 import Ui from "xbreader/models/Ui";
 import Slider from "xbreader/models/Slider";
@@ -201,14 +199,15 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
         this.binder = this.slider = this.publication = this.series = this.ui = null;
     }
 
-    oncreate(vnode: Vnode<ReaderAttrs, this>) {
-        let manifestPointer: object | string = this.config.state.loader(vnode.attrs.cid);
+    oncreate(vnode: VnodeDOM<ReaderAttrs, this>) {
+        let manifestPointer: unknown | string = this.config.state.loader(vnode.attrs.cid);
         if(!manifestPointer)
             if(this.config.state.link)
                 manifestPointer = this.config.state.link;
             else
                 manifestPointer = vnode.attrs.cid + ".json";
-        else if (!manifestPointer) {
+
+        if (!manifestPointer) {
             console.warn("No item specified");
             m.route.set("/error/:code/:message", { code: 9400, message: t`No item specified` }, { replace: true });
             return;

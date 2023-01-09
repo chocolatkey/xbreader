@@ -1,7 +1,7 @@
 import { XBReadingDirection } from "xbreader/components/Reader";
 
-export function isNumeric(n: any): n is number | string {
-    return !isNaN(parseFloat(n)) && isFinite(n);
+export function isNumeric(n: string | number): n is number | string {
+    return !isNaN(parseFloat(n as string)) && isFinite(n as number);
 }
 
 export function intVal(n: number | string): number {

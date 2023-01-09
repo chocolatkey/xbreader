@@ -5,7 +5,6 @@ import m, {
 } from "mithril";
 import Ui from "xbreader/models/Ui";
 import Config, { XBOptionType, XBOptionTypeSpinnerOptions } from "xbreader/models/Config";
-import xbError from "../models/xbError";
 import Slider from "../models/Slider";
 
 export interface SettingsAttrs {

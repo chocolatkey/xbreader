@@ -1,12 +1,10 @@
 import { t } from "ttag";
-import m, { CVnode, ChildArray, Child, Vnode, ClassComponent } from "mithril";
+import m, { CVnode, ClassComponent } from "mithril";
 import Slider, { DEFAULT_MARGIN } from "xbreader/models/Slider";
 import Peripherals from "xbreader/helpers/peripherals";
 import { chooserFunction, worker } from "xbreader/helpers/lazyLoader";
-import Page from "./Page";
 import ReflowablePage from "./ReflowablePage";
 import Link from "../models/Link";
-import Loader from "../partials/Loader";
 import Skeleton from "../partials/Skeleton";
 import Config, { RenderConfig } from "../models/Config";
 

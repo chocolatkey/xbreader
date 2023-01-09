@@ -2,7 +2,6 @@
     Inspired by Siema (https://github.com/pawelgrzybek/siema)
  */
 
-import { t } from "ttag";
 import m from "mithril";
 import sML from "xbreader/helpers/sMLstub";
 import Publication from "./Publication";
@@ -200,7 +199,7 @@ export default class Slider {
     }
 
     get slength() {
-        if(this.reflowable) return this.rlength * this.perPage - this.perPage;
+        if(this.reflowable) return this.rlength * this.perPage;
         return this.publication.spine.length;
     }
 

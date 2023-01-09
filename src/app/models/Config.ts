@@ -2,7 +2,7 @@
 import { t } from "ttag";
 import Reader from "xbreader/components/Reader";
 import { canDrawBitmap } from "xbreader/helpers/platform";
-import LazyLoader, { drawerFunction } from "xbreader/helpers/lazyLoader";
+import { drawerFunction } from "xbreader/helpers/lazyLoader";
 import Series from "./Series";
 import Link from "./Link";
 
@@ -463,7 +463,7 @@ export default class Config {
             onToggleInterface: () => {}, // When interface is shown/hidden
 
             onSource: (link: Link) => false, // Link When you want to overrride the logic choosing the appropriate link object or inject/modify links
-            onDrew: null,
+            onDrew: null, // TODO
             onError: null, // (TODO)
             render: {
                 bitmap: canDrawBitmap,

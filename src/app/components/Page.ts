@@ -1,11 +1,10 @@
 import { t } from "ttag";
 import m, {ClassComponent, Vnode} from "mithril";
-import SmartLoader, { chooserFunction, drawerFunction } from "xbreader/helpers/lazyLoader";
+import SmartLoader, { chooserFunction } from "xbreader/helpers/lazyLoader";
 import Link from "xbreader/models/Link";
 import Slider from "xbreader/models/Slider";
 import { RenderConfig } from "xbreader/models/Config";
 import Peripherals, { BibiMouseEvent } from "xbreader/helpers/peripherals";
-import { canDrawBitmap } from "xbreader/helpers/platform";
 export const MAX_FIT_WIDTH = 1400;
 export const MAX_FIT_HEIGHT = 1000;
 export const MAX_TTB_WIDTH = 1000;

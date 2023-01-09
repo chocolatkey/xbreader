@@ -4,7 +4,6 @@ import Coordinator, { Point, BibiEvent, VerticalThird, HorizontalThird } from ".
 import Reader, { XBReadingDirection } from "xbreader/components/Reader";
 import Slider from "xbreader/models/Slider";
 import Ui, { DialogData } from "xbreader/models/Ui";
-import { BeforeDeserialized } from "ta-json-x";
 
 const MAX_SCALE = 6; // 6x zoom
 const SCROLL_COOLDOWN = 200; // Faster would be 25

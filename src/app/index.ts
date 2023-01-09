@@ -9,7 +9,7 @@ import errorView from "./views/error";
 window.xbreader = (config: XBConfig) => {
     console.log(`${__NAME__} ${__VERSION__}`);
     if(!config)
-        config = {} as any as XBConfig;
+        config = {} as XBConfig;
     config.mount = config.mount ? config.mount : document.body;
     if(config.prefix)
         m.route.prefix = config.prefix;

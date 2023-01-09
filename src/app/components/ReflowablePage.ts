@@ -1,6 +1,6 @@
 import { t } from "ttag";
-import m, {ClassComponent, Vnode, Attributes, VnodeDOM} from "mithril";
-import SmartLoader, { chooserFunction } from "xbreader/helpers/lazyLoader";
+import m, { ClassComponent, Vnode, Attributes } from "mithril";
+import { chooserFunction } from "xbreader/helpers/lazyLoader";
 import Link from "xbreader/models/Link";
 import Slider from "xbreader/models/Slider";
 import { RenderConfig } from "xbreader/models/Config";

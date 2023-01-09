@@ -3,7 +3,7 @@
  */
 
 import { t } from "ttag";
-import m, { CVnode, ChildArray, Child, Vnode, ClassComponent } from "mithril";
+import m, { CVnode, ChildArray, Vnode, ClassComponent } from "mithril";
 import Slider from "xbreader/models/Slider";
 import Peripherals from "xbreader/helpers/peripherals";
 import Page from "./Page";

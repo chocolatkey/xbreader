@@ -1,6 +1,6 @@
 import { t } from "ttag";
 import m, {ClassComponent, Vnode, Child} from "mithril";
-import Logo, { LogoAttrs } from "xbreader/partials/Logo";
+import Logo from "xbreader/partials/Logo";
 import Ui from "xbreader/models/Ui";
 import Slider from "xbreader/models/Slider";
 import Reader from "./Reader";
@@ -17,7 +17,7 @@ export interface InterfaceAttrs {
 }
 
 export default class Interface implements ClassComponent<InterfaceAttrs> {
-    oninit(vnode: Vnode<InterfaceAttrs, this>) {
+    oninit() {
         console.log("Interface initialized");
     }
 

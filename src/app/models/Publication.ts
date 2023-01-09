@@ -337,7 +337,7 @@ export default class Publication {
             console.log("Publication loaded: " + this.Metadata.Title);
             this.navi = new Navigator(this);
             this.ready = true;
-            resolve();
+            resolve(void 0);
         });
     }
 

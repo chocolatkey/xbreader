@@ -71,13 +71,6 @@ module.exports = {
                     }
                 }
             ]
-        },
-        {
-            test: /\.(jpg|webp|ico|tiff|bmp|png|woff|woff2|eot|ttf|svg)$/,
-            loader: "file-loader",
-            options: {
-                name: "[name]-[hash].[ext]"
-            }
         }]
     },
     resolve: {
@@ -117,7 +110,6 @@ module.exports = {
         new webpack.DefinePlugin(stringifiedConstants),
         new webpack.DefinePlugin({
             "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG)
-        }),
-        new webpack.HotModuleReplacementPlugin(),
+        })
     ]
 };

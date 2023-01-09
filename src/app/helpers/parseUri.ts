@@ -17,10 +17,10 @@ export const options = {
 };
 
 export function parse(str: string) {
-    var	o   = options,
+    const	o   = options,
         m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
-        uri: { [index: string]: any } = {},
-        i   = 14;
+        uri: { [index: string]: any } = {};
+    let i = 14;
 
     while (i--) uri[o.key[i]] = m[i] || "";
 
