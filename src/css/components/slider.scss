@@ -40,7 +40,7 @@ $w: calc(100% - 160px);
     cursor: pointer;
     width: $w;
     height: $h;
-    background: ( radial-gradient(circle at $h/2 50%, $colorTrack .3125em, $colorTrack .3125em, $colorTrack $h/2, transparent $h/2), linear-gradient(90deg, transparent 0, $colorTrack 0) repeat-x 0 50%);
+    background: ( radial-gradient(circle at calc($h/2) 50%, $colorTrack .3125em, $colorTrack .3125em, $colorTrack calc($h/2), transparent calc($h/2)), linear-gradient(90deg, transparent 0, $colorTrack 0) repeat-x 0 50%);
     position: relative;
     background-size: 0% 1.2em, 100% 0.5em;
     border-radius: 1px;

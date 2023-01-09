@@ -1,4 +1,3 @@
-import { t } from "ttag";
 import m, { CVnode } from "mithril";
 
 export interface LoadingAttrs {

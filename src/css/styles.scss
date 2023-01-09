@@ -2,6 +2,10 @@
 @import "./font/style.scss";
 @import "./utils.scss";
 
+:root {
+    color-scheme: dark;
+}
+
 html {
     //overflow: hidden; //&.welcome { overflow: scroll !important; }
     position: absolute; // for InAppBrowsers

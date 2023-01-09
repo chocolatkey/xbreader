@@ -71,6 +71,7 @@ div#br-spine.reflowable {
 
     li {
         font-size: 1em;
+        list-style: revert;
     }
 
     li p {
@@ -78,11 +79,13 @@ div#br-spine.reflowable {
     }
 
     ul {
+        padding: revert;
         margin-top: 1em;
         margin-bottom: 1em;
     }
 
     ol {
+        padding: revert;
         margin-top: 1em;
         margin-bottom: 1em;
         text-align: left;
