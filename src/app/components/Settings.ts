@@ -14,6 +14,8 @@ export interface SettingsAttrs {
 }
 
 const oval = ((o: XBOption) => o.value.toString().replace(/[ ,"'+#]+/g, "_"));
+const positive = "＋";
+const negative = "－";
 
 export default class Settings implements ClassComponent<SettingsAttrs> {
     view({attrs}: CVnode <SettingsAttrs> ) {
@@ -107,7 +109,7 @@ export default class Settings implements ClassComponent<SettingsAttrs> {
                                         else
                                             attrs.ui.notify(t`Failed saving settings`);
                                     }
-                                }, "－"),
+                                }, negative),
                                 m("button.br-form__input-spinner.positive", {
                                     type: "button",
                                     onclick: () => {
@@ -122,7 +124,7 @@ export default class Settings implements ClassComponent<SettingsAttrs> {
                                         else
                                             attrs.ui.notify(t`Failed saving settings`);
                                     }
-                                }, "＋")
+                                }, positive)
                             ])
                         ]);
 

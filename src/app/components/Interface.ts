@@ -9,6 +9,8 @@ import Settings from "./Settings";
 import Config from "xbreader/models/Config";
 import Dialog from "./Dialog";
 
+const spacer = "›";
+
 export interface InterfaceAttrs {
     readonly model: Ui;
     readonly slider: Slider;
@@ -213,7 +215,7 @@ export default class Interface implements ClassComponent<InterfaceAttrs> {
                             title: t`Series`,
                             target: "_parent"
                         }, series.firstSeries.Name as Child),
-                        m("span.spacer", "›")]) : null,
+                        m("span.spacer", spacer)]) : null,
                         brand.embedded ? m("span#br-chapter", publication.pmetadata.Title as Child) : vnode.attrs.reader.series.selector
                     ]),
                     m("section.br-toolbar__section.br-toolbar__section--align-end.dhide", {

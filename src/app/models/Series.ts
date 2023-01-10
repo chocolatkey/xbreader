@@ -3,6 +3,8 @@ import m, { Vnode, Child, Children } from "mithril";
 import Publication from "./Publication";
 import { Contributor } from "@r2-shared-js/models/metadata-contributor";
 
+const spacer = "›";
+
 export default class Series {
     private readonly publication: Publication;
     private readonly metadata: Contributor[];
@@ -168,7 +170,7 @@ export default class Series {
         return m("span#br-chapter__group", [
             selectedVolumeName ? [
                 selectedVolumeName,
-                m("span.spacer", "›")
+                m("span.spacer", spacer)
             ] : null,
             select
         ]);

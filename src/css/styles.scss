@@ -2,10 +2,6 @@
 @import "./font/style.scss";
 @import "./utils.scss";
 
-:root {
-    color-scheme: dark;
-}
-
 html {
     //overflow: hidden; //&.welcome { overflow: scroll !important; }
     position: absolute; // for InAppBrowsers
@@ -213,6 +209,7 @@ div#br-book {
             @include hdpicursor(context-menu, 0, 5);
         }
     }
+    color-scheme: dark;
 }
 
 div#br-spine.fixed {
