@@ -123,7 +123,7 @@ export default class Page implements ClassComponent<PageAttrs> {
         if (slider && (slider.ttb || slider.single)) { // Vertical (TTB) or forced single page
             if(slider.toon || (this.data.Height / this.data.Width) > 2) { // TTB publication or very tall image
                 // ... && this.data.Width < docWidth
-                if((this.data.Height > MAX_FIT_HEIGHT || this.data.Width > MAX_FIT_WIDTH) && !(this.landscape && !slider.toon)) { // Too large to fit, compromise with maxFit
+                if(slider.publication.isTtb || (this.data.Height > MAX_FIT_HEIGHT || this.data.Width > MAX_FIT_WIDTH) && !(this.landscape && !slider.toon)) { // Too large to fit, compromise with maxFit
                     const preferredWidth = Math.min(docWidth, (slider.fit ? MIN_TTB_WIDTH : MAX_TTB_WIDTH));
                     if(preferredWidth < this.data.Width) {
                         this.itemHeight = preferredWidth / this.data.Width * this.data.Height;
