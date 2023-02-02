@@ -66,7 +66,6 @@ export default class Peripherals {
     private dblDisabler: number;
     private disableDblClick: boolean;
     private dtimer: number;
-    private Scrolling: boolean;
     private Timer_onscrolled: number;
     private Timer_cooldown: number;
     private onwheelTimer_stop: number;
@@ -999,14 +998,8 @@ export default class Peripherals {
         }
         if(!this.slider.reflowable) this.processVScroll();
         else if(!this.ui.settingsShown) this.slider.onChange();
-        if (!this.Scrolling) {
-            this.Scrolling = true;
-        }
-        //E.dispatch("bibi:scrolls", Eve);
         clearTimeout(this.Timer_onscrolled);
         this.Timer_onscrolled = window.setTimeout(() => {
-            this.Scrolling = false;
-
             // Update cursor
             this.cursorHandler();
             m.redraw();
