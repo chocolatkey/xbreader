@@ -99,9 +99,7 @@ module.exports = {
             favicon: "src/favicon.ico",
             excludeChunks: ["xbreader"],
             extra: {
-                v: consts.__VERSION__,
-                dsn: false,
-                ua: false
+                v: consts.__VERSION__
             }
         }),
         new MiniCssExtractPlugin({

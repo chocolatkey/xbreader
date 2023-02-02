@@ -134,9 +134,7 @@ module.exports = {
                 "loader-fr"
             ],
             extra: {
-                v: consts.__VERSION__,
-                dsn: consts.__DSN__,
-                ua: consts.__GA_UA__
+                v: consts.__VERSION__
             }
         }),
         /*new TtagWebpackPlugin({
