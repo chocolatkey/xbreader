@@ -159,6 +159,31 @@ if(workerSupported) {
 
 export type drawerFunction = (loader: LazyLoader, source: ImageBitmap | string, blob?: string)=> void;
 export type chooserFunction = (link: Link)=> Link;
+export type errorFunction = (err: Error)=> void;
+
+const svgStatusGenerator = (message: string, details: string, width: number, height: number): string => {
+    const template = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">
+<defs>
+<style>
+.t, .d {
+    fill: grey;
+    user-select: none;
+}
+.t {
+    font: normal bold 150px sans-serif;
+}
+.d {
+    font: normal 20px sans-serif;
+}
+</style>
+</defs>
+<title>Status</title>
+<text class="t" x="50%" y="50%" fill="grey" dominant-baseline="middle" text-anchor="middle">${message}</text>
+<text class="d" x="50%" y="99%" fill="grey" dominant-baseline="text-top" text-anchor="middle">${details}</text>
+</svg>`;
+
+    return `data:image/svg+xml,${encodeURIComponent(template)}`;
+};
 
 export default class LazyLoader {
     private best: Link;
@@ -265,14 +290,17 @@ export default class LazyLoader {
     destroy(): void {
         if(this.canvas) this.canvas.height = this.canvas.width = 0;
         if (!this.loaded && workerSupported) worker.postMessage({src: this.href, mode: "CANCEL"}, [], this.specificWorker);
-        if(this.blob && this.blob !== "empty") URL.revokeObjectURL(this.blob);
+        if(this.blob && this.blob.indexOf("blob:") === 0) URL.revokeObjectURL(this.blob);
     }
 
     private toBlob(type?: string, quality?: number) {
         if(this.loaded)
             return;
-        this.canvas.toBlob((blob) => {
-            if(!blob) return;
+        if(this.blob?.indexOf("data:") === 0) {
+            (this.element as HTMLImageElement).src = this.blob;
+            this.blob = "empty";
+        } else this.canvas.toBlob((blob) => {
+            if(!blob || this.loaded) return;
             this.blob = URL.createObjectURL(blob);
             if(!this.loaded)
                 (this.element as HTMLImageElement).src = this.blob;
@@ -288,6 +316,15 @@ export default class LazyLoader {
             let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
             let tempCanvas: HTMLCanvasElement | OffscreenCanvas;
             let dctx: ImageBitmapRenderingContext;
+
+            if(this.element instanceof HTMLImageElement && typeof element === "string") {
+                const fn = this.href.split("/");
+                const fnnq = fn[fn.length - 1].split("?")[0];
+                const infoString = `${__NAME__} ${__VERSION__} → ${fnnq}`;
+                this.blob = svgStatusGenerator(element, infoString, this.best.Width || this.element.width, this.best.Height || this.element.height);
+                this.drawAsSoon();
+                return;
+            }
 
             try {
                 // We *have* to initialize the context for the first time as a bitmaprenderer if we want to use the same context in the future
@@ -319,10 +356,10 @@ export default class LazyLoader {
                         ctx.textAlign = "center";
                         ctx.textBaseline = "middle";
                         ctx.fillStyle = "grey";
-        
+
                         ctx.font = "normal bold 150px sans-serif";
                         ctx.fillText(element as string, cd.width / 2, cd.height / 2);
-        
+
                         ctx.font = "normal 20px sans-serif";
                         const fn = this.href.split("/");
                         const fnnq = fn[fn.length - 1].split("?")[0];
@@ -360,13 +397,13 @@ export default class LazyLoader {
                         this.draw(this.preloader as HTMLImageElement, true);
                     }
                 }
-                if(this.blob)
+                if(this.blob?.indexOf("blob:") === 0)
                     URL.revokeObjectURL(this.blob);
                 return;
             } else {
-                if(this.blob || this.drawer) // C
+                if((this.blob?.indexOf("blob:") === 0 || this.blob === "empty") || this.drawer) // C
                     return;
-                this.blob = "empty";
+                if(!this.blob) this.blob = "empty";
                 this.toBlob();
             }
         }
