@@ -63,13 +63,6 @@ export default class Reader implements ClassComponent<ReaderAttrs> {
             this.mobile = true;
         else
             this.mobile = false;
-        if(sML.UA.InternetExplorer) {
-            if(sML.UA.InternetExplorer === 10) {
-                // No flex compatibility TODO
-            } else if(sML.UA.InternetExplorer < 10) {
-                // Not supported TODO
-            } 
-        }
         this.hint = "";
 
         this.loadingStatus = t`Initializing...`;

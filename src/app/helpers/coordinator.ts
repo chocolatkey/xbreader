@@ -1,5 +1,3 @@
-import Peripherals from "./peripherals";
-
 export interface Point {
     X: number;
     Y: number;
@@ -30,14 +28,11 @@ export interface BibiEvent {
 }
 
 export default class Coordinator {
-    p: Peripherals;
     HTML: HTMLElement;
     Head: HTMLHeadElement;
     Body: HTMLElement;
 
-    constructor(peripherals: Peripherals) {
-        this.p = peripherals;
-
+    constructor() {
         this.HTML  = document.documentElement;
         this.Head  = document.head;
         this.Body  = document.body;

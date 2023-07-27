@@ -344,7 +344,7 @@ export default class LazyLoader {
                         tempCanvas.height = cd.height;
                     }
                     // https://bugs.chromium.org/p/chromium/issues/detail?id=1072214#c14
-                    ctx = tempCanvas.getContext("2d", (!sML.UA.Chrome || sML.UA.Chrome) >= 83 ? { desynchronized: true } : null) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+                    ctx = tempCanvas.getContext("2d", (!sML.UA.Chrome || sML.UA.Chrome[0] >= 83) ? { desynchronized: true } : null) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
                 }
             } catch (error) { console.error(error); }
             if(ctx)

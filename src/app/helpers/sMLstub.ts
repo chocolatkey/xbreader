@@ -6,96 +6,120 @@
  *  * Licensed under the MIT license. - http://www.opensource.org/licenses/mit-license.php
  *
  * Portions of this code come from the sML library
+ * Current version: 1.0.36
  */
 
 declare interface OSFlags {
-    iOS: number;
-    macOS: number;
-    WindowsPhone: number;
-    Windows: number;
-    Android: number;
-    Chrome: boolean;
-    Linux: boolean;
+    iOS: number[];
+    macOS: number[];
+    iPadOS: number[];
+    WindowsPhone: number[];
+    ChromeOS: number[];
+    Windows: number[];
+    Android: number[];
+    Linux: number[];
     Firefox: boolean;
 }
 
 declare interface UAFlags {
-    Gecko: number;
-    Firefox: number;
-    Opera: number;
-    Silk: number;
-    Chrome: number | boolean;
-    Chromium: number | boolean;
-    Safari: number;
-    Edge: number;
-    Blink: number | boolean;
-    WebKit: number;
-    Trident: number;
-    InternetExplorer: number;
-    Flash: number;
+    Gecko: number[];
+    Firefox: number[];
+    Waterfox: number[];
+    Opera: number[];
+    Silk: number[];
+    Blink: number[];
+    EdgeHTML: number[];
+    Chrome: number[];
+    Chromium: number[];
+    Phoebe: number[];
+    UCBrowser: number[];
+    Vivaldi: number[];
+    Safari: number[];
+    Edge: number[];
+    WebKit: number[];
+    Trident: number[];
+    InternetExplorer: number[];
+    Flash: number[];
+    Facebook: number[];
+    LINE: number[];
 }
 
 class sML {
-    OperatingSystem: OSFlags;
-    OS: OSFlags; // Synonym for above
-    UserAgent: UAFlags;
-    UA: UAFlags; // Synonym for above
-    Environments: string[];
-    Env: string[]; // Synonym for above
+    OS: OSFlags;
+    UA: UAFlags;
+    Env: string[];
     Mobile: boolean;
 
     constructor() {
-        const nUA = navigator.userAgent;
-        const getVersion = (Prefix: string, Reference?: string) => parseFloat(nUA.replace(new RegExp("^.*" + Prefix + "[ :\\/]?(\\d+([\\._]\\d+)?).*$"), Reference ? Reference : "$1").replace(/_/g, ".")) || undefined;
+        const NUAD = navigator.userAgentData, NUA = navigator.userAgent;
 
-        this.OperatingSystem = this.OS = ((OS: OSFlags) => {
-            if(/ \(iP(hone|ad|od touch);/.test(nUA)) OS.iOS     = getVersion("CPU (iPhone )?OS", "$2");
-            else if(      /Mac OS X 10[\._]\d/.test(nUA)) OS.macOS   = getVersion("Mac OS X ");
-            else if(  /Windows Phone( OS)? \d/.test(nUA)) OS.WindowsPhone = getVersion("Windows Phone OS") || getVersion("Windows Phone");
-            else if(        /Windows( NT)? \d/.test(nUA)) OS.Windows = (W => W >= 10 ? W : W >= 6.3 ? 8.1 : W >= 6.2 ? 8 : W >= 6.1 ? 7 : W)(getVersion("Windows NT") || getVersion("Windows"));
-            else if(              /Android \d/.test(nUA)) OS.Android = getVersion("Android");
-            else if(                    /CrOS/.test(nUA)) OS.Chrome  = true;
-            else if(                    /X11;/.test(nUA)) OS.Linux   = true;
-            else if(                 /Firefox/.test(nUA)) OS.Firefox = true;
+        const _sV = (V: string | number) => (typeof V === "string" || typeof V === "number") && V ? String(V).replace(/_/g, ".").split(".").map(I => parseInt(I) || 0) : [];
+        const _dV = (Pre="") => {
+            if(!Pre) return [];
+            const RE = new RegExp("^.*" + Pre + "[ :\\/]?(\\d+([\\._]\\d+)*).*$");
+            if(!RE.test(NUA)) return [];
+            return _sV(NUA.replace(RE, "$1"));
+        };
+
+        this.OS = ((OS: OSFlags) => {
+            if(                /(macOS|Mac OS X)/.test(NUA)) {
+                    if(/\(iP(hone|od touch);/.test(NUA)) OS.iOS = _dV("CPU (?:iPhone )?OS ");
+                    if(             /\(iPad;/.test(NUA)) OS.iOS = OS.iPadOS = _dV("CPU (?:iPhone )?OS ");
+                else if( /(macOS|Mac OS X) \d/.test(NUA)) document.ontouchend !== undefined ? OS.iOS = OS.iPadOS = _dV() : OS.macOS = _dV("(?:macOS|Mac OS X) ");
+            } else if(      /Windows( NT)? \d/.test(NUA)) OS.Windows = (V => V[0] !== 6 || !V[1] ? V : V[1] === 1 ? [7] : V[1] === 2 ? [8] : [8, 1])(_dV("Windows(?: NT)?"));
+            else if(            /Android \d/.test(NUA)) OS.Android = _dV("Android");
+            else if(                  /CrOS/.test(NUA)) OS.ChromeOS = _dV();
+            else if(                  /X11;/.test(NUA)) OS.Linux = _dV();
             return OS;
-        })({} as OSFlags);
+        })({} as OSFlags); if(NUAD) NUAD.getHighEntropyValues(["architecture", "model", "platform", "platformVersion", "uaFullVersion"]).then(HEUAD => (OS => { const Pf = HEUAD.platform, PfV = HEUAD.platformVersion; if(!Pf || !PfV) return;
+                if(         /^i(OS|P(hone|od touch))$/.test(Pf)) OS.iOS = _sV(PfV);
+            else if(                      /^iPad(OS)?$/.test(Pf)) OS.iOS = OS.iPadOS = _sV(PfV);
+            else if(/^(macOS|(Mac )?OS X|Mac(Intel)?)$/.test(Pf)) document.ontouchend !== undefined ? OS.iOS = OS.iPadOS = _sV() : OS.macOS = _sV(PfV);
+            else if(           /^(Microsoft )?Windows$/.test(Pf)) OS.Windows = _sV(PfV);
+            else if(              /^(Google )?Android$/.test(Pf)) OS.Android = _sV(PfV);
+            else if(     /^((Google )?Chrome OS|CrOS)$/.test(Pf)) OS.ChromeOS = _sV(PfV);
+            else if(             /^(Linux|Ubuntu|X11)$/.test(Pf)) OS.Linux = _sV(PfV);
+            else return; /**/ Object.keys(this.OS).forEach(Key => delete (this.OS as any)[Key]), Object.assign(this.OS, OS);
+        })({} as OSFlags));
 
         this.Mobile = (this.OS.iOS || this.OS.Android || this.OS.WindowsPhone) ? true : false;
 
-        this.UserAgent = this.UA = ((UA: UAFlags) => {
-            if(/Gecko\/\d/.test(nUA)) {
-                UA.Gecko = getVersion("rv");
-                if(/Firefox\/\d/.test(nUA)) UA.Firefox = getVersion("Firefox");
-                //UA.VendorPrefix = "moz";
-            } else if(/Edge\/\d/.test(nUA)) {
-                UA.Edge = getVersion("Edge");
-                //UA.VendorPrefix = "$1";
-            } else if(/Chrom(ium|e)\/\d/.test(nUA)) {
-                UA.Chromium = getVersion("Chromium") || getVersion("Chrome") || true;
-                if( /Edg\/\d/.test(nUA)) UA.Edge   = getVersion("Edg");
-                else if( /OPR\/\d/.test(nUA)) UA.Opera  = getVersion("OPR");
-                else if(/Silk\/\d/.test(nUA)) UA.Silk   = getVersion("Silk");
-                else                          UA.Chrome = getVersion("Chrome") || UA.Chromium;
-                //UA.VendorPrefix = '';
-            } else if(/AppleWebKit\/\d/.test(nUA)) {
-                UA.WebKit = getVersion("AppleWebKit");
-                if(   /CriOS \d/.test(nUA)) UA.Chrome  = getVersion("CriOS");
-                else if(   /FxiOS \d/.test(nUA)) UA.Firefox = getVersion("FxiOS");
-                else if( /EdgiOS\/\d/.test(nUA)) UA.Edge    = getVersion("EdgiOS");
-                else if(/Version\/\d/.test(nUA)) UA.Safari  = getVersion("Version");
-                //UA.VendorPrefix = "webkit";
-            } else if(/Trident\/\d/.test(nUA)) {
-                UA.Trident          = getVersion("Trident"); 
-                UA.InternetExplorer = getVersion("rv") || getVersion("MSIE");
-                //UA.VendorPrefix = "ms";
-            }
-            //try { UA.Flash = parseFloat(navigator.mimeTypes['application/x-shockwave-flash'].enabledPlugin.description.replace(/^.+?([\d\.]+).*$/, '$1')); } catch(Err) {}
+        this.UA = ((UA: UAFlags) => { let _OK = false;
+            if(NUAD && Array.isArray(NUAD.brands)) { const BnV = NUAD.brands.reduce((BnV, _) => { BnV[_.brand] = [_.version * 1]; return BnV; }, {});
+                    if(BnV["Google Chrome"])  _OK = true, UA.Blink = UA.Chromium = BnV["Chromium"] || [], UA.Chrome = BnV["Google Chrome"];
+                else if(BnV["Microsoft Edge"]) _OK = true, UA.Blink = UA.Chromium = BnV["Chromium"] || [], UA.Edge = BnV["Microsoft Edge"];
+                else if(BnV["Opera"])          _OK = true, UA.Blink = UA.Chromium = BnV["Chromium"] || [], UA.Opera = BnV["Opera"];
+            } if(!_OK) {
+                if(              / Gecko\/\d/.test(NUA)) { UA.Gecko = _dV("rv");
+                        if(  / Waterfox\/\d/.test(NUA))   UA.Waterfox = _dV("Waterfox");
+                    else if(   / Firefox\/\d/.test(NUA))   UA.Firefox = _dV("Firefox");
+                } else if(        / Edge\/\d/.test(NUA)) { UA.EdgeHTML = _dV("Edge");
+                                                        UA.Edge = UA.EdgeHTML;
+                } else if(/ Chrom(ium|e)\/\d/.test(NUA)) { UA.Blink = UA.Chromium = (V => V[0] ? V : _dV("Chrome"))(_dV("Chromium"));
+                        if(     / EdgA?\/\d/.test(NUA))   UA.Edge = (V => V[0] ? V : _dV("Edg"))(_dV("EdgA"));
+                    else if(       / OPR\/\d/.test(NUA))   UA.Opera = _dV("OPR");
+                    else if(   / Vivaldi\/\d/.test(NUA))   UA.Vivaldi = _dV("Vivaldi");
+                    else if(      / Silk\/\d/.test(NUA))   UA.Silk = _dV("Silk");
+                    else if( / UCBrowser\/\d/.test(NUA))   UA.UCBrowser = _dV("UCBrowser");
+                    else if(    / Phoebe\/\d/.test(NUA))   UA.Phoebe = _dV("Phoebe");
+                    else                                   UA.Chrome = (V => V[0] ? V : UA.Chromium)(_dV("Chrome"));
+                } else if( / AppleWebKit\/\d/.test(NUA)) { UA.WebKit = _dV("AppleWebKit");
+                        if(      / CriOS \d/.test(NUA))   UA.Chrome = _dV("CriOS");
+                    else if(      / FxiOS \d/.test(NUA))   UA.Firefox = _dV("FxiOS");
+                    else if(    / EdgiOS\/\d/.test(NUA))   UA.Edge = _dV("EdgiOS");
+                    else if(   / Version\/\d/.test(NUA))   UA.Safari = _dV("Version");
+                } else if(     / Trident\/\d/.test(NUA)) { UA.Trident = _dV("Trident");
+                                                        UA.InternetExplorer = (V => V[0] ? V : _dV("MSIE"))(_dV("rv"));
+                }
+            } /*+*/ if( /[\[; ]FB(AN|_IAB)\//.test(NUA))   UA.Facebook = _dV("FBAV");
+            /*+*/ if(           / Line\/\d/.test(NUA))   UA.LINE = _dV("Line");
             return UA;
         })({} as UAFlags);
 
-        this.Environments = this.Env = ["OperatingSystem", "UserAgent"].reduce((Env, OS_UA) => { for(const Param in (this as any)[OS_UA]) if((this as any)[OS_UA][Param]) Env.push(Param); return Env; }, []);
+        (this.Env as any) = { get: () => [this.OS, this.UA].reduce((Env, OS_UA) => { for(const Par in OS_UA) if((OS_UA as any)[Par]) Env.push(Par); return Env; }, []) };
     }
 
+    // Old
     edit(Obj: object | HTMLElement, ...ProSets: any) {
         const l = ProSets.length;
         if((Obj as HTMLElement).tagName) {

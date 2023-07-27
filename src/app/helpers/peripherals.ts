@@ -108,7 +108,7 @@ export default class Peripherals {
         this.slider = Reader.slider;
         this.ui = Reader.ui;
         this.reader = Reader;
-        this.coordinator = new Coordinator(this);
+        this.coordinator = new Coordinator();
 
         this.updateKeyCodes(["keydown", "keyup", "keypress"], {
             32: "Space"
