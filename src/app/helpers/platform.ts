@@ -5,7 +5,24 @@ export const language = () => {
 };
 
 const WebPChecker = () => {
-    if(sML.UA?.Firefox >= 65) return true; // Firefox doesn't support canvas detection method, do UA check instead
+    if(sML.UA?.Blink && sML.UA.Blink[0] >= 32)
+        // Shortcut for Blink browsers, which have supported WebP for a loooong time
+        return true;
+
+    if(sML.UA?.Firefox && sML.UA.Firefox[0] >= 65)
+        // Firefox doesn't support canvas detection method, do UA check instead
+        return true;
+
+    if(sML.UA?.Safari && sML.UA.Safari[0] >= 14) {
+        // Safari doesn't support canvas detection method
+        if(sML.OS?.macOS && sML.OS.macOS[0] <= 12)
+            // "Safari 14.0 – 15.6 has full support of WebP, but requires macOS 11 Big Sur or later."
+            if(sML.UA.Safari[0] < 16) return false;
+
+        // Safari supports WebP now!
+        return true;
+    }
+
     const elem = document.createElement("canvas");
     if (elem.getContext && elem.getContext("2d"))
         // was able or not to get WebP representation
